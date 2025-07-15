@@ -3,6 +3,11 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --vouched-primary: #4f46e5;
+  --vouched-secondary: #7c3aed;
+  --vouched-accent: #06b6d4;
+  --vouched-dark: #1e1b4b;
+  --vouched-light: #f8fafc;
 }
 
 @theme inline {
@@ -10,11 +15,16 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --color-vouched-primary: var(--vouched-primary);
+  --color-vouched-secondary: var(--vouched-secondary);
+  --color-vouched-accent: var(--vouched-accent);
+  --color-vouched-dark: var(--vouched-dark);
+  --color-vouched-light: var(--vouched-light);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
+    --background: #0f0f23;
     --foreground: #ededed;
   }
 }

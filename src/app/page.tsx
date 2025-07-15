@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronRightIcon, CheckIcon } from '@heroicons/react/24/outline';
+import { ChevronRightIcon, CheckIcon, ShieldCheckIcon, DocumentCheckIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 
 type FlowType = 'desktop' | 'phone';
-type WorkflowType = 'VouchedRX' | 'VouchedFI' | 'custom';
+type WorkflowType = 'simultaneous' | 'step-up';
 
 interface Product {
   id: string;
@@ -15,7 +15,7 @@ interface Product {
 
 export default function ConfigurationPage() {
   const [flowType, setFlowType] = useState<FlowType>('desktop');
-  const [workflowType, setWorkflowType] = useState<WorkflowType>('VouchedRX');
+  const [workflowType, setWorkflowType] = useState<WorkflowType>('simultaneous');
   const [products, setProducts] = useState<Product[]>([
     {
       id: 'id-verification',
@@ -67,72 +67,87 @@ export default function ConfigurationPage() {
       id: 'simultaneous',
       name: 'Simultaneous',
       description: 'Run checks simultaneously akin to VouchedFI',
+      icon: ShieldCheckIcon,
     },
     {
       id: 'step-up',
       name: 'Step Up',
       description: 'Run checks sequentially, akin to VouchedRX',
+      icon: DocumentCheckIcon,
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-      <div className="max-w-4xl mx-auto px-6 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950 dark:via-slate-900 dark:to-purple-950">
+      <div className="max-w-5xl mx-auto px-6 py-12">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-slate-900 dark:text-slate-100 mb-4">
-            Vouched Identity Verification
+          <div className="flex items-center justify-center mb-6">
+            <div className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold text-xl">
+              Vouched
+            </div>
+          </div>
+          <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-4">
+            Identity Verification
+            <span className="text-indigo-600"> Showcase</span>
           </h1>
-          <p className="text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-            Configure your demo experience to showcase Vouched's powerful identity verification solutions
+          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+            Configure your demo experience to showcase Vouched's AI-powered identity verification solutions
           </p>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-8 space-y-8">
+        <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-700 p-8 space-y-10">
           {/* Flow Type Selection */}
-          <div className="space-y-4">
-            <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
-              Choose Your Flow
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <UserGroupIcon className="h-8 w-8 text-indigo-600" />
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+                Choose Your Flow
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <button
                 onClick={() => setFlowType('desktop')}
-                className={`p-6 rounded-xl border-2 text-left transition-all ${
+                className={`p-8 rounded-2xl border-2 text-left transition-all duration-200 transform hover:scale-105 ${
                   flowType === 'desktop'
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                    : 'border-slate-200 dark:border-slate-600 hover:border-slate-300 dark:hover:border-slate-500'
+                    ? 'border-indigo-500 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 shadow-lg'
+                    : 'border-gray-200 dark:border-gray-600 hover:border-indigo-300 dark:hover:border-indigo-400 hover:shadow-md'
                 }`}
               >
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                     Desktop Flow
                   </h3>
                   {flowType === 'desktop' && (
-                    <CheckIcon className="h-5 w-5 text-blue-500" />
+                    <div className="bg-indigo-500 rounded-full p-1">
+                      <CheckIcon className="h-5 w-5 text-white" />
+                    </div>
                   )}
                 </div>
-                <p className="text-slate-600 dark:text-slate-400">
-                  User completes verification on desktop, then hands off to mobile device
+                <p className="text-gray-600 dark:text-gray-300">
+                  User completes verification on desktop, then hands off to mobile device via QR code or SMS
                 </p>
               </button>
               
               <button
                 onClick={() => setFlowType('phone')}
-                className={`p-6 rounded-xl border-2 text-left transition-all ${
+                className={`p-8 rounded-2xl border-2 text-left transition-all duration-200 transform hover:scale-105 ${
                   flowType === 'phone'
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                    : 'border-slate-200 dark:border-slate-600 hover:border-slate-300 dark:hover:border-slate-500'
+                    ? 'border-indigo-500 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 shadow-lg'
+                    : 'border-gray-200 dark:border-gray-600 hover:border-indigo-300 dark:hover:border-indigo-400 hover:shadow-md'
                 }`}
               >
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                     Phone Flow
                   </h3>
                   {flowType === 'phone' && (
-                    <CheckIcon className="h-5 w-5 text-blue-500" />
+                    <div className="bg-indigo-500 rounded-full p-1">
+                      <CheckIcon className="h-5 w-5 text-white" />
+                    </div>
                   )}
                 </div>
-                <p className="text-slate-600 dark:text-slate-400">
+                <p className="text-gray-600 dark:text-gray-300">
                   User completes entire verification process directly on mobile device
                 </p>
               </button>
@@ -140,54 +155,68 @@ export default function ConfigurationPage() {
           </div>
 
           {/* Workflow Selection */}
-          <div className="space-y-4">
-            <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
-              Select Workflow
-            </h2>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              {workflows.map((workflow) => (
-                <button
-                  key={workflow.id}
-                  onClick={() => setWorkflowType(workflow.id as WorkflowType)}
-                  className={`p-6 rounded-xl border-2 text-left transition-all ${
-                    workflowType === workflow.id
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                      : 'border-slate-200 dark:border-slate-600 hover:border-slate-300 dark:hover:border-slate-500'
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100">
-                      {workflow.name}
-                    </h3>
-                    {workflowType === workflow.id && (
-                      <CheckIcon className="h-5 w-5 text-blue-500" />
-                    )}
-                  </div>
-                  <p className="text-slate-600 dark:text-slate-400 mb-4">
-                    {workflow.description}
-                  </p>
-                </button>
-              ))}
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <ShieldCheckIcon className="h-8 w-8 text-indigo-600" />
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+                Select Workflow
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {workflows.map((workflow) => {
+                const IconComponent = workflow.icon;
+                return (
+                  <button
+                    key={workflow.id}
+                    onClick={() => setWorkflowType(workflow.id as WorkflowType)}
+                    className={`p-8 rounded-2xl border-2 text-left transition-all duration-200 transform hover:scale-105 ${
+                      workflowType === workflow.id
+                        ? 'border-indigo-500 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 shadow-lg'
+                        : 'border-gray-200 dark:border-gray-600 hover:border-indigo-300 dark:hover:border-indigo-400 hover:shadow-md'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <IconComponent className="h-6 w-6 text-indigo-600" />
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                          {workflow.name}
+                        </h3>
+                      </div>
+                      {workflowType === workflow.id && (
+                        <div className="bg-indigo-500 rounded-full p-1">
+                          <CheckIcon className="h-5 w-5 text-white" />
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      {workflow.description}
+                    </p>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
           {/* Product Selection */}
-          <div className="space-y-4">
-            <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
-              Configure Products
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <DocumentCheckIcon className="h-8 w-8 text-indigo-600" />
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+                Configure Products
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {products.map((product) => (
                 <div
                   key={product.id}
-                  className={`p-6 rounded-xl border-2 transition-all ${
+                  className={`p-8 rounded-2xl border-2 transition-all duration-200 ${
                     product.enabled
-                      ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
-                      : 'border-slate-200 dark:border-slate-600'
+                      ? 'border-emerald-500 bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/30 dark:to-green-900/30 shadow-lg'
+                      : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
                   }`}
                 >
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                       {product.name}
                     </h3>
                     <label className="relative inline-flex items-center cursor-pointer">
@@ -197,10 +226,10 @@ export default function ConfigurationPage() {
                         onChange={() => toggleProduct(product.id)}
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-blue-600"></div>
+                      <div className="w-12 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
                     </label>
                   </div>
-                  <p className="text-slate-600 dark:text-slate-400">
+                  <p className="text-gray-600 dark:text-gray-300">
                     {product.description}
                   </p>
                 </div>
@@ -209,28 +238,28 @@ export default function ConfigurationPage() {
           </div>
 
           {/* Configuration Summary */}
-          <div className="bg-slate-50 dark:bg-slate-700 rounded-xl p-6">
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">
+          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-2xl p-8 border border-indigo-100 dark:border-indigo-800">
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
               Configuration Summary
             </h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-slate-600 dark:text-slate-400">Flow Type:</span>
-                <span className="font-medium text-slate-900 dark:text-slate-100 capitalize">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="text-center">
+                <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Flow Type</div>
+                <div className="text-lg font-semibold text-indigo-600 dark:text-indigo-400 capitalize">
                   {flowType}
-                </span>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-600 dark:text-slate-400">Workflow:</span>
-                <span className="font-medium text-slate-900 dark:text-slate-100">
-                  {workflowType}
-                </span>
+              <div className="text-center">
+                <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Workflow</div>
+                <div className="text-lg font-semibold text-indigo-600 dark:text-indigo-400">
+                  {workflowType === 'simultaneous' ? 'Simultaneous' : 'Step Up'}
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-600 dark:text-slate-400">Products:</span>
-                <span className="font-medium text-slate-900 dark:text-slate-100">
+              <div className="text-center">
+                <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Products</div>
+                <div className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">
                   {products.filter(p => p.enabled).length} enabled
-                </span>
+                </div>
               </div>
             </div>
           </div>
@@ -239,10 +268,10 @@ export default function ConfigurationPage() {
           <div className="pt-6">
             <button
               onClick={handleStartDemo}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-4 px-6 rounded-xl transition-colors flex items-center justify-center group"
+              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold py-6 px-8 rounded-2xl transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center group"
             >
-              Start Demo Experience
-              <ChevronRightIcon className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              <span className="text-lg">Start Demo Experience</span>
+              <ChevronRightIcon className="h-6 w-6 ml-3 group-hover:translate-x-2 transition-transform duration-200" />
             </button>
           </div>
         </div>
