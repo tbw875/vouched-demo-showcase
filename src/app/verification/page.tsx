@@ -94,25 +94,6 @@ export default function VerificationPage() {
             // Callbacks
             onInit: (job: any) => {
               console.log('Vouched initialized', job);
-              console.log('Form data:', formData);
-              console.log('Config:', vouchedConfig);
-              console.log('User agent:', navigator.userAgent);
-              console.log('Is HTTPS:', window.location.protocol === 'https:');
-              
-              // Check camera permissions
-              if (navigator.mediaDevices) {
-                console.log('Camera API available');
-                navigator.mediaDevices.enumerateDevices().then(devices => {
-                  const videoDevices = devices.filter(device => device.kind === 'videoinput');
-                  console.log('Video devices found:', videoDevices.length);
-                  console.log('Video devices:', videoDevices);
-                }).catch(err => {
-                  console.error('Error enumerating devices:', err);
-                });
-              } else {
-                console.log('Camera API NOT available');
-              }
-              
               setIsLoading(false);
             },
             
