@@ -1,0 +1,354 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { ChevronRightIcon, UserIcon, PhoneIcon, EnvelopeIcon, CalendarIcon, IdentificationIcon } from '@heroicons/react/24/outline';
+
+interface VouchedConfig {
+  flowType: 'desktop' | 'phone';
+  workflowType: 'simultaneous' | 'step-up';
+  enabledProducts: string[];
+}
+
+interface FormData {
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  email?: string;
+  dateOfBirth?: string;
+  ssn?: string;
+  ipAddress?: string;
+}
+
+interface FormField {
+  id: keyof FormData;
+  label: string;
+  type: string;
+  required: boolean;
+  placeholder: string;
+  icon: React.ComponentType<any>;
+  pattern?: string;
+  maxLength?: number;
+  description?: string;
+}
+
+export default function FormFillPage() {
+  const searchParams = useSearchParams();
+  const [formData, setFormData] = useState<FormData>({});
+  const [errors, setErrors] = useState<Partial<FormData>>({});
+  const [ssnMode, setSsnMode] = useState<'full' | 'last4'>('last4');
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Parse configuration from URL params
+  const config: VouchedConfig = {
+    flowType: (searchParams.get('flow') as 'desktop' | 'phone') || 'desktop',
+    workflowType: (searchParams.get('workflow') as 'simultaneous' | 'step-up') || 'simultaneous',
+    enabledProducts: searchParams.get('products')?.split(',') || ['id-verification']
+  };
+
+  // Get user's IP address
+  useEffect(() => {
+    const fetchIpAddress = async () => {
+      try {
+        const response = await fetch('https://api.ipify.org?format=json');
+        const data = await response.json();
+        setFormData(prev => ({ ...prev, ipAddress: data.ip }));
+      } catch (error) {
+        console.error('Failed to fetch IP address:', error);
+        // Fallback to a placeholder
+        setFormData(prev => ({ ...prev, ipAddress: 'Unable to detect' }));
+      }
+    };
+
+    if (config.enabledProducts.includes('crosscheck')) {
+      fetchIpAddress();
+    }
+  }, [config.enabledProducts]);
+
+  // Generate form fields based on configuration
+  const generateFormFields = (): FormField[] => {
+    const fields: FormField[] = [];
+
+    // CrossCheck fields
+    if (config.enabledProducts.includes('crosscheck')) {
+      fields.push(
+        {
+          id: 'firstName',
+          label: 'First Name',
+          type: 'text',
+          required: true,
+          placeholder: 'Enter your first name',
+          icon: UserIcon,
+          description: 'Required for CrossCheck verification'
+        },
+        {
+          id: 'lastName',
+          label: 'Last Name',
+          type: 'text',
+          required: true,
+          placeholder: 'Enter your last name',
+          icon: UserIcon,
+          description: 'Required for CrossCheck verification'
+        },
+        {
+          id: 'phone',
+          label: 'Phone Number',
+          type: 'tel',
+          required: true,
+          placeholder: '+1 (555) 123-4567',
+          icon: PhoneIcon,
+          pattern: '^[+]?[1-9]\\d{1,14}$',
+          description: 'Required for CrossCheck verification'
+        },
+        {
+          id: 'email',
+          label: 'Email Address',
+          type: 'email',
+          required: true,
+          placeholder: 'your.email@example.com',
+          icon: EnvelopeIcon,
+          description: 'Required for CrossCheck verification'
+        }
+      );
+    }
+
+    // DOB Verification fields
+    if (config.enabledProducts.includes('dob-verification')) {
+      fields.push({
+        id: 'dateOfBirth',
+        label: 'Date of Birth',
+        type: 'date',
+        required: true,
+        placeholder: 'YYYY-MM-DD',
+        icon: CalendarIcon,
+        description: 'Required for DOB verification - will be compared against your ID'
+      });
+    }
+
+    // SSN field (always show for demo purposes)
+    fields.push({
+      id: 'ssn',
+      label: `Social Security Number (${ssnMode === 'full' ? 'Full 9 digits' : 'Last 4 digits'})`,
+      type: 'text',
+      required: false,
+      placeholder: ssnMode === 'full' ? '123-45-6789' : '6789',
+      icon: IdentificationIcon,
+      pattern: ssnMode === 'full' ? '^\\d{3}-\\d{2}-\\d{4}$' : '^\\d{4}$',
+      maxLength: ssnMode === 'full' ? 11 : 4,
+      description: 'Optional - can be used for additional verification'
+    });
+
+    return fields;
+  };
+
+  const formFields = generateFormFields();
+
+  const handleInputChange = (id: keyof FormData, value: string) => {
+    setFormData(prev => ({ ...prev, [id]: value }));
+    
+    // Clear error when user starts typing
+    if (errors[id]) {
+      setErrors(prev => ({ ...prev, [id]: undefined }));
+    }
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors: Partial<FormData> = {};
+
+    formFields.forEach(field => {
+      if (field.required && !formData[field.id]) {
+        newErrors[field.id] = 'This field is required';
+      } else if (formData[field.id] && field.pattern) {
+        const regex = new RegExp(field.pattern);
+        if (!regex.test(formData[field.id]!)) {
+          newErrors[field.id] = 'Please enter a valid format';
+        }
+      }
+    });
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsLoading(true);
+
+    // Simulate processing time
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Navigate to verification page with form data
+    const params = new URLSearchParams({
+      flow: config.flowType,
+      workflow: config.workflowType,
+      products: config.enabledProducts.join(','),
+      formData: JSON.stringify(formData)
+    });
+
+    window.location.href = `/verification?${params.toString()}`;
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950 dark:via-slate-900 dark:to-purple-950">
+      <div className="max-w-3xl mx-auto px-6 py-12">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <div className="flex items-center justify-center mb-6">
+            <div className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold text-xl">
+              Vouched
+            </div>
+          </div>
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            Personal Information
+          </h1>
+          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+            Please provide the following information for verification. This data will be used to enhance the verification process.
+          </p>
+        </div>
+
+        {/* Configuration Summary */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 mb-8">
+          <div className="flex flex-wrap gap-4 text-sm justify-center">
+            <div className="flex items-center gap-2">
+              <span className="text-gray-500 dark:text-gray-400">Flow:</span>
+              <span className="bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 px-2 py-1 rounded capitalize">
+                {config.flowType}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-gray-500 dark:text-gray-400">Workflow:</span>
+              <span className="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 px-2 py-1 rounded">
+                {config.workflowType}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-gray-500 dark:text-gray-400">Products:</span>
+              <span className="bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 px-2 py-1 rounded">
+                {config.enabledProducts.length}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Form */}
+        <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-700 p-8">
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Dynamic Form Fields */}
+            {formFields.map((field) => {
+              const IconComponent = field.icon;
+              return (
+                <div key={field.id} className="space-y-2">
+                  <label className="flex items-center gap-3 text-lg font-semibold text-gray-900 dark:text-white">
+                    <IconComponent className="h-5 w-5 text-indigo-600" />
+                    {field.label}
+                    {field.required && <span className="text-red-500">*</span>}
+                  </label>
+                  
+                  {field.description && (
+                    <p className="text-sm text-gray-600 dark:text-gray-400 ml-8">
+                      {field.description}
+                    </p>
+                  )}
+
+                  <div className="relative">
+                    <input
+                      type={field.type}
+                      id={field.id}
+                      value={formData[field.id] || ''}
+                      onChange={(e) => handleInputChange(field.id, e.target.value)}
+                      placeholder={field.placeholder}
+                      maxLength={field.maxLength}
+                      className={`w-full px-4 py-3 pl-12 rounded-lg border transition-colors duration-200 ${
+                        errors[field.id]
+                          ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                          : 'border-gray-300 dark:border-gray-600 focus:border-indigo-500 focus:ring-indigo-500'
+                      } bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2`}
+                    />
+                    <IconComponent className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+                  </div>
+
+                  {errors[field.id] && (
+                    <p className="text-red-500 text-sm ml-8">{errors[field.id]}</p>
+                  )}
+                </div>
+              );
+            })}
+
+            {/* SSN Mode Toggle */}
+            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  SSN Collection Mode
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSsnMode(ssnMode === 'full' ? 'last4' : 'full');
+                    setFormData(prev => ({ ...prev, ssn: '' }));
+                  }}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-3 py-1 rounded transition-colors duration-200"
+                >
+                  Switch to {ssnMode === 'full' ? 'Last 4' : 'Full SSN'}
+                </button>
+              </div>
+              <p className="text-xs text-gray-600 dark:text-gray-400">
+                {ssnMode === 'full' 
+                  ? 'Collecting full 9-digit SSN (XXX-XX-XXXX format)'
+                  : 'Collecting last 4 digits only for enhanced security'
+                }
+              </p>
+            </div>
+
+            {/* IP Address Display */}
+            {config.enabledProducts.includes('crosscheck') && (
+              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                  <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                    Automatically Detected
+                  </span>
+                </div>
+                <p className="text-sm text-blue-700 dark:text-blue-300">
+                  IP Address: <span className="font-mono">{formData.ipAddress || 'Detecting...'}</span>
+                </p>
+              </div>
+            )}
+
+            {/* Submit Button */}
+            <div className="pt-6">
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-4 px-8 rounded-2xl transition-all duration-200 transform hover:scale-105 disabled:hover:scale-100 shadow-lg hover:shadow-xl flex items-center justify-center group"
+              >
+                {isLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                    <span>Processing...</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-lg">Continue to Verification</span>
+                    <ChevronRightIcon className="h-6 w-6 ml-3 group-hover:translate-x-2 transition-transform duration-200" />
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        {/* Privacy Notice */}
+        <div className="mt-8 text-center">
+          <p className="text-sm text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+            Your personal information is encrypted and securely processed. Vouched is SOC2 Type 1 certified and complies with GDPR and CCPA regulations.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+} 

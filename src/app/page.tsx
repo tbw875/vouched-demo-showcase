@@ -54,12 +54,21 @@ export default function ConfigurationPage() {
   };
 
   const handleStartDemo = () => {
+    const enabledProducts = products.filter(p => p.enabled).map(p => p.id);
     console.log('Configuration:', {
       flowType,
       workflowType,
-      enabledProducts: products.filter(p => p.enabled).map(p => p.id),
+      enabledProducts,
     });
-    // TODO: Navigate to next step
+    
+    // Navigate to form fill page with configuration
+    const params = new URLSearchParams({
+      flow: flowType,
+      workflow: workflowType,
+      products: enabledProducts.join(',')
+    });
+    
+    window.location.href = `/form-fill?${params.toString()}`;
   };
 
   const workflows = [
