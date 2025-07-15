@@ -22,8 +22,6 @@ interface FormData {
 export default function VerificationPage() {
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(true);
-  const [isPhone, setIsPhone] = useState(false);
-  const [manualViewOverride, setManualViewOverride] = useState(false);
   const vouchedInstanceRef = useRef<any>(null);
   
   // Parse configuration from URL params
@@ -38,27 +36,8 @@ export default function VerificationPage() {
     ? JSON.parse(searchParams.get('formData')!) 
     : {};
 
-  // Check if we should show phone view
-  useEffect(() => {
-    const checkPhoneView = () => {
-      // Don't auto-switch if user manually overrode the view
-      if (manualViewOverride) return;
-      
-      const windowWidth = window.innerWidth;
-      const shouldShowPhone = config.flowType === 'phone' || windowWidth <= 768;
-      setIsPhone(shouldShowPhone);
-    };
-
-    checkPhoneView();
-    window.addEventListener('resize', checkPhoneView);
-    return () => window.removeEventListener('resize', checkPhoneView);
-  }, [config.flowType, manualViewOverride]);
-
-  // Handle manual view switching
-  const handleViewSwitch = () => {
-    setIsPhone(!isPhone);
-    setManualViewOverride(true);
-  };
+  // Determine if we should show phone view based on configuration
+  const isPhoneView = config.flowType === 'phone';
 
   // Initialize Vouched JS Plugin
   useEffect(() => {
@@ -86,7 +65,8 @@ export default function VerificationPage() {
           const vouchedConfig = {
             appId: 'wYd4PAXW3W2~xHNRx~-cdUpFl!*SFs',
             
-            // Mobile handoff settings for desktop flow
+            // Mobile handoff settings based on configuration
+            // For localhost testing, allow direct camera access even in phone flow
             crossDevice: config.flowType === 'desktop',
             crossDeviceQRCode: config.flowType === 'desktop',
             crossDeviceSMS: config.flowType === 'desktop',
@@ -116,6 +96,23 @@ export default function VerificationPage() {
               console.log('Vouched initialized', job);
               console.log('Form data:', formData);
               console.log('Config:', vouchedConfig);
+              console.log('User agent:', navigator.userAgent);
+              console.log('Is HTTPS:', window.location.protocol === 'https:');
+              
+              // Check camera permissions
+              if (navigator.mediaDevices) {
+                console.log('Camera API available');
+                navigator.mediaDevices.enumerateDevices().then(devices => {
+                  const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                  console.log('Video devices found:', videoDevices.length);
+                  console.log('Video devices:', videoDevices);
+                }).catch(err => {
+                  console.error('Error enumerating devices:', err);
+                });
+              } else {
+                console.log('Camera API NOT available');
+              }
+              
               setIsLoading(false);
             },
             
@@ -129,6 +126,7 @@ export default function VerificationPage() {
             
             onError: (error: any) => {
               console.error('Vouched error', error);
+              console.error('Error details:', JSON.stringify(error, null, 2));
               setIsLoading(false);
             }
           };
@@ -205,22 +203,22 @@ export default function VerificationPage() {
         {/* Verification Container */}
         <div className="flex justify-center">
           <div className={`
-            ${isPhone 
+            ${isPhoneView 
               ? 'w-full max-w-sm mx-auto' 
               : 'w-full max-w-4xl'
             }
             transition-all duration-300
           `}>
-            {/* Single container that changes appearance based on view */}
+            {/* Container with styling based on configuration */}
             <div className={`
-              ${isPhone 
+              ${isPhoneView 
                 ? 'bg-gray-900 rounded-3xl p-2 shadow-2xl' 
                 : 'bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700'
               }
               overflow-hidden
             `}>
               {/* Phone frame styling */}
-              {isPhone && (
+              {isPhoneView && (
                 <div className="bg-black rounded-2xl p-1">
                   <div className="bg-gray-100 dark:bg-gray-800 rounded-xl overflow-hidden">
                     {/* Phone notch */}
@@ -232,7 +230,7 @@ export default function VerificationPage() {
               )}
 
               {/* Desktop frame styling */}
-              {!isPhone && (
+              {!isPhoneView && (
                 <div className="bg-gray-100 dark:bg-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-600">
                   <div className="flex items-center gap-3">
                     <div className="flex gap-2">
@@ -249,12 +247,12 @@ export default function VerificationPage() {
                 </div>
               )}
               
-              {/* Single Vouched Container - stays in DOM */}
-              <div className={`vouched-container ${isPhone ? 'phone-container' : 'desktop-container'}`}>
+              {/* Vouched Container */}
+              <div className={`vouched-container ${isPhoneView ? 'phone-container' : 'desktop-container'}`}>
                 {isLoading && (
                   <div className="loading-container">
-                    <div className={`animate-spin rounded-full border-b-2 border-indigo-600 ${isPhone ? 'h-8 w-8' : 'h-12 w-12'}`}></div>
-                    <p className={`text-gray-600 dark:text-gray-300 ${isPhone ? 'mt-2' : 'mt-4'}`}>Loading verification...</p>
+                    <div className={`animate-spin rounded-full border-b-2 border-indigo-600 ${isPhoneView ? 'h-8 w-8' : 'h-12 w-12'}`}></div>
+                    <p className={`text-gray-600 dark:text-gray-300 ${isPhoneView ? 'mt-2' : 'mt-4'}`}>Loading verification...</p>
                   </div>
                 )}
                 <div id="vouched-element" className="vouched-element"></div>
@@ -263,14 +261,15 @@ export default function VerificationPage() {
           </div>
         </div>
 
-        {/* View Switcher Button */}
+        {/* Helpful Note */}
         <div className="mt-8 text-center">
-          <button
-            onClick={handleViewSwitch}
-            className="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-white font-medium py-3 px-6 rounded-lg border border-gray-300 dark:border-gray-600 transition-colors duration-200 shadow-sm"
-          >
-            Switch to {isPhone ? 'Desktop' : 'Phone'} View
-          </button>
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 max-w-2xl mx-auto">
+            <p className="text-blue-800 dark:text-blue-200 text-sm">
+              <strong>Note:</strong> The verification experience is optimized for your selected flow type. 
+              {config.flowType === 'desktop' && ' You\'ll see QR codes or SMS options to continue on your mobile device.'}
+              {config.flowType === 'phone' && ' The camera interface will appear directly for mobile verification.'}
+            </p>
+          </div>
         </div>
 
         {/* Configuration Display */}
