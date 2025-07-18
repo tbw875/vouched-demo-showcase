@@ -5,6 +5,7 @@ import { ChevronRightIcon, CheckIcon, ShieldCheckIcon, DocumentCheckIcon, UserGr
 
 type FlowType = 'desktop' | 'phone';
 type WorkflowType = 'simultaneous' | 'step-up';
+type SSNMode = 'off' | 'last4' | 'full9';
 
 interface Product {
   id: string;
@@ -16,6 +17,7 @@ interface Product {
 export default function ConfigurationPage() {
   const [flowType, setFlowType] = useState<FlowType>('desktop');
   const [workflowType, setWorkflowType] = useState<WorkflowType>('simultaneous');
+  const [ssnMode, setSsnMode] = useState<SSNMode>('off');
   const [products, setProducts] = useState<Product[]>([
     {
       id: 'id-verification',
@@ -55,17 +57,25 @@ export default function ConfigurationPage() {
 
   const handleStartDemo = () => {
     const enabledProducts = products.filter(p => p.enabled).map(p => p.id);
+    
+    // Add ssnPrivate to products if it's not 'off'
+    if (ssnMode !== 'off') {
+      enabledProducts.push('ssnPrivate');
+    }
+    
     console.log('Configuration:', {
       flowType,
       workflowType,
       enabledProducts,
+      ssnMode,
     });
     
     // Navigate to form fill page with configuration
     const params = new URLSearchParams({
       flow: flowType,
       workflow: workflowType,
-      products: enabledProducts.join(',')
+      products: enabledProducts.join(','),
+      ssnMode: ssnMode
     });
     
     window.location.href = `/form-fill?${params.toString()}`;
@@ -243,15 +253,93 @@ export default function ConfigurationPage() {
                   </p>
                 </div>
               ))}
+              
+              {/* SSN Collection Card - Spans 2 columns */}
+              <div className="md:col-span-2 p-8 rounded-2xl border-2 border-gray-200 dark:border-gray-600 transition-all duration-200">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <ShieldCheckIcon className="h-6 w-6 text-indigo-600" />
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                      SSN Collection
+                    </h3>
+                  </div>
+                  
+                  {/* Triple Toggle Switch */}
+                  <div className="relative inline-flex bg-gray-200 dark:bg-gray-700 rounded-full p-1 shadow-inner">
+                    {/* Background slider */}
+                    <div 
+                      className={`absolute top-1 bottom-1 rounded-full transition-all duration-300 ease-in-out shadow-lg ${
+                        ssnMode === 'off' 
+                          ? 'bg-gray-500' 
+                          : ssnMode === 'last4' 
+                          ? 'bg-orange-500' 
+                          : 'bg-red-500'
+                      }`}
+                      style={{
+                        width: 'calc(33.333333% - 2px)',
+                        left: ssnMode === 'off' ? '2px' : 
+                              ssnMode === 'last4' ? 'calc(33.333333% + 1px)' : 
+                              'calc(66.666667% + 0px)'
+                      }}
+                    />
+                    
+                    {/* Toggle Options */}
+                    <button
+                      type="button"
+                      onClick={() => setSsnMode('off')}
+                      className={`relative z-10 px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300 min-w-[80px] ${
+                        ssnMode === 'off' 
+                          ? 'text-white' 
+                          : 'text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100'
+                      }`}
+                    >
+                      OFF
+                    </button>
+                    
+                    <button
+                      type="button"
+                      onClick={() => setSsnMode('last4')}
+                      className={`relative z-10 px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300 min-w-[80px] ${
+                        ssnMode === 'last4' 
+                          ? 'text-white' 
+                          : 'text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100'
+                      }`}
+                    >
+                      LAST 4
+                    </button>
+                    
+                    <button
+                      type="button"
+                      onClick={() => setSsnMode('full9')}
+                      className={`relative z-10 px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300 min-w-[80px] ${
+                        ssnMode === 'full9' 
+                          ? 'text-white' 
+                          : 'text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100'
+                      }`}
+                    >
+                      FULL 9
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Description based on selected mode */}
+                <p className="text-gray-600 dark:text-gray-300">
+                  {ssnMode === 'off' && "SSN information will not be collected during verification"}
+                  {ssnMode === 'last4' && "Collect only the last 4 digits of SSN for enhanced security"}
+                  {ssnMode === 'full9' && "Collect full SSN (XXX-XX-XXXX) for comprehensive verification"}
+                </p>
+              </div>
             </div>
           </div>
+
+
 
           {/* Configuration Summary */}
           <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-2xl p-8 border border-indigo-100 dark:border-indigo-800">
             <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
               Configuration Summary
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div className="text-center">
                 <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Flow Type</div>
                 <div className="text-lg font-semibold text-indigo-600 dark:text-indigo-400 capitalize">
@@ -267,7 +355,17 @@ export default function ConfigurationPage() {
               <div className="text-center">
                 <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Products</div>
                 <div className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">
-                  {products.filter(p => p.enabled).length} enabled
+                  {products.filter(p => p.enabled).length + (ssnMode !== 'off' ? 1 : 0)} enabled
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">SSN Collection</div>
+                <div className={`text-lg font-semibold ${
+                  ssnMode === 'off' ? 'text-gray-600 dark:text-gray-400' :
+                  ssnMode === 'last4' ? 'text-orange-600 dark:text-orange-400' :
+                  'text-red-600 dark:text-red-400'
+                }`}>
+                  {ssnMode === 'off' ? 'Off' : ssnMode === 'last4' ? 'Last 4 Digits' : 'Full 9 Digits'}
                 </div>
               </div>
             </div>

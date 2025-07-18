@@ -8,6 +8,7 @@ interface VouchedConfig {
   flowType: 'desktop' | 'phone';
   workflowType: 'simultaneous' | 'step-up';
   enabledProducts: string[];
+  ssnMode: 'off' | 'last4' | 'full9';
 }
 
 interface FormData {
@@ -29,21 +30,20 @@ interface FormField {
   icon: React.ComponentType<any>;
   pattern?: string;
   maxLength?: number;
-  description?: string;
 }
 
 export default function FormFillPage() {
   const searchParams = useSearchParams();
   const [formData, setFormData] = useState<FormData>({});
   const [errors, setErrors] = useState<Partial<FormData>>({});
-  const [ssnMode, setSsnMode] = useState<'full' | 'last4'>('last4');
   const [isLoading, setIsLoading] = useState(false);
   
   // Parse configuration from URL params
   const config: VouchedConfig = {
     flowType: (searchParams.get('flow') as 'desktop' | 'phone') || 'desktop',
     workflowType: (searchParams.get('workflow') as 'simultaneous' | 'step-up') || 'simultaneous',
-    enabledProducts: searchParams.get('products')?.split(',') || ['id-verification']
+    enabledProducts: searchParams.get('products')?.split(',') || ['id-verification'],
+    ssnMode: (searchParams.get('ssnMode') as 'off' | 'last4' | 'full9') || 'off'
   };
 
   // Get user's IP address
@@ -78,8 +78,7 @@ export default function FormFillPage() {
           type: 'text',
           required: true,
           placeholder: 'Enter your first name',
-          icon: UserIcon,
-          description: 'Required for CrossCheck verification'
+          icon: UserIcon
         },
         {
           id: 'lastName',
@@ -87,27 +86,24 @@ export default function FormFillPage() {
           type: 'text',
           required: true,
           placeholder: 'Enter your last name',
-          icon: UserIcon,
-          description: 'Required for CrossCheck verification'
+          icon: UserIcon
         },
         {
           id: 'phone',
           label: 'Phone Number',
           type: 'tel',
           required: true,
-          placeholder: '+1 (555) 123-4567',
+          placeholder: '(123) 456-7890',
           icon: PhoneIcon,
-          pattern: '^[+]?[1-9]\\d{1,14}$',
-          description: 'Required for CrossCheck verification'
+          pattern: '^[+]?[1-9]\\d{1,14}$'
         },
         {
           id: 'email',
           label: 'Email Address',
           type: 'email',
           required: true,
-          placeholder: 'your.email@example.com',
-          icon: EnvelopeIcon,
-          description: 'Required for CrossCheck verification'
+          placeholder: 'Enter your email address',
+          icon: EnvelopeIcon
         }
       );
     }
@@ -120,31 +116,58 @@ export default function FormFillPage() {
         type: 'date',
         required: true,
         placeholder: 'YYYY-MM-DD',
-        icon: CalendarIcon,
-        description: 'Required for DOB verification - will be compared against your ID'
+        icon: CalendarIcon
       });
     }
 
-    // SSN field (always show for demo purposes)
-    fields.push({
-      id: 'ssn',
-      label: `Social Security Number (${ssnMode === 'full' ? 'Full 9 digits' : 'Last 4 digits'})`,
-      type: 'text',
-      required: false,
-      placeholder: ssnMode === 'full' ? '123-45-6789' : '6789',
-      icon: IdentificationIcon,
-      pattern: ssnMode === 'full' ? '^\\d{3}-\\d{2}-\\d{4}$' : '^\\d{4}$',
-      maxLength: ssnMode === 'full' ? 11 : 4,
-      description: 'Optional - can be used for additional verification'
-    });
+    // SSN field (show when ssnPrivate product is enabled)
+    if (config.enabledProducts.includes('ssnPrivate')) {
+      fields.push({
+        id: 'ssn',
+        label: `Social Security Number (${config.ssnMode === 'full9' ? 'Full 9 digits' : 'Last 4 digits'})`,
+        type: 'text',
+        required: false,
+        placeholder: config.ssnMode === 'full9' ? '123-45-6789' : '6789',
+        icon: IdentificationIcon,
+        pattern: config.ssnMode === 'full9' ? '^\\d{3}-\\d{2}-\\d{4}$' : '^\\d{4}$',
+        maxLength: config.ssnMode === 'full9' ? 11 : 4
+      });
+    }
 
     return fields;
   };
 
   const formFields = generateFormFields();
 
+  const formatSSN = (value: string, mode: 'off' | 'last4' | 'full9') => {
+    if (!value || mode === 'off') return value;
+    
+    // Clean the input for any non-digit values
+    const ssn = value.replace(/[^\d]/g, '');
+    
+    if (mode === 'last4') {
+      return ssn.slice(0, 4);
+    } else {
+      // Full 9-digit formatting
+      const ssnLength = ssn.length;
+      
+      if (ssnLength < 4) return ssn;
+      if (ssnLength < 6) {
+        return `${ssn.slice(0, 3)}-${ssn.slice(3)}`;
+      }
+      return `${ssn.slice(0, 3)}-${ssn.slice(3, 5)}-${ssn.slice(5, 9)}`;
+    }
+  };
+
   const handleInputChange = (id: keyof FormData, value: string) => {
-    setFormData(prev => ({ ...prev, [id]: value }));
+    let processedValue = value;
+    
+    // Format SSN if it's the SSN field and ssnPrivate is enabled
+    if (id === 'ssn' && config.enabledProducts.includes('ssnPrivate') && config.ssnMode !== 'off') {
+      processedValue = formatSSN(value, config.ssnMode);
+    }
+    
+    setFormData(prev => ({ ...prev, [id]: processedValue }));
     
     // Clear error when user starts typing
     if (errors[id]) {
@@ -195,7 +218,7 @@ export default function FormFillPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950 dark:via-slate-900 dark:to-purple-950">
-      <div className="max-w-3xl mx-auto px-6 py-12">
+      <div className="max-w-2xl mx-auto px-6 py-12">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="flex items-center justify-center mb-6">
@@ -204,40 +227,16 @@ export default function FormFillPage() {
             </div>
           </div>
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Personal Information
+            Verify your Identity
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Please provide the following information for verification. This data will be used to enhance the verification process.
+          <p className="text-xl text-gray-600 dark:text-gray-300">
+            Please provide your personal information for verification
           </p>
-        </div>
-
-        {/* Configuration Summary */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 mb-8">
-          <div className="flex flex-wrap gap-4 text-sm justify-center">
-            <div className="flex items-center gap-2">
-              <span className="text-gray-500 dark:text-gray-400">Flow:</span>
-              <span className="bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 px-2 py-1 rounded capitalize">
-                {config.flowType}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-gray-500 dark:text-gray-400">Workflow:</span>
-              <span className="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 px-2 py-1 rounded">
-                {config.workflowType}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-gray-500 dark:text-gray-400">Products:</span>
-              <span className="bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 px-2 py-1 rounded">
-                {config.enabledProducts.length}
-              </span>
-            </div>
-          </div>
         </div>
 
         {/* Form */}
         <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-700 p-8">
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Dynamic Form Fields */}
             {formFields.map((field) => {
               const IconComponent = field.icon;
@@ -248,12 +247,6 @@ export default function FormFillPage() {
                     {field.label}
                     {field.required && <span className="text-red-500">*</span>}
                   </label>
-                  
-                  {field.description && (
-                    <p className="text-sm text-gray-600 dark:text-gray-400 ml-8">
-                      {field.description}
-                    </p>
-                  )}
 
                   <div className="relative">
                     <input
@@ -279,46 +272,6 @@ export default function FormFillPage() {
               );
             })}
 
-            {/* SSN Mode Toggle */}
-            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  SSN Collection Mode
-                </span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSsnMode(ssnMode === 'full' ? 'last4' : 'full');
-                    setFormData(prev => ({ ...prev, ssn: '' }));
-                  }}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-3 py-1 rounded transition-colors duration-200"
-                >
-                  Switch to {ssnMode === 'full' ? 'Last 4' : 'Full SSN'}
-                </button>
-              </div>
-              <p className="text-xs text-gray-600 dark:text-gray-400">
-                {ssnMode === 'full' 
-                  ? 'Collecting full 9-digit SSN (XXX-XX-XXXX format)'
-                  : 'Collecting last 4 digits only for enhanced security'
-                }
-              </p>
-            </div>
-
-            {/* IP Address Display */}
-            {config.enabledProducts.includes('crosscheck') && (
-              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                  <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                    Automatically Detected
-                  </span>
-                </div>
-                <p className="text-sm text-blue-700 dark:text-blue-300">
-                  IP Address: <span className="font-mono">{formData.ipAddress || 'Detecting...'}</span>
-                </p>
-              </div>
-            )}
-
             {/* Submit Button */}
             <div className="pt-6">
               <button
@@ -333,7 +286,7 @@ export default function FormFillPage() {
                   </>
                 ) : (
                   <>
-                    <span className="text-lg">Continue to Verification</span>
+                    <span className="text-lg">Verify Identity</span>
                     <ChevronRightIcon className="h-6 w-6 ml-3 group-hover:translate-x-2 transition-transform duration-200" />
                   </>
                 )}

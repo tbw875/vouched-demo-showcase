@@ -65,26 +65,38 @@ export default function VerificationPage() {
           const vouchedConfig = {
             appId: 'wYd4PAXW3W2~xHNRx~-cdUpFl!*SFs',
             
+            // Verification information for comparison
+            verification: {
+              ...(formData.firstName && { firstName: formData.firstName }),
+              ...(formData.lastName && { lastName: formData.lastName }),
+              ...(formData.phone && { phone: formData.phone }),
+              ...(formData.email && { email: formData.email }),
+              ...(formData.dateOfBirth && { dob: formData.dateOfBirth }),
+              ...(formData.ssn && { ssn: formData.ssn }),
+            },
+            
             // Mobile handoff settings based on configuration
-            // For localhost testing, allow direct camera access even in phone flow
             crossDevice: config.flowType === 'desktop',
             crossDeviceQRCode: config.flowType === 'desktop',
             crossDeviceSMS: config.flowType === 'desktop',
             
-            // Configure products based on selection
-            id: config.enabledProducts.includes('id-verification'),
-            crosscheck: config.enabledProducts.includes('crosscheck'),
-            dobVerification: config.enabledProducts.includes('dob-verification'),
-            aml: config.enabledProducts.includes('aml'),
+            // Enable camera access on localhost
+            allowLocalhost: true,
             
-            // Include form data for verification
-            ...(formData.firstName && { firstName: formData.firstName }),
-            ...(formData.lastName && { lastName: formData.lastName }),
-            ...(formData.phone && { phone: formData.phone }),
-            ...(formData.email && { email: formData.email }),
-            ...(formData.dateOfBirth && { dateOfBirth: formData.dateOfBirth }),
-            ...(formData.ssn && { ssn: formData.ssn }),
-            ...(formData.ipAddress && { ipAddress: formData.ipAddress }),
+            // Basic verification configuration (always enabled)
+            id: 'camera',
+            
+            // Product configuration - conditional based on selection
+            ...(config.enabledProducts.includes('crosscheck') ? { crosscheck: true } : {}),
+            ...(config.enabledProducts.includes('ssnPrivate') ? { ssnPrivate: true } : {}),
+            ...(config.enabledProducts.includes('dob-verification') ? { dobVerification: true } : {}),
+            ...(config.enabledProducts.includes('aml') ? { aml: true } : {}),
+            
+            // Additional configuration from reference implementation
+            liveness: 'enhanced',
+            includeBarcode: true,
+            manualCaptureTimeout: 20000,
+            showTermsAndPrivacy: true,
             
             // UI Configuration
             theme: {
