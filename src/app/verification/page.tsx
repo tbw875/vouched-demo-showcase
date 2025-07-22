@@ -74,22 +74,6 @@ function VerificationPageContent() {
               // Webhook configuration for receiving results
               callbackURL: `${window.location.origin}/api/vouched-webhook`,
               
-              // Force desktop mode for cross-device handoff
-              ...(config.flowType === 'desktop' && {
-                crossDevice: true,
-                crossDeviceQRCode: true, 
-                crossDeviceSMS: true,
-                mode: 'desktop', // Explicitly set desktop mode
-              }),
-              
-              // Force mobile mode when phone flow is selected
-              ...(config.flowType === 'phone' && {
-                crossDevice: false,
-                crossDeviceQRCode: false,
-                crossDeviceSMS: false,
-                mode: 'mobile', // Explicitly set mobile mode
-              }),
-              
               // Verification information for comparison
               verification: {
                 ...(formData.firstName && { firstName: formData.firstName }),
@@ -124,9 +108,31 @@ function VerificationPageContent() {
                 name: 'avant'
               },
               
+              // Cross Device Configuration - MUST be set AFTER product configuration
+              // Desktop: Always enable cross device handoff (QR code and SMS options)
+              ...(config.flowType === 'desktop' && {
+                crossDevice: true,
+                crossDeviceQRCode: true, 
+                crossDeviceSMS: true,
+              }),
+              
+              // Phone: Disable cross device handoff (direct mobile verification)
+              ...(config.flowType === 'phone' && {
+                crossDevice: false,
+                crossDeviceQRCode: false,
+                crossDeviceSMS: false,
+              }),
+              
               // Callbacks
               onInit: (job: { token: string }) => {
                 console.log('Vouched initialized', job);
+                console.log('Flow type:', config.flowType);
+                console.log('Enabled products:', config.enabledProducts);
+                console.log('Cross device settings:', {
+                  crossDevice: config.flowType === 'desktop',
+                  crossDeviceQRCode: config.flowType === 'desktop',
+                  crossDeviceSMS: config.flowType === 'desktop'
+                });
               },
               
               onDone: (job: { token: string }) => {
