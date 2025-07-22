@@ -2,7 +2,8 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { ChevronRightIcon, ChevronLeftIcon, UserIcon, PhoneIcon, EnvelopeIcon, CalendarIcon, IdentificationIcon } from '@heroicons/react/24/outline';
+import { ChevronRightIcon, UserIcon, PhoneIcon, EnvelopeIcon, CalendarIcon, IdentificationIcon } from '@heroicons/react/24/outline';
+import PageHeader from '../components/PageHeader';
 
 interface VouchedConfig {
   flowType: 'desktop' | 'phone';
@@ -222,24 +223,10 @@ function FormFillPageContent() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950 dark:via-slate-900 dark:to-purple-950">
       <div className="max-w-2xl mx-auto px-6 py-12">
-        {/* Back Button */}
-        <div className="flex items-center justify-start mb-8">
-          <button
-            onClick={() => window.location.href = '/'}
-            className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-          >
-            <ChevronLeftIcon className="h-5 w-5" />
-            Back to Configuration
-          </button>
-        </div>
-
         {/* Header */}
+        <PageHeader pageTitle="Identity Verification" />
+        
         <div className="text-center mb-12">
-          <div className="flex items-center justify-center mb-6">
-            <div className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold text-xl">
-              Vouched
-            </div>
-          </div>
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
             Verify your Identity
           </h1>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import PageHeader from '../components/PageHeader';
 
 // Extend Window interface for TypeScript
 declare global {
@@ -194,21 +195,9 @@ function VerificationPageContent() {
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950 dark:via-slate-900 dark:to-purple-950">
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Header */}
-        <div className="text-center mb-8 relative">
-          {/* Start Over Button - Small and subtle */}
-          <button
-            onClick={() => window.location.href = '/'}
-            className="absolute top-0 right-0 text-xs text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors duration-200 px-2 py-1 rounded opacity-60 hover:opacity-100"
-            title="Start over"
-          >
-            ← Start over
-          </button>
-          
-          <div className="flex items-center justify-center mb-4">
-            <div className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold text-xl">
-              Vouched
-            </div>
-          </div>
+        <PageHeader pageTitle="Identity Verification" />
+        
+        <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             Identity Verification
           </h1>

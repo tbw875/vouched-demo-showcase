@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { ChevronLeftIcon, CheckCircleIcon, XCircleIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon, XCircleIcon, ClockIcon } from '@heroicons/react/24/outline';
+import PageHeader from '../components/PageHeader';
 
 interface WebhookResponse {
   timestamp: string;
@@ -141,7 +142,7 @@ export default function WebhookResponsePage() {
     
     switch (status) {
       case 'success':
-        return 'Verification Successful';
+        return 'Verification Completed';
       case 'failed':
         return 'Verification Failed';
       default:
@@ -153,24 +154,7 @@ export default function WebhookResponsePage() {
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950 dark:via-slate-900 dark:to-purple-950">
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <button
-            onClick={() => window.location.href = '/'}
-            className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-          >
-            <ChevronLeftIcon className="h-5 w-5" />
-            Back to Configuration
-          </button>
-          
-          <div className="flex items-center gap-3">
-            <div className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold text-xl">
-              Vouched
-            </div>
-            <div className="text-gray-600 dark:text-gray-300">
-              Verification Results
-            </div>
-          </div>
-        </div>
+        <PageHeader pageTitle="Verification Results" />
 
         {/* Two Column Layout - Status + Input Data */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
