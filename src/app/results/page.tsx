@@ -1,0 +1,227 @@
+'use client';
+
+import { useEffect, useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { ChevronLeftIcon, CheckCircleIcon, XCircleIcon, ClockIcon } from '@heroicons/react/24/outline';
+
+interface WebhookData {
+  data: Record<string, unknown>;
+}
+
+function ResultsPageContent() {
+  const searchParams = useSearchParams();
+  const [webhookData, setWebhookData] = useState<Record<string, unknown> | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [pollingCount, setPollingCount] = useState(0);
+
+  const jobToken = searchParams.get('token');
+  const formData = searchParams.get('formData') ? JSON.parse(searchParams.get('formData')!) : {};
+
+  // Poll for webhook data
+  useEffect(() => {
+    if (!jobToken) {
+      setError('Missing job token');
+      setIsLoading(false);
+      return;
+    }
+
+    let attempts = 0;
+    const maxAttempts = 90; // 90 attempts * 2 seconds = 3 minutes timeout
+    let intervalId: NodeJS.Timeout | null = null;
+    
+    const pollWebhookData = async () => {
+      try {
+        attempts++;
+        setPollingCount(attempts);
+        
+        const response = await fetch(`/api/webhook?token=${jobToken}`);
+        
+        if (response.ok) {
+          const result: WebhookData = await response.json();
+          setWebhookData(result.data);
+          setIsLoading(false);
+          if (intervalId) clearInterval(intervalId);
+        } else if (response.status === 404) {
+          // Data not found yet, continue polling
+          if (attempts >= maxAttempts) {
+            setError('Webhook data not received within timeout period (3 minutes)');
+            setIsLoading(false);
+            if (intervalId) clearInterval(intervalId);
+          }
+          // Continue polling - don't clear interval
+        } else {
+          throw new Error(`HTTP ${response.status}`);
+        }
+      } catch (err) {
+        console.error('Error polling webhook data:', err);
+        setError('Failed to retrieve webhook data');
+        setIsLoading(false);
+        if (intervalId) clearInterval(intervalId);
+      }
+    };
+
+    // Initial poll
+    pollWebhookData();
+    
+    // Set up interval polling every 2 seconds
+    intervalId = setInterval(pollWebhookData, 2000);
+
+    // Cleanup function
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+
+  }, [jobToken]); // Only depend on jobToken, not pollingCount
+
+  const getVerificationStatus = () => {
+    if (!webhookData) return 'pending';
+    
+    const result = webhookData.result as { success?: boolean } | undefined;
+    if (result?.success) return 'success';
+    if (result?.success === false) return 'failed';
+    return 'pending';
+  };
+
+  const getStatusIcon = () => {
+    const status = getVerificationStatus();
+    
+    switch (status) {
+      case 'success':
+        return <CheckCircleIcon className="h-8 w-8 text-green-500" />;
+      case 'failed':
+        return <XCircleIcon className="h-8 w-8 text-red-500" />;
+      default:
+        return <ClockIcon className="h-8 w-8 text-yellow-500" />;
+    }
+  };
+
+  const getStatusMessage = () => {
+    const status = getVerificationStatus();
+    
+    switch (status) {
+      case 'success':
+        return 'Verification Successful';
+      case 'failed':
+        return 'Verification Failed';
+      default:
+        return 'Verification Processing';
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950 dark:via-slate-900 dark:to-purple-950">
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <button
+            onClick={() => window.location.href = '/'}
+            className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+          >
+            <ChevronLeftIcon className="h-5 w-5" />
+            Back to Configuration
+          </button>
+          
+          <div className="flex items-center gap-3">
+            <div className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold text-xl">
+              Vouched
+            </div>
+            <div className="text-gray-600 dark:text-gray-300">
+              Verification Results
+            </div>
+          </div>
+        </div>
+
+        {/* Status Card */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-8 mb-8">
+          <div className="flex items-center justify-center mb-6">
+            {getStatusIcon()}
+          </div>
+          
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white text-center mb-2">
+            {getStatusMessage()}
+          </h1>
+          
+          {isLoading && (
+            <p className="text-gray-600 dark:text-gray-300 text-center">
+              Waiting for webhook data... (polling attempt {pollingCount + 1})
+            </p>
+          )}
+          
+          {error && (
+            <p className="text-red-600 dark:text-red-400 text-center">
+              {error}
+            </p>
+          )}
+          
+          {webhookData && (
+            <div className="mt-4 text-center">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Job Token: {jobToken}
+              </p>
+                             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                 Received: {new Date(webhookData.timestamp as string).toLocaleString()}
+               </p>
+            </div>
+          )}
+        </div>
+
+        {/* Form Data Display */}
+        {Object.keys(formData).length > 0 && (
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-8 mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+              Form Data Submitted
+            </h2>
+            <div className="overflow-hidden rounded-lg">
+              <SyntaxHighlighter
+                language="json"
+                style={oneDark}
+                customStyle={{
+                  margin: 0,
+                  borderRadius: '0.5rem',
+                  fontSize: '0.875rem',
+                }}
+              >
+                {JSON.stringify(formData, null, 2)}
+              </SyntaxHighlighter>
+            </div>
+          </div>
+        )}
+
+        {/* Webhook Data Display */}
+        {webhookData && (
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-8">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+              Webhook Response
+            </h2>
+            <div className="overflow-hidden rounded-lg">
+              <SyntaxHighlighter
+                language="json"
+                style={oneDark}
+                customStyle={{
+                  margin: 0,
+                  borderRadius: '0.5rem',
+                  fontSize: '0.875rem',
+                }}
+              >
+                {JSON.stringify(webhookData, null, 2)}
+              </SyntaxHighlighter>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default function ResultsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950 dark:via-slate-900 dark:to-purple-950 flex items-center justify-center">
+      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
+    </div>}>
+      <ResultsPageContent />
+    </Suspense>
+  );
+} 

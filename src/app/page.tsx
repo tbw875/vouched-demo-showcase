@@ -111,7 +111,7 @@ export default function ConfigurationPage() {
             <span className="text-indigo-600"> Showcase</span>
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            Configure your demo experience to showcase Vouched's AI-powered identity verification solutions
+            Configure your demo experience to showcase Vouched&apos;s AI-powered identity verification solutions
           </p>
         </div>
 

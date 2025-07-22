@@ -1,7 +1,14 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+
+// Extend Window interface for TypeScript
+declare global {
+  interface Window {
+    Vouched: (config: Record<string, unknown>) => { mount: (selector: string) => void; unmount?: () => void };
+  }
+}
 
 interface VouchedConfig {
   flowType: 'desktop' | 'phone';
@@ -19,10 +26,9 @@ interface FormData {
   ipAddress?: string;
 }
 
-export default function VerificationPage() {
+function VerificationPageContent() {
   const searchParams = useSearchParams();
-  const [isLoading, setIsLoading] = useState(true);
-  const vouchedInstanceRef = useRef<any>(null);
+  const vouchedInstanceRef = useRef<Record<string, unknown> | null>(null);
   
   // Parse configuration from URL params
   const config: VouchedConfig = {
@@ -57,72 +63,86 @@ export default function VerificationPage() {
           const element = document.getElementById('vouched-element');
           if (!element) {
             console.error('Vouched element not found');
-            setIsLoading(false);
             return;
           }
           
-          // Configure Vouched based on flow type and products
-          const vouchedConfig = {
-            appId: 'wYd4PAXW3W2~xHNRx~-cdUpFl!*SFs',
-            
-            // Verification information for comparison
-            verification: {
-              ...(formData.firstName && { firstName: formData.firstName }),
-              ...(formData.lastName && { lastName: formData.lastName }),
-              ...(formData.phone && { phone: formData.phone }),
-              ...(formData.email && { email: formData.email }),
-              ...(formData.dateOfBirth && { dob: formData.dateOfBirth }),
-              ...(formData.ssn && { ssn: formData.ssn }),
-            },
-            
-            // Mobile handoff settings based on configuration
-            crossDevice: config.flowType === 'desktop',
-            crossDeviceQRCode: config.flowType === 'desktop',
-            crossDeviceSMS: config.flowType === 'desktop',
-            
-            // Enable camera access on localhost
-            allowLocalhost: true,
-            
-            // Basic verification configuration (always enabled)
-            id: 'camera',
-            
-            // Product configuration - conditional based on selection
-            ...(config.enabledProducts.includes('crosscheck') ? { crosscheck: true } : {}),
-            ...(config.enabledProducts.includes('ssnPrivate') ? { ssnPrivate: true } : {}),
-            ...(config.enabledProducts.includes('dob-verification') ? { dobVerification: true } : {}),
-            ...(config.enabledProducts.includes('aml') ? { aml: true } : {}),
-            
-            // Additional configuration from reference implementation
-            liveness: 'enhanced',
-            includeBarcode: true,
-            manualCaptureTimeout: 20000,
-            showTermsAndPrivacy: true,
-            
-            // UI Configuration
-            theme: {
-              name: 'avant'
-            },
-            
-            // Callbacks
-            onInit: (job: any) => {
-              console.log('Vouched initialized', job);
-              setIsLoading(false);
-            },
-            
-            onDone: (job: any) => {
-              console.log('Verification complete', { 
-                token: job.token, 
-                formData: formData 
-              });
-              // Handle completion - could navigate to results page
-            },
-            
-            onError: (error: any) => {
-              console.error('Vouched error', error);
-              console.error('Error details:', JSON.stringify(error, null, 2));
-              setIsLoading(false);
-            }
-          };
+                      // Configure Vouched based on flow type and products
+            const vouchedConfig = {
+              appId: 'wYd4PAXW3W2~xHNRx~-cdUpFl!*SFs',
+              
+              // Webhook configuration for receiving results
+              callbackURL: `${window.location.origin}/api/vouched-webhook`,
+              
+              // Force desktop mode for cross-device handoff
+              ...(config.flowType === 'desktop' && {
+                crossDevice: true,
+                crossDeviceQRCode: true, 
+                crossDeviceSMS: true,
+                mode: 'desktop', // Explicitly set desktop mode
+              }),
+              
+              // Force mobile mode when phone flow is selected
+              ...(config.flowType === 'phone' && {
+                crossDevice: false,
+                crossDeviceQRCode: false,
+                crossDeviceSMS: false,
+                mode: 'mobile', // Explicitly set mobile mode
+              }),
+              
+              // Verification information for comparison
+              verification: {
+                ...(formData.firstName && { firstName: formData.firstName }),
+                ...(formData.lastName && { lastName: formData.lastName }),
+                ...(formData.phone && { phone: formData.phone }),
+                ...(formData.email && { email: formData.email }),
+                ...(formData.dateOfBirth && { dob: formData.dateOfBirth }),
+                ...(formData.ssn && { ssn: formData.ssn }),
+              },
+              
+              // Enable camera access on localhost
+              allowLocalhost: true,
+              
+              // Basic verification configuration (always enabled)
+              id: 'camera',
+              selfie: 'camera',
+              
+              // Product configuration - conditional based on selection
+              ...(config.enabledProducts.includes('crosscheck') ? { crosscheck: true } : {}),
+              ...(config.enabledProducts.includes('ssnPrivate') ? { ssnPrivate: true } : {}),
+              ...(config.enabledProducts.includes('dob-verification') ? { dobVerification: true } : {}),
+              ...(config.enabledProducts.includes('aml') ? { aml: true } : {}),
+              
+              // Additional configuration from reference implementation
+              liveness: 'enhanced',
+              includeBarcode: true,
+              manualCaptureTimeout: 20000,
+              showTermsAndPrivacy: true,
+              
+              // UI Configuration
+              theme: {
+                name: 'avant'
+              },
+              
+              // Callbacks
+              onInit: (job: { token: string }) => {
+                console.log('Vouched initialized', job);
+              },
+              
+              onDone: (job: { token: string }) => {
+                console.log('Verification complete', { 
+                  token: job.token, 
+                  formData: formData 
+                });
+                
+                // Navigate to webhook response page
+                window.location.href = '/webhook-response';
+              },
+              
+              onError: (error: Error) => {
+                console.error('Vouched error', error);
+                console.error('Error details:', JSON.stringify(error, null, 2));
+              }
+            };
 
           try {
             // Initialize Vouched using the correct pattern
@@ -136,7 +156,6 @@ export default function VerificationPage() {
             console.log('Vouched mounted successfully');
           } catch (error) {
             console.error('Failed to initialize Vouched:', error);
-            setIsLoading(false);
           }
         };
         
@@ -147,7 +166,6 @@ export default function VerificationPage() {
     
     script.onerror = () => {
       console.error('Failed to load Vouched script');
-      setIsLoading(false);
     };
     
     document.head.appendChild(script);
@@ -176,7 +194,16 @@ export default function VerificationPage() {
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950 dark:via-slate-900 dark:to-purple-950">
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 relative">
+          {/* Start Over Button - Small and subtle */}
+          <button
+            onClick={() => window.location.href = '/'}
+            className="absolute top-0 right-0 text-xs text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors duration-200 px-2 py-1 rounded opacity-60 hover:opacity-100"
+            title="Start over"
+          >
+            ← Start over
+          </button>
+          
           <div className="flex items-center justify-center mb-4">
             <div className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold text-xl">
               Vouched
@@ -194,11 +221,11 @@ export default function VerificationPage() {
         </div>
 
         {/* Verification Container */}
-        <div className="flex justify-center">
+        <div className="w-full flex justify-center items-center">
           <div className={`
             ${isPhoneView 
-              ? 'w-full max-w-sm mx-auto' 
-              : 'w-full max-w-4xl'
+              ? 'w-full max-w-lg mx-auto' 
+              : '' /* Desktop will use CSS-defined dimensions */
             }
             transition-all duration-300
           `}>
@@ -242,55 +269,8 @@ export default function VerificationPage() {
               
               {/* Vouched Container */}
               <div className={`vouched-container ${isPhoneView ? 'phone-container' : 'desktop-container'}`}>
-                {isLoading && (
-                  <div className="loading-container">
-                    <div className={`animate-spin rounded-full border-b-2 border-indigo-600 ${isPhoneView ? 'h-8 w-8' : 'h-12 w-12'}`}></div>
-                    <p className={`text-gray-600 dark:text-gray-300 ${isPhoneView ? 'mt-2' : 'mt-4'}`}>Loading verification...</p>
-                  </div>
-                )}
                 <div id="vouched-element" className="vouched-element"></div>
               </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Helpful Note */}
-        <div className="mt-8 text-center">
-          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 max-w-2xl mx-auto">
-            <p className="text-blue-800 dark:text-blue-200 text-sm">
-              <strong>Note:</strong> The verification experience is optimized for your selected flow type. 
-              {config.flowType === 'desktop' && ' You\'ll see QR codes or SMS options to continue on your mobile device.'}
-              {config.flowType === 'phone' && ' The camera interface will appear directly for mobile verification.'}
-            </p>
-          </div>
-        </div>
-
-        {/* Configuration Display */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 mt-8">
-          <div className="flex flex-wrap gap-4 text-sm justify-center">
-            <div className="flex items-center gap-2">
-              <span className="text-gray-500 dark:text-gray-400">Flow:</span>
-              <span className="bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 px-2 py-1 rounded capitalize">
-                {config.flowType}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-gray-500 dark:text-gray-400">Workflow:</span>
-              <span className="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 px-2 py-1 rounded">
-                {config.workflowType}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-gray-500 dark:text-gray-400">Products:</span>
-              <span className="bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 px-2 py-1 rounded">
-                {config.enabledProducts.length}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-gray-500 dark:text-gray-400">Form Data:</span>
-              <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded">
-                {Object.keys(formData).filter(key => formData[key as keyof FormData]).length} fields
-              </span>
             </div>
           </div>
         </div>
@@ -303,39 +283,97 @@ export default function VerificationPage() {
         }
         
         .phone-container {
-          height: 600px;
+          height: 90vh;
+          min-height: 700px;
+          width: 100%;
+          max-width: 450px; /* Portrait - very narrow and tall */
+          margin: 0 auto;
         }
         
         .desktop-container {
-          height: 700px;
+          height: 60vh; /* Shorter height for landscape */
+          width: 95vw; /* Much wider - almost full screen */
+          min-height: 500px;
+          min-width: 1000px; /* Much wider minimum */
+          max-height: 700px;
+          max-width: 1600px; /* Much wider maximum */
+          margin: 0 auto; /* Center it */
         }
         
         .vouched-element {
           position: absolute;
           top: 0;
           left: 0;
-          width: 100%;
-          height: 100%;
+          width: 100% !important;
+          height: 100% !important;
         }
         
-        .loading-container {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          z-index: 10;
+        /* Desktop element should be LANDSCAPE */
+        .desktop-container .vouched-element {
+          min-width: 1000px;
+          min-height: 500px;
         }
         
-        /* Responsive adjustments */
+        /* Phone element should be narrow and tall */
+        .phone-container .vouched-element {
+          max-width: 450px;
+          min-height: 700px;
+        }
+        
+
+        
+        /* Responsive adjustments - maintain LANDSCAPE for desktop */
+        @media (max-width: 1400px) {
+          .desktop-container {
+            height: 55vh;
+            width: 90vw;
+            min-height: 450px;
+            min-width: 800px;
+            max-height: 650px;
+            max-width: 1400px;
+          }
+        }
+        
+        @media (max-width: 1000px) {
+          .desktop-container {
+            height: 50vh;
+            width: 85vw;
+            min-height: 400px;
+            min-width: 700px;
+            max-height: 600px;
+            max-width: 1000px;
+          }
+        }
+        
         @media (max-width: 768px) {
           .desktop-container {
-            height: 500px;
+            height: 45vh;
+            width: 80vw;
+            min-height: 350px;
+            min-width: 600px;
+            max-height: 500px;
+            max-width: 800px;
           }
           .phone-container {
-            height: 500px;
+            max-width: 380px;
+            height: 80vh;
+            min-height: 600px;
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .desktop-container {
+            height: 40vh;
+            width: 75vw;
+            min-height: 300px;
+            min-width: 400px;
+            max-height: 450px;
+            max-width: 600px;
+          }
+          .phone-container {
+            max-width: 320px;
+            height: 75vh;
+            min-height: 500px;
           }
         }
       `}</style>
@@ -343,9 +381,12 @@ export default function VerificationPage() {
   );
 }
 
-// Extend Window interface for TypeScript
-declare global {
-  interface Window {
-    Vouched: any;
-  }
-} 
+export default function VerificationPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950 dark:via-slate-900 dark:to-purple-950 flex items-center justify-center">
+      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
+    </div>}>
+      <VerificationPageContent />
+    </Suspense>
+  );
+}

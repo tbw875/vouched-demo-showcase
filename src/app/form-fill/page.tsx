@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { ChevronRightIcon, UserIcon, PhoneIcon, EnvelopeIcon, CalendarIcon, IdentificationIcon } from '@heroicons/react/24/outline';
+import { ChevronRightIcon, ChevronLeftIcon, UserIcon, PhoneIcon, EnvelopeIcon, CalendarIcon, IdentificationIcon } from '@heroicons/react/24/outline';
 
 interface VouchedConfig {
   flowType: 'desktop' | 'phone';
@@ -27,12 +27,12 @@ interface FormField {
   type: string;
   required: boolean;
   placeholder: string;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   pattern?: string;
   maxLength?: number;
 }
 
-export default function FormFillPage() {
+function FormFillPageContent() {
   const searchParams = useSearchParams();
   const [formData, setFormData] = useState<FormData>({});
   const [errors, setErrors] = useState<Partial<FormData>>({});
@@ -202,6 +202,9 @@ export default function FormFillPage() {
 
     setIsLoading(true);
 
+    // Save form data to localStorage for later display
+    localStorage.setItem('vouchedFormData', JSON.stringify(formData));
+    
     // Simulate processing time
     await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -219,6 +222,17 @@ export default function FormFillPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950 dark:via-slate-900 dark:to-purple-950">
       <div className="max-w-2xl mx-auto px-6 py-12">
+        {/* Back Button */}
+        <div className="flex items-center justify-start mb-8">
+          <button
+            onClick={() => window.location.href = '/'}
+            className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+          >
+            <ChevronLeftIcon className="h-5 w-5" />
+            Back to Configuration
+          </button>
+        </div>
+
         {/* Header */}
         <div className="text-center mb-12">
           <div className="flex items-center justify-center mb-6">
@@ -294,14 +308,17 @@ export default function FormFillPage() {
             </div>
           </form>
         </div>
-
-        {/* Privacy Notice */}
-        <div className="mt-8 text-center">
-          <p className="text-sm text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            Your personal information is encrypted and securely processed. Vouched is SOC2 Type 1 certified and complies with GDPR and CCPA regulations.
-          </p>
-        </div>
+              </div>
       </div>
-    </div>
-  );
-} 
+    );
+  }
+
+  export default function FormFillPage() {
+    return (
+      <Suspense fallback={<div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950 dark:via-slate-900 dark:to-purple-950 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
+      </div>}>
+        <FormFillPageContent />
+      </Suspense>
+    );
+  } 
