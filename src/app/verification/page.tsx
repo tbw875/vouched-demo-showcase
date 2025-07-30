@@ -54,19 +54,28 @@ function VerificationPageContent() {
     }
 
     const script = document.createElement('script');
-    script.src = 'https://static.vouched.id/widget/vouched-2.0.0.js';
+    script.src = 'https://static.vouched.id/plugin/releases/latest/index.js';
     script.async = true;
     
     script.onload = () => {
-      if (window.Vouched) {
-        // Wait for the DOM element to be available
-        const initializeVouched = () => {
-          const element = document.getElementById('vouched-element');
-          if (!element) {
-            console.error('Vouched element not found');
-            return;
-          }
+      console.log('Vouched script loaded successfully');
+      
+      // Add a small delay to ensure the script is fully initialized
+      setTimeout(() => {
+        if (window.Vouched) {
+          console.log('Vouched object found, initializing...');
           
+          // Wait for the DOM element to be available
+          const initializeVouched = () => {
+            const element = document.getElementById('vouched-element');
+            if (!element) {
+              console.error('Vouched element not found');
+              // Retry after a short delay
+              setTimeout(initializeVouched, 100);
+              return;
+            }
+            
+            console.log('Vouched element found, creating configuration...');
                       // Configure Vouched based on flow type and products
             const vouchedConfig = {
               appId: 'wYd4PAXW3W2~xHNRx~-cdUpFl!*SFs',
@@ -75,14 +84,28 @@ function VerificationPageContent() {
               callbackURL: `${window.location.origin}/api/vouched-webhook`,
               
               // Verification information for comparison
-              verification: {
-                ...(formData.firstName && { firstName: formData.firstName }),
-                ...(formData.lastName && { lastName: formData.lastName }),
-                ...(formData.phone && { phone: formData.phone }),
-                ...(formData.email && { email: formData.email }),
-                ...(formData.dateOfBirth && { dob: formData.dateOfBirth }),
-                ...(formData.ssn && { ssn: formData.ssn }),
-              },
+              verification: (() => {
+                const verificationData: Record<string, any> = {};
+                
+                // Add basic identity data for CrossCheck and IDV
+                if (formData.firstName) verificationData.firstName = formData.firstName;
+                if (formData.lastName) verificationData.lastName = formData.lastName;
+                if (formData.phone) verificationData.phone = formData.phone;
+                if (formData.email) verificationData.email = formData.email;
+                if (formData.ipAddress) verificationData.ipAddress = formData.ipAddress;
+                
+                // Add DOB for DOB verification - MUST use birthDate parameter
+                if (config.enabledProducts.includes('dob-verification') && formData.dateOfBirth) {
+                  verificationData.birthDate = formData.dateOfBirth;
+                }
+                
+                // Add SSN for SSN Private verification
+                if (config.enabledProducts.includes('ssnPrivate') && formData.ssn) {
+                  verificationData.ssn = formData.ssn;
+                }
+                
+                return verificationData;
+              })(),
               
               // Enable camera access on localhost
               allowLocalhost: true,
@@ -133,6 +156,39 @@ function VerificationPageContent() {
                   crossDeviceQRCode: config.flowType === 'desktop',
                   crossDeviceSMS: config.flowType === 'desktop'
                 });
+                
+                // Log verification data being sent
+                const verificationData = (() => {
+                  const data: Record<string, any> = {};
+                  
+                  // Add basic identity data
+                  if (formData.firstName) data.firstName = formData.firstName;
+                  if (formData.lastName) data.lastName = formData.lastName;
+                  if (formData.phone) data.phone = formData.phone;
+                  if (formData.email) data.email = formData.email;
+                  if (formData.ipAddress) data.ipAddress = formData.ipAddress;
+                  
+                  // Add DOB if DOB verification is enabled - using correct birthDate parameter
+                  if (config.enabledProducts.includes('dob-verification') && formData.dateOfBirth) {
+                    data.birthDate = formData.dateOfBirth;  // NOT dateOfBirth!
+                  }
+                  
+                  // Add SSN if SSN Private is enabled
+                  if (config.enabledProducts.includes('ssnPrivate') && formData.ssn) {
+                    data.ssn = formData.ssn;
+                  }
+                  
+                  return data;
+                })();
+                console.log('Verification data sent to Vouched:', verificationData);
+                
+                // Log product-specific configuration
+                console.log('Product configurations:', {
+                  dobVerification: config.enabledProducts.includes('dob-verification'),
+                  ssnPrivate: config.enabledProducts.includes('ssnPrivate'),
+                  crosscheck: config.enabledProducts.includes('crosscheck'),
+                  aml: config.enabledProducts.includes('aml')
+                });
               },
               
               onDone: (job: { token: string }) => {
@@ -153,22 +209,64 @@ function VerificationPageContent() {
 
           try {
             // Initialize Vouched using the correct pattern
-            console.log('Initializing Vouched with config:', vouchedConfig);
+            console.log('Initializing Vouched with config:', JSON.stringify(vouchedConfig, null, 2));
             const vouched = window.Vouched(vouchedConfig);
             
             // Store the instance in ref
             vouchedInstanceRef.current = vouched;
             
+            console.log('About to mount Vouched to #vouched-element...');
             vouched.mount('#vouched-element');
-            console.log('Vouched mounted successfully');
+            console.log('Vouched mount called successfully');
+            
+            // Add a timeout to check if mounting actually worked
+            setTimeout(() => {
+              const iframeCheck = document.querySelector('#vouched-element iframe');
+              if (iframeCheck) {
+                console.log('✅ Vouched iframe found and mounted:', iframeCheck);
+                console.log('Iframe src:', iframeCheck.getAttribute('src'));
+                console.log('Iframe dimensions:', {
+                  width: iframeCheck.clientWidth,
+                  height: iframeCheck.clientHeight
+                });
+              } else {
+                console.log('❌ Vouched iframe NOT found after mounting');
+                console.log('Vouched element contents:', document.getElementById('vouched-element')?.innerHTML);
+                
+                // Try remounting as a fallback
+                console.log('Attempting to remount Vouched...');
+                try {
+                  if (vouchedInstanceRef.current && typeof (vouchedInstanceRef.current as any).unmount === 'function') {
+                    (vouchedInstanceRef.current as any).unmount();
+                  }
+                  setTimeout(() => {
+                    if (vouchedInstanceRef.current && typeof (vouchedInstanceRef.current as any).mount === 'function') {
+                      (vouchedInstanceRef.current as any).mount('#vouched-element');
+                      console.log('Remount attempt completed');
+                    }
+                  }, 1000);
+                } catch (remountError) {
+                  console.error('Remount failed:', remountError);
+                }
+              }
+            }, 3000); // Check after 3 seconds instead of 2
+            
           } catch (error) {
             console.error('Failed to initialize Vouched:', error);
+            console.error('Error details:', {
+              message: error instanceof Error ? error.message : String(error),
+              stack: error instanceof Error ? error.stack : undefined,
+              config: vouchedConfig
+            });
           }
         };
         
         // Give the DOM a moment to render
         setTimeout(initializeVouched, 100);
-      }
+        } else {
+          console.error('Vouched object not found after script load');
+        }
+      }, 500); // Initial delay for script loading
     };
     
     script.onerror = () => {
@@ -275,6 +373,7 @@ function VerificationPageContent() {
         .vouched-container {
           position: relative;
           overflow: hidden;
+          background: white; /* Ensure background color */
         }
         
         .phone-container {
@@ -301,6 +400,15 @@ function VerificationPageContent() {
           left: 0;
           width: 100% !important;
           height: 100% !important;
+          border: none; /* Remove any borders that might interfere */
+          background: transparent;
+        }
+        
+        /* Ensure iframe content is displayed properly */
+        .vouched-element iframe {
+          border: none;
+          width: 100%;
+          height: 100%;
         }
         
         /* Desktop element should be LANDSCAPE */
@@ -314,8 +422,6 @@ function VerificationPageContent() {
           max-width: 450px;
           min-height: 700px;
         }
-        
-
         
         /* Responsive adjustments - maintain LANDSCAPE for desktop */
         @media (max-width: 1400px) {

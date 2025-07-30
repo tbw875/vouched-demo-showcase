@@ -18,6 +18,7 @@ export default function ConfigurationPage() {
   const [flowType, setFlowType] = useState<FlowType>('desktop');
   const [workflowType, setWorkflowType] = useState<WorkflowType>('simultaneous');
   const [ssnMode, setSsnMode] = useState<SSNMode>('off');
+  const [reverificationEnabled, setReverificationEnabled] = useState(false);
   const [products, setProducts] = useState<Product[]>([
     {
       id: 'id-verification',
@@ -68,6 +69,7 @@ export default function ConfigurationPage() {
       workflowType,
       enabledProducts,
       ssnMode,
+      reverificationEnabled,
     });
     
     // Navigate to form fill page with configuration
@@ -75,7 +77,8 @@ export default function ConfigurationPage() {
       flow: flowType,
       workflow: workflowType,
       products: enabledProducts.join(','),
-      ssnMode: ssnMode
+      ssnMode: ssnMode,
+      reverification: reverificationEnabled.toString()
     });
     
     window.location.href = `/form-fill?${params.toString()}`;
@@ -329,6 +332,46 @@ export default function ConfigurationPage() {
                   {ssnMode === 'full9' && "Collect full SSN (XXX-XX-XXXX) for comprehensive verification"}
                 </p>
               </div>
+              
+              {/* Reverification Card - Spans 2 columns */}
+              <div className="md:col-span-2 p-8 rounded-2xl border-2 border-gray-200 dark:border-gray-600 transition-all duration-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {/* Custom Face ID Icon */}
+                    <svg className="h-6 w-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      {/* Face circle */}
+                      <circle cx="12" cy="12" r="4" strokeWidth="1.5"/>
+                      {/* Eyes */}
+                      <circle cx="10.5" cy="10.5" r="0.5" fill="currentColor"/>
+                      <circle cx="13.5" cy="10.5" r="0.5" fill="currentColor"/>
+                      {/* Mouth */}
+                      <path d="M10.5 13.5c.5.5 1.5.5 3 0" strokeWidth="1.5" strokeLinecap="round"/>
+                      {/* Scanning corners */}
+                      <path d="M4 8V6a2 2 0 0 1 2-2h2" strokeWidth="2" strokeLinecap="round"/>
+                      <path d="M20 8V6a2 2 0 0 0-2-2h-2" strokeWidth="2" strokeLinecap="round"/>
+                      <path d="M4 16v2a2 2 0 0 0 2 2h2" strokeWidth="2" strokeLinecap="round"/>
+                      <path d="M20 16v2a2 2 0 0 1-2 2h-2" strokeWidth="2" strokeLinecap="round"/>
+                    </svg>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                      Reverification
+                    </h3>
+                  </div>
+                  
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={reverificationEnabled}
+                      onChange={(e) => setReverificationEnabled(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-12 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 dark:peer-focus:ring-purple-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-purple-600"></div>
+                  </label>
+                </div>
+                
+                <p className="text-gray-600 dark:text-gray-300 mt-4">
+                  Enable additional verification step after initial results for enhanced compliance and security validation
+                </p>
+              </div>
             </div>
           </div>
 
@@ -339,7 +382,7 @@ export default function ConfigurationPage() {
             <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
               Configuration Summary
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
               <div className="text-center">
                 <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Flow Type</div>
                 <div className="text-lg font-semibold text-indigo-600 dark:text-indigo-400 capitalize">
@@ -366,6 +409,14 @@ export default function ConfigurationPage() {
                   'text-red-600 dark:text-red-400'
                 }`}>
                   {ssnMode === 'off' ? 'Off' : ssnMode === 'last4' ? 'Last 4 Digits' : 'Full 9 Digits'}
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Reverification</div>
+                <div className={`text-lg font-semibold ${
+                  reverificationEnabled ? 'text-purple-600 dark:text-purple-400' : 'text-gray-600 dark:text-gray-400'
+                }`}>
+                  {reverificationEnabled ? 'Enabled' : 'Disabled'}
                 </div>
               </div>
             </div>

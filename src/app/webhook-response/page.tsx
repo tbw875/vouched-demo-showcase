@@ -150,6 +150,33 @@ export default function WebhookResponsePage() {
     }
   };
 
+  // Transform form data to match what was actually sent to Vouched
+  const transformToVouchedParameters = (rawFormData: any) => {
+    const vouchedData: Record<string, any> = {};
+    
+    // Basic identity data (always included when available)
+    if (rawFormData.firstName) vouchedData.firstName = rawFormData.firstName;
+    if (rawFormData.lastName) vouchedData.lastName = rawFormData.lastName;
+    if (rawFormData.phone) vouchedData.phone = rawFormData.phone;
+    if (rawFormData.email) vouchedData.email = rawFormData.email;
+    if (rawFormData.ipAddress) vouchedData.ipAddress = rawFormData.ipAddress;
+    
+    // Transform dateOfBirth to birthDate (Vouched's expected parameter)
+    if (rawFormData.dateOfBirth) {
+      vouchedData.birthDate = rawFormData.dateOfBirth;
+    }
+    
+    // SSN data (when provided)
+    if (rawFormData.ssn) {
+      vouchedData.ssn = rawFormData.ssn;
+    }
+    
+    return vouchedData;
+  };
+
+  // Get the transformed data for display
+  const vouchedParameters = Object.keys(formData).length > 0 ? transformToVouchedParameters(formData) : {};
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950 dark:via-slate-900 dark:to-purple-950">
       <div className="max-w-7xl mx-auto px-6 py-8">
@@ -192,10 +219,10 @@ export default function WebhookResponsePage() {
           {/* Input Data Card */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-8">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-              Input Data
+              Data Sent to Vouched
             </h2>
             
-            {Object.keys(formData).length > 0 ? (
+            {Object.keys(vouchedParameters).length > 0 ? (
               <div className="overflow-hidden rounded-lg">
                 {isMounted ? (
                   <SyntaxHighlighter
@@ -208,7 +235,7 @@ export default function WebhookResponsePage() {
                       maxHeight: '300px'
                     }}
                   >
-                    {JSON.stringify(formData, null, 2)}
+                    {JSON.stringify(vouchedParameters, null, 2)}
                   </SyntaxHighlighter>
                 ) : (
                   <div className="p-4 bg-gray-900 rounded-lg text-gray-400 text-sm">
@@ -218,9 +245,9 @@ export default function WebhookResponsePage() {
               </div>
             ) : (
               <div className="text-center py-8">
-                <p className="text-gray-500 text-sm">No input data available</p>
+                <p className="text-gray-500 text-sm">No verification data available</p>
                 <p className="text-xs text-gray-400 mt-2">
-                  Form data was not saved for this verification
+                  No data was sent to Vouched for this verification
                 </p>
               </div>
             )}
