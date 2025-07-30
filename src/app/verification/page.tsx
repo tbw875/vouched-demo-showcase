@@ -37,6 +37,8 @@ function VerificationPageContent() {
     workflowType: (searchParams.get('workflow') as 'simultaneous' | 'step-up') || 'simultaneous',
     enabledProducts: searchParams.get('products')?.split(',') || ['id-verification']
   };
+  
+  const reverificationEnabled = searchParams.get('reverification') === 'true';
 
   // Parse form data from URL params
   const formData: FormData = searchParams.get('formData') 
@@ -77,137 +79,166 @@ function VerificationPageContent() {
             
             console.log('Vouched element found, creating configuration...');
                       // Configure Vouched based on flow type and products
+            const verificationData: Record<string, any> = {};
+            
+            // Add basic identity data for CrossCheck and IDV
+            if (formData.firstName) verificationData.firstName = formData.firstName;
+            if (formData.lastName) verificationData.lastName = formData.lastName;
+            if (formData.phone) verificationData.phone = formData.phone;
+            if (formData.email) verificationData.email = formData.email;
+            if (formData.ipAddress) verificationData.ipAddress = formData.ipAddress;
+            
+            // Add DOB for DOB verification - MUST use birthDate parameter
+            if (config.enabledProducts.includes('dob-verification') && formData.dateOfBirth) {
+              verificationData.birthDate = formData.dateOfBirth;
+            }
+            
+            // Add SSN for SSN Private verification
+            if (config.enabledProducts.includes('ssnPrivate') && formData.ssn) {
+              verificationData.ssn = formData.ssn;
+            }
+
+            // Create proper Vouched configuration following working example
             const vouchedConfig = {
-              appId: 'wYd4PAXW3W2~xHNRx~-cdUpFl!*SFs',
-              
-              // Webhook configuration for receiving results
+              // The exact App ID that works
+              appId: "wYd4PAXW3W2~xHNRx~-cdUpFl!*SFs",
+
+              // Required verification information for comparison
+              verification: {
+                firstName: verificationData.firstName || '',
+                lastName: verificationData.lastName || '',
+                email: verificationData.email || '',
+                phone: verificationData.phone || '',
+                ...(verificationData.birthDate && { dob: verificationData.birthDate }),
+                ...(verificationData.ssn && { ssn: verificationData.ssn })
+              },
+
+              // Webhook configuration - this sends verification results to your backend
               callbackURL: `${window.location.origin}/api/vouched-webhook`,
               
-              // Verification information for comparison
-              verification: (() => {
-                const verificationData: Record<string, any> = {};
-                
-                // Add basic identity data for CrossCheck and IDV
-                if (formData.firstName) verificationData.firstName = formData.firstName;
-                if (formData.lastName) verificationData.lastName = formData.lastName;
-                if (formData.phone) verificationData.phone = formData.phone;
-                if (formData.email) verificationData.email = formData.email;
-                if (formData.ipAddress) verificationData.ipAddress = formData.ipAddress;
-                
-                // Add DOB for DOB verification - MUST use birthDate parameter
-                if (config.enabledProducts.includes('dob-verification') && formData.dateOfBirth) {
-                  verificationData.birthDate = formData.dateOfBirth;
-                }
-                
-                // Add SSN for SSN Private verification
-                if (config.enabledProducts.includes('ssnPrivate') && formData.ssn) {
-                  verificationData.ssn = formData.ssn;
-                }
-                
-                return verificationData;
-              })(),
-              
+              // Mobile handoff fields - crucial for sessions
+              crossDevice: true,
+              crossDeviceQRCode: true,
+              crossDeviceSMS: true,
+
               // Enable camera access on localhost
               allowLocalhost: true,
-              
-              // Basic verification configuration (always enabled)
+
+              // Configuration from reference implementation
+              liveness: 'enhanced',
               id: 'camera',
               selfie: 'camera',
-              
-              // Product configuration - conditional based on selection
-              ...(config.enabledProducts.includes('crosscheck') ? { crosscheck: true } : {}),
-              ...(config.enabledProducts.includes('ssnPrivate') ? { ssnPrivate: true } : {}),
-              ...(config.enabledProducts.includes('dob-verification') ? { dobVerification: true } : {}),
-              ...(config.enabledProducts.includes('aml') ? { aml: true } : {}),
-              
-              // Additional configuration from reference implementation
-              liveness: 'enhanced',
               includeBarcode: true,
               manualCaptureTimeout: 20000,
               showTermsAndPrivacy: true,
-              
-              // UI Configuration
+
+              // Theme
               theme: {
-                name: 'avant'
+                name: "avant",
               },
-              
-              // Cross Device Configuration - MUST be set AFTER product configuration
-              // Desktop: Always enable cross device handoff (QR code and SMS options)
-              ...(config.flowType === 'desktop' && {
-                crossDevice: true,
-                crossDeviceQRCode: true, 
-                crossDeviceSMS: true,
-              }),
-              
-              // Phone: Disable cross device handoff (direct mobile verification)
-              ...(config.flowType === 'phone' && {
-                crossDevice: false,
-                crossDeviceQRCode: false,
-                crossDeviceSMS: false,
-              }),
-              
-              // Callbacks
-              onInit: (job: { token: string }) => {
-                console.log('Vouched initialized', job);
-                console.log('Flow type:', config.flowType);
-                console.log('Enabled products:', config.enabledProducts);
-                console.log('Cross device settings:', {
-                  crossDevice: config.flowType === 'desktop',
-                  crossDeviceQRCode: config.flowType === 'desktop',
-                  crossDeviceSMS: config.flowType === 'desktop'
-                });
-                
-                // Log verification data being sent
-                const verificationData = (() => {
-                  const data: Record<string, any> = {};
-                  
-                  // Add basic identity data
-                  if (formData.firstName) data.firstName = formData.firstName;
-                  if (formData.lastName) data.lastName = formData.lastName;
-                  if (formData.phone) data.phone = formData.phone;
-                  if (formData.email) data.email = formData.email;
-                  if (formData.ipAddress) data.ipAddress = formData.ipAddress;
-                  
-                  // Add DOB if DOB verification is enabled - using correct birthDate parameter
-                  if (config.enabledProducts.includes('dob-verification') && formData.dateOfBirth) {
-                    data.birthDate = formData.dateOfBirth;  // NOT dateOfBirth!
-                  }
-                  
-                  // Add SSN if SSN Private is enabled
-                  if (config.enabledProducts.includes('ssnPrivate') && formData.ssn) {
-                    data.ssn = formData.ssn;
-                  }
-                  
-                  return data;
-                })();
-                console.log('Verification data sent to Vouched:', verificationData);
-                
-                // Log product-specific configuration
-                console.log('Product configurations:', {
-                  dobVerification: config.enabledProducts.includes('dob-verification'),
-                  ssnPrivate: config.enabledProducts.includes('ssnPrivate'),
-                  crosscheck: config.enabledProducts.includes('crosscheck'),
-                  aml: config.enabledProducts.includes('aml')
-                });
-              },
-              
-              onDone: (job: { token: string }) => {
-                console.log('Verification complete', { 
-                  token: job.token, 
-                  formData: formData 
-                });
-                
-                // Navigate to webhook response page
-                window.location.href = '/webhook-response';
-              },
-              
-              onError: (error: Error) => {
-                console.error('Vouched error', error);
-                console.error('Error details:', JSON.stringify(error, null, 2));
-              }
+
+              // Add product configuration conditionally
+              ...(config.enabledProducts.includes('crosscheck') && { crosscheck: true }),
+              ...(config.enabledProducts.includes('dob-verification') && { dobVerification: true }),
+
+              // Add debug mode to get detailed error information
+              debug: true
             };
 
           try {
+            // Check if there's already an instance and clean it up first
+            if (vouchedInstanceRef.current) {
+              console.log("Cleaning up existing Vouched instance before creating a new one");
+              try {
+                if (typeof vouchedInstanceRef.current.unmount === 'function') {
+                  vouchedInstanceRef.current.unmount();
+                }
+                if (typeof vouchedInstanceRef.current.destroy === 'function') {
+                  vouchedInstanceRef.current.destroy();
+                }
+              } catch (cleanupError) {
+                console.warn("Error during cleanup:", cleanupError);
+              }
+              vouchedInstanceRef.current = null;
+            }
+            
+            // Set up message listener for Vouched events (since callbacks cause DataCloneError)
+            const messageHandler = (event: MessageEvent) => {
+              // Only listen to messages from Vouched
+              if (event.origin !== 'https://static.vouched.id') return;
+              
+              console.log('Received message from Vouched:', event.data);
+              
+              const { type, data } = event.data;
+              
+              if (type === 'VOUCHED_INIT') {
+                console.log('onInit called:', data);
+                console.log('Job ID:', data?.id);
+                console.log('Job Token:', data?.token);
+                console.log('Job Status:', data?.status);
+              }
+              
+              if (type === 'VOUCHED_SUBMIT') {
+                console.log("Photo submitted", data);
+                console.log("Job ID in onSubmit:", data?.job?.id);
+                console.log("Job Status in onSubmit:", data?.job?.status);
+              }
+              
+              if (type === 'VOUCHED_DONE') {
+                const job = data;
+                console.log("Scanning complete", { 
+                  token: job?.token,
+                  success: job?.result?.success,
+                  jobId: job?.id,
+                  fullJob: job
+                });
+
+                // Store the job ID for future reverification
+                if (job?.id) {
+                  try {
+                    localStorage.setItem('vouchedJobId', job.id);
+                    console.log("Job ID stored for reverification:", job.id);
+                  } catch (err) {
+                    console.warn("Could not store job ID:", err);
+                  }
+                }
+
+                // Store the job data locally so we can show it immediately
+                try {
+                  localStorage.setItem('latestJobData', JSON.stringify({
+                    timestamp: new Date().toISOString(),
+                    data: job
+                  }));
+                  console.log("Job data stored locally for immediate display");
+                } catch (err) {
+                  console.warn("Could not store job data:", err);
+                }
+
+                // Navigate to webhook response page with reverification parameter
+                const params = new URLSearchParams({
+                  reverification: reverificationEnabled.toString()
+                });
+                
+                setTimeout(() => {
+                  console.log("Redirecting to webhook response page...");
+                  window.location.href = `/webhook-response?${params.toString()}`;
+                }, 1500); // 1.5 second delay to allow webhook to arrive
+              }
+              
+              if (type === 'VOUCHED_CAMERA') {
+                console.log("Camera status", data);
+              }
+              
+              if (type === 'VOUCHED_ERROR') {
+                console.error('Vouched error', data);
+              }
+            };
+            
+            window.addEventListener('message', messageHandler);
+            
+            // Store handler for cleanup
+            (window as any)._vouchedMessageHandler = messageHandler;
+
             // Initialize Vouched using the correct pattern
             console.log('Initializing Vouched with config:', JSON.stringify(vouchedConfig, null, 2));
             const vouched = window.Vouched(vouchedConfig);
@@ -276,15 +307,26 @@ function VerificationPageContent() {
     document.head.appendChild(script);
     
     return () => {
+      // Cleanup message listener
+      if ((window as any)._vouchedMessageHandler) {
+        window.removeEventListener('message', (window as any)._vouchedMessageHandler);
+        delete (window as any)._vouchedMessageHandler;
+      }
+      
       // Cleanup Vouched instance properly
       if (vouchedInstanceRef.current) {
         try {
+          console.log("Cleaning up Vouched instance on unmount");
           // If there's an unmount method, call it
           if (typeof vouchedInstanceRef.current.unmount === 'function') {
             vouchedInstanceRef.current.unmount();
           }
+          // If there's a destroy method, call it
+          if (typeof vouchedInstanceRef.current.destroy === 'function') {
+            vouchedInstanceRef.current.destroy();
+          }
         } catch (error) {
-          console.error('Error unmounting Vouched:', error);
+          console.error('Error cleaning up Vouched:', error);
         }
         vouchedInstanceRef.current = null;
       }

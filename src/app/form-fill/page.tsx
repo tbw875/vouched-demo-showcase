@@ -46,6 +46,8 @@ function FormFillPageContent() {
     enabledProducts: searchParams.get('products')?.split(',') || ['id-verification'],
     ssnMode: (searchParams.get('ssnMode') as 'off' | 'last4' | 'full9') || 'off'
   };
+  
+  const reverificationEnabled = searchParams.get('reverification') === 'true';
 
   // Get user's IP address
   useEffect(() => {
@@ -214,7 +216,8 @@ function FormFillPageContent() {
       flow: config.flowType,
       workflow: config.workflowType,
       products: config.enabledProducts.join(','),
-      formData: JSON.stringify(formData)
+      formData: JSON.stringify(formData),
+      reverification: reverificationEnabled.toString()
     });
 
     window.location.href = `/verification?${params.toString()}`;

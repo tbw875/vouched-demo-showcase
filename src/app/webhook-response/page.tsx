@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { CheckCircleIcon, XCircleIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon, XCircleIcon, ClockIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import PageHeader from '../components/PageHeader';
 
 interface WebhookResponse {
@@ -12,7 +13,8 @@ interface WebhookResponse {
   error?: string;
 }
 
-export default function WebhookResponsePage() {
+function WebhookResponsePageContent() {
+  const searchParams = useSearchParams();
   const [responses, setResponses] = useState<WebhookResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [pollingInterval, setPollingInterval] = useState<number>(1000); // 1 second polling interval
@@ -20,6 +22,8 @@ export default function WebhookResponsePage() {
   const [isMounted, setIsMounted] = useState(false);
   const [pollingCount, setPollingCount] = useState(0);
   const [formData, setFormData] = useState<any>({});
+  
+  const reverificationEnabled = searchParams.get('reverification') === 'true';
 
   useEffect(() => {
     setIsMounted(true);
@@ -177,6 +181,20 @@ export default function WebhookResponsePage() {
   // Get the transformed data for display
   const vouchedParameters = Object.keys(formData).length > 0 ? transformToVouchedParameters(formData) : {};
 
+  // Extract jobID from webhook response for Vouched job link
+  const getJobId = (response: WebhookResponse | null): string | null => {
+    if (!response?.data) return null;
+    
+    // Try different possible locations for jobID
+    return response.data.id || 
+           response.data.job?.id || 
+           response.data.jobId || 
+           response.data.extractedJobId ||
+           null;
+  };
+
+  const jobId = getJobId(latestResponse);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950 dark:via-slate-900 dark:to-purple-950">
       <div className="max-w-7xl mx-auto px-6 py-8">
@@ -208,10 +226,27 @@ export default function WebhookResponsePage() {
             )}
             
             {latestResponse && (
-              <div className="mt-4 text-center">
+              <div className="mt-4 text-center space-y-3">
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   Received: {new Date(latestResponse.timestamp).toLocaleString()}
                 </p>
+                
+                {/* Job Link Button */}
+                {jobId && (
+                  <div className="pt-2">
+                    <a
+                      href={`https://app.vouched.id/account/job/${jobId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200"
+                    >
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                      View Job in Vouched
+                    </a>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -297,7 +332,39 @@ export default function WebhookResponsePage() {
             </button>
           </div>
         )}
+
+        {/* Reverification Button */}
+        {reverificationEnabled && latestResponse && getVerificationStatus() === 'success' && (
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-8 text-center mt-8">
+            <div className="mb-6">
+              <ArrowPathIcon className="h-12 w-12 text-purple-600 mx-auto mb-4" />
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                Reverification Available
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300">
+                Proceed to reverification to compare against your initial verification.
+              </p>
+            </div>
+            <button 
+              className="px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl flex items-center gap-3 mx-auto"
+              onClick={() => window.location.href = '/reverification/login'}
+            >
+              <ArrowPathIcon className="h-5 w-5" />
+              Proceed to Reverification
+            </button>
+          </div>
+        )}
       </div>
     </div>
+  );
+}
+
+export default function WebhookResponsePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950 dark:via-slate-900 dark:to-purple-950 flex items-center justify-center">
+      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
+    </div>}>
+      <WebhookResponsePageContent />
+    </Suspense>
   );
 } 

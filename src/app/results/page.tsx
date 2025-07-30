@@ -21,6 +21,20 @@ function ResultsPageContent() {
   const jobToken = searchParams.get('token');
   const formData = searchParams.get('formData') ? JSON.parse(searchParams.get('formData')!) : {};
 
+  // Extract jobID from webhook response for Vouched job link
+  const getJobId = (data: Record<string, unknown> | null): string | null => {
+    if (!data) return null;
+    
+    // Try different possible locations for jobID
+    return (data.id as string) || 
+           ((data.job as any)?.id as string) || 
+           (data.jobId as string) || 
+           (data.extractedJobId as string) ||
+           null;
+  };
+
+  const jobId = getJobId(webhookData);
+
   // Poll for webhook data
   useEffect(() => {
     if (!jobToken) {
@@ -141,13 +155,30 @@ function ResultsPageContent() {
           )}
           
           {webhookData && (
-            <div className="mt-4 text-center">
+            <div className="mt-4 text-center space-y-3">
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 Job Token: {jobToken}
               </p>
-                             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                 Received: {new Date(webhookData.timestamp as string).toLocaleString()}
-               </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Received: {new Date(webhookData.timestamp as string).toLocaleString()}
+              </p>
+              
+              {/* Job Link Button */}
+              {jobId && (
+                <div className="pt-2">
+                  <a
+                    href={`https://app.vouched.id/account/job/${jobId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200"
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                    View Job in Vouched
+                  </a>
+                </div>
+              )}
             </div>
           )}
         </div>
