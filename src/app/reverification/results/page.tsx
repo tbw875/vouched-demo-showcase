@@ -20,17 +20,71 @@ function ReverificationResultsContent() {
   const [pollingCount, setPollingCount] = useState(0);
   const [isMounted, setIsMounted] = useState(false);
 
-  const token = searchParams.get('token');
-  const originalJobId = searchParams.get('originalJobId');
-  const email = searchParams.get('email');
+  const [token, setToken] = useState('');
+  const [originalJobId, setOriginalJobId] = useState('');
+  const [email, setEmail] = useState('');
 
   useEffect(() => {
     setIsMounted(true);
-  }, []);
+    
+    // Get reverification data from localStorage and URL params
+    const urlToken = searchParams.get('token');
+    const urlOriginalJobId = searchParams.get('originalJobId');
+    const urlEmail = searchParams.get('email');
+    
+    if (urlToken) setToken(urlToken);
+    if (urlOriginalJobId) setOriginalJobId(urlOriginalJobId);
+    if (urlEmail) setEmail(urlEmail);
+    
+    // Try to get stored job ID if not in URL
+    if (!urlOriginalJobId) {
+      try {
+        const storedJobId = localStorage.getItem('vouchedJobId');
+        if (storedJobId) {
+          setOriginalJobId(storedJobId);
+        }
+      } catch (error) {
+        console.error('Error loading original job ID:', error);
+      }
+    }
+    
+    // Try to get email from form data if not in URL
+    if (!urlEmail) {
+      try {
+        const storedFormData = localStorage.getItem('vouchedFormData');
+        if (storedFormData) {
+          const formData = JSON.parse(storedFormData);
+          if (formData.email) {
+            setEmail(formData.email);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading email:', error);
+      }
+    }
+  }, [searchParams]);
 
   useEffect(() => {
+    // First check if we have data in localStorage (from onReverify callback)
+    try {
+      const storedJobData = localStorage.getItem('latestJobData');
+      if (storedJobData) {
+        const jobData = JSON.parse(storedJobData);
+        if (jobData.data) {
+          setResponses([{
+            timestamp: jobData.timestamp,
+            data: jobData.data
+          }]);
+          setLoading(false);
+          return; // Don't poll if we have local data
+        }
+      }
+    } catch (error) {
+      console.error('Error loading local job data:', error);
+    }
+
     let attempts = 0;
-    const maxAttempts = 60; // 60 attempts * 2 seconds = 2 minutes timeout
+    const maxAttempts = 30; // Reduced from 60 to 30 attempts * 2 seconds = 1 minute timeout
 
     const fetchResponses = async () => {
       try {

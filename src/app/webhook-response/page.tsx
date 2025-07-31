@@ -333,25 +333,42 @@ function WebhookResponsePageContent() {
           </div>
         )}
 
-        {/* Reverification Button */}
-        {reverificationEnabled && latestResponse && getVerificationStatus() === 'success' && (
+        {/* Action Buttons */}
+        {latestResponse && getVerificationStatus() === 'success' && (
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-8 text-center mt-8">
             <div className="mb-6">
-              <ArrowPathIcon className="h-12 w-12 text-purple-600 mx-auto mb-4" />
+              <CheckCircleIcon className="h-12 w-12 text-green-600 mx-auto mb-4" />
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                Reverification Available
+                Verification Complete
               </h3>
               <p className="text-gray-600 dark:text-gray-300">
-                Proceed to reverification to compare against your initial verification.
+                Your identity has been verified. Access your dashboard to explore available services.
               </p>
             </div>
-            <button 
-              className="px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl flex items-center gap-3 mx-auto"
-              onClick={() => window.location.href = '/reverification/login'}
-            >
-              <ArrowPathIcon className="h-5 w-5" />
-              Proceed to Reverification
-            </button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button 
+                className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl flex items-center gap-3 justify-center"
+                onClick={() => {
+                  const params = new URLSearchParams({
+                    reverification: reverificationEnabled.toString()
+                  });
+                  window.location.href = `/dashboard?${params.toString()}`;
+                }}
+              >
+                <CheckCircleIcon className="h-5 w-5" />
+                Go to Dashboard
+              </button>
+              
+              {reverificationEnabled && (
+                <button 
+                  className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl flex items-center gap-3 justify-center"
+                  onClick={() => window.location.href = '/reverification/login'}
+                >
+                  <ArrowPathIcon className="h-5 w-5" />
+                  Start Reverification
+                </button>
+              )}
+            </div>
           </div>
         )}
       </div>

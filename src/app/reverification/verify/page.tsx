@@ -73,7 +73,27 @@ function ReverificationVerifyContent() {
               liveness: 'enhanced',
 
               // Add debug mode to get detailed error information
-              debug: true
+              debug: true,
+
+              // Simple reverification callback following Vouched docs pattern
+              onReverify: function(job: any) {
+                console.log("Reverification complete", { token: job.token });
+                
+                // Store essential data for dashboard access
+                localStorage.setItem('latestJobData', JSON.stringify({
+                  timestamp: new Date().toISOString(),
+                  data: job
+                }));
+
+                // Redirect to dashboard (welcome page) based on success, like regular verification
+                if (job.result && job.result.success) {
+                  console.log("Reverification successful, redirecting to dashboard");
+                  window.location.href = '/dashboard';
+                } else {
+                  console.log("Reverification failed, redirecting to reverification results");
+                  window.location.href = '/reverification/results';
+                }
+              }
             };
 
             try {
@@ -110,40 +130,8 @@ function ReverificationVerifyContent() {
                 }
                 
                 if (type === 'VOUCHED_REVERIFY' || type === 'VOUCHED_DONE') {
-                  const job = data;
-                  console.log("Reverification complete", { 
-                    token: job?.token,
-                    success: job?.result?.success,
-                    jobId: job?.id,
-                    fullJob: job
-                  });
-
-                  // Store the job data locally so we can show it immediately
-                  try {
-                    localStorage.setItem('latestJobData', JSON.stringify({
-                      timestamp: new Date().toISOString(),
-                      data: job
-                    }));
-                    console.log("Reverification job data stored locally for immediate display");
-                  } catch (err) {
-                    console.warn("Could not store reverification job data:", err);
-                  }
-
-                  // The webhook will also receive this same job information
-                  console.log("Webhook should be triggered with reverification data");
-                  console.log("Webhook URL:", `${window.location.origin}/api/vouched-webhook`);
-
-                  // Navigate to reverification results page
-                  const params = new URLSearchParams({
-                    token: job?.token || '',
-                    originalJobId: originalJobId || '',
-                    email: email || ''
-                  });
-
-                  setTimeout(() => {
-                    console.log("Redirecting to reverification results page...");
-                    window.location.href = `/reverification/results?${params.toString()}`;
-                  }, 1500); // 1.5 second delay to allow webhook to arrive
+                  console.log("Reverification complete via postMessage", data);
+                  // Navigation is now handled by onReverify callback
                 }
                 
                 if (type === 'VOUCHED_CAMERA') {

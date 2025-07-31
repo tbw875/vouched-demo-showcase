@@ -142,7 +142,28 @@ function VerificationPageContent() {
               ...(config.enabledProducts.includes('dob-verification') && { dobVerification: true }),
 
               // Add debug mode to get detailed error information
-              debug: true
+              debug: true,
+
+              // Simple callback following Vouched documentation pattern
+              onDone: function(job: any) {
+                console.log("Verification complete", { token: job.token });
+                
+                // Store essential data
+                if (job.id) {
+                  localStorage.setItem('vouchedJobId', job.id);
+                }
+                localStorage.setItem('latestJobData', JSON.stringify({
+                  timestamp: new Date().toISOString(),
+                  data: job
+                }));
+
+                // Simple navigation based on success
+                if (job.result && job.result.success) {
+                  window.location.href = '/dashboard';
+                } else {
+                  window.location.href = '/webhook-response';
+                }
+              }
             };
 
           try {
@@ -185,44 +206,8 @@ function VerificationPageContent() {
               }
               
               if (type === 'VOUCHED_DONE') {
-                const job = data;
-                console.log("Scanning complete", { 
-                  token: job?.token,
-                  success: job?.result?.success,
-                  jobId: job?.id,
-                  fullJob: job
-                });
-
-                // Store the job ID for future reverification
-                if (job?.id) {
-                  try {
-                    localStorage.setItem('vouchedJobId', job.id);
-                    console.log("Job ID stored for reverification:", job.id);
-                  } catch (err) {
-                    console.warn("Could not store job ID:", err);
-                  }
-                }
-
-                // Store the job data locally so we can show it immediately
-                try {
-                  localStorage.setItem('latestJobData', JSON.stringify({
-                    timestamp: new Date().toISOString(),
-                    data: job
-                  }));
-                  console.log("Job data stored locally for immediate display");
-                } catch (err) {
-                  console.warn("Could not store job data:", err);
-                }
-
-                // Navigate to webhook response page with reverification parameter
-                const params = new URLSearchParams({
-                  reverification: reverificationEnabled.toString()
-                });
-                
-                setTimeout(() => {
-                  console.log("Redirecting to webhook response page...");
-                  window.location.href = `/webhook-response?${params.toString()}`;
-                }, 1500); // 1.5 second delay to allow webhook to arrive
+                console.log("Scanning complete via postMessage", data);
+                // Navigation is now handled by onDone callback
               }
               
               if (type === 'VOUCHED_CAMERA') {
