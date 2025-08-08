@@ -78,18 +78,15 @@ export default function ReverificationLoginPage() {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 dark:from-purple-950 dark:via-slate-900 dark:to-indigo-950">
       <div className="max-w-2xl mx-auto px-6 py-12">
         {/* Header */}
-        <PageHeader pageTitle="Reverification Login" />
+        <PageHeader />
         
         <div className="text-center mb-12">
           <div className="mb-6">
             <ArrowPathIcon className="h-16 w-16 text-purple-600 mx-auto mb-4" />
           </div>
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Reverification Login
+            Passwordless Login
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-lg mx-auto">
-            Enter your email address to retrieve your original verification and start the reverification process.
-          </p>
         </div>
 
         {/* Login Form */}
@@ -127,9 +124,6 @@ export default function ReverificationLoginPage() {
                   {errors.email}
                 </p>
               )}
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                This will be used to locate your original verification for comparison.
-              </p>
             </div>
 
             {/* Submit Button */}
@@ -155,7 +149,7 @@ export default function ReverificationLoginPage() {
                 ) : (
                   <>
                     <ArrowRightIcon className="h-5 w-5" />
-                    Continue to Reverification
+                    Continue to Login
                   </>
                 )}
               </button>

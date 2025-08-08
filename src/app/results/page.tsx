@@ -130,7 +130,7 @@ function ResultsPageContent() {
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950 dark:via-slate-900 dark:to-purple-950">
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Header */}
-        <PageHeader pageTitle="Verification Results" />
+        <PageHeader/>
 
         {/* Status Card */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-8 mb-8">

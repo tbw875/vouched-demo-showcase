@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, Suspense } from 'react';
+import { useEffect, useRef, Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import PageHeader from '../../components/PageHeader';
 
@@ -9,9 +9,23 @@ import PageHeader from '../../components/PageHeader';
 function ReverificationVerifyContent() {
   const searchParams = useSearchParams();
   const vouchedInstanceRef = useRef<Record<string, unknown> | null>(null);
+  const [isPhoneView, setIsPhoneView] = useState(false);
   
   const email = searchParams.get('email');
   const originalJobId = searchParams.get('originalJobId');
+
+  // Detect device type - for reverification, we'll default to desktop but allow phone mode
+  useEffect(() => {
+    const checkDeviceType = () => {
+      const isMobile = window.innerWidth <= 768;
+      setIsPhoneView(isMobile);
+    };
+    
+    checkDeviceType();
+    window.addEventListener('resize', checkDeviceType);
+    
+    return () => window.removeEventListener('resize', checkDeviceType);
+  }, []);
 
   // Initialize Vouched JS Plugin for Reverification
   useEffect(() => {
@@ -21,7 +35,7 @@ function ReverificationVerifyContent() {
     }
 
     const script = document.createElement('script');
-    script.src = 'https://static.vouched.id/widget/vouched-2.0.0.js';
+    script.src = 'https://static.vouched.id/plugin/releases/latest/index.js';
     script.async = true;
     
     script.onload = () => {
@@ -36,6 +50,7 @@ function ReverificationVerifyContent() {
             const element = document.getElementById('vouched-element');
             if (!element) {
               console.error('Vouched element not found');
+              setTimeout(initializeVouched, 100);
               return;
             }
             
@@ -71,6 +86,11 @@ function ReverificationVerifyContent() {
               allowLocalhost: true,
 
               liveness: 'enhanced',
+              id: 'camera',
+              selfie: 'camera',
+              includeBarcode: true,
+              manualCaptureTimeout: 20000,
+              showTermsAndPrivacy: true,
 
               // Add debug mode to get detailed error information
               debug: true,
@@ -82,7 +102,8 @@ function ReverificationVerifyContent() {
                 // Store essential data for dashboard access
                 localStorage.setItem('latestJobData', JSON.stringify({
                   timestamp: new Date().toISOString(),
-                  data: job
+                  data: job,
+                  type: 'reverify'
                 }));
 
                 // Redirect to dashboard (welcome page) based on success, like regular verification
@@ -153,26 +174,38 @@ function ReverificationVerifyContent() {
               
               // Create the Vouched instance
               const vouchedInstance = window.Vouched(vouchedConfig);
-              vouchedInstance.mount('#vouched-element');
               vouchedInstanceRef.current = vouchedInstance;
               
-              console.log('Vouched reverification instance created successfully');
+              console.log('About to mount Vouched to #vouched-element...');
+              vouchedInstance.mount('#vouched-element');
+              console.log('Vouched reverification mount called successfully');
+              
+              // Add a timeout to check if mounting actually worked
+              setTimeout(() => {
+                const iframeCheck = document.querySelector('#vouched-element iframe');
+                if (iframeCheck) {
+                  console.log('✅ Vouched reverification iframe found and mounted:', iframeCheck);
+                } else {
+                  console.log('❌ Vouched reverification iframe NOT found after mounting');
+                }
+              }, 3000);
+              
             } catch (error) {
               console.error('Error creating Vouched reverification instance:', error);
+              console.error('Error details:', {
+                message: error instanceof Error ? error.message : String(error),
+                stack: error instanceof Error ? error.stack : undefined,
+                config: vouchedConfig
+              });
             }
           };
 
-          // Try to initialize immediately, or wait for element
-          initializeVouched();
-          
-          // If element not found, try again after a short delay
-          if (!document.getElementById('vouched-element')) {
-            setTimeout(initializeVouched, 500);
-          }
+          // Give the DOM a moment to render
+          setTimeout(initializeVouched, 100);
         } else {
           console.log('Vouched object not available after script load');
         }
-      }, 100);
+      }, 500);
     };
 
     script.onerror = () => {
@@ -208,69 +241,84 @@ function ReverificationVerifyContent() {
         vouchedInstanceRef.current = null;
       }
       
-      try {
+      if (document.head.contains(script)) {
         document.head.removeChild(script);
-      } catch (error) {
-        // Script might already be removed
       }
     };
 
   }, []); // Empty dependency array - run once on mount
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 dark:from-purple-950 dark:via-slate-900 dark:to-indigo-950">
-      <div className="max-w-4xl mx-auto px-6 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950 dark:via-slate-900 dark:to-purple-950">
+      <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Header */}
-        <PageHeader pageTitle="Reverification" />
-
-        {/* Verification Info */}
+        <PageHeader pageTitle="Identity Reverification" />
+        
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             Identity Reverification
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300 mb-6">
-            Please complete the reverification process to compare against your original verification.
+          <p className="text-gray-600 dark:text-gray-300">
+            {isPhoneView 
+              ? 'Complete reverification on your mobile device' 
+              : 'Complete reverification on desktop, then use your mobile device'
+            }
           </p>
-          
-          {/* User Info Card */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 mb-8 max-w-md mx-auto">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-              Verification Details
-            </h3>
-            <div className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
-              <p><span className="font-medium">Email:</span> {email}</p>
-              <p><span className="font-medium">Original Job ID:</span> {originalJobId?.substring(0, 20)}...</p>
-              <p><span className="font-medium">Match Type:</span> Selfie Comparison</p>
-            </div>
-          </div>
         </div>
 
-        {/* Vouched Container */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <div id="vouched-element" className="min-h-[600px] flex items-center justify-center">
-            <div className="text-center p-8">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-              <p className="text-gray-600 dark:text-gray-300 font-medium">
-                Loading Reverification Interface...
-              </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                Please wait while we prepare your reverification session
-              </p>
+        {/* Verification Container */}
+        <div className="w-full flex justify-center items-center">
+          <div className={`
+            ${isPhoneView 
+              ? 'w-full max-w-lg mx-auto' 
+              : '' /* Desktop will use CSS-defined dimensions */
+            }
+            transition-all duration-300
+          `}>
+            {/* Container with styling based on configuration */}
+            <div className={`
+              ${isPhoneView 
+                ? 'bg-gray-900 rounded-3xl p-2 shadow-2xl' 
+                : 'bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700'
+              }
+              overflow-hidden
+            `}>
+              {/* Phone frame styling */}
+              {isPhoneView && (
+                <div className="bg-black rounded-2xl p-1">
+                  <div className="bg-gray-100 dark:bg-gray-800 rounded-xl overflow-hidden">
+                    {/* Phone notch */}
+                    <div className="bg-black h-6 flex items-center justify-center">
+                      <div className="w-16 h-1 bg-gray-600 rounded-full"></div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Desktop frame styling */}
+              {!isPhoneView && (
+                <div className="bg-gray-100 dark:bg-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+                  <div className="flex items-center gap-3">
+                    <div className="flex gap-2">
+                      <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                      <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                    </div>
+                    <div className="flex-1 text-center">
+                      <span className="text-sm text-gray-600 dark:text-gray-300">
+                        Identity Reverification
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Vouched Container */}
+              <div className={`vouched-container ${isPhoneView ? 'phone-container' : 'desktop-container'}`}>
+                <div id="vouched-element" className="vouched-element"></div>
+              </div>
             </div>
           </div>
-        </div>
-
-        {/* Instructions */}
-        <div className="mt-8 bg-purple-50 dark:bg-purple-900/20 rounded-xl p-6 border border-purple-200 dark:border-purple-700">
-          <h3 className="text-lg font-semibold text-purple-900 dark:text-purple-200 mb-3">
-            Reverification Instructions
-          </h3>
-          <ul className="text-sm text-purple-700 dark:text-purple-300 space-y-2">
-            <li>• This process will compare your new selfie with your original verification</li>
-            <li>• Ensure you are in good lighting and your face is clearly visible</li>
-            <li>• The system will analyze facial features to confirm your identity</li>
-            <li>• Results will be available immediately after completion</li>
-          </ul>
         </div>
 
         {/* Back Button */}
@@ -284,22 +332,113 @@ function ReverificationVerifyContent() {
         </div>
       </div>
 
-      {/* Custom styles for Vouched */}
-      <style>{`
-        #vouched-element {
-          border-radius: 0;
+      <style jsx>{`
+        .vouched-container {
+          position: relative;
+          overflow: hidden;
+          background: white; /* Ensure background color */
         }
         
-        /* Responsive adjustments for Vouched widget */
-        @media (max-width: 768px) {
-          #vouched-element {
-            min-height: 500px;
+        .phone-container {
+          height: 90vh;
+          min-height: 700px;
+          width: 100%;
+          max-width: 450px; /* Portrait - very narrow and tall */
+          margin: 0 auto;
+        }
+        
+        .desktop-container {
+          height: 60vh; /* Shorter height for landscape */
+          width: 95vw; /* Much wider - almost full screen */
+          min-height: 500px;
+          min-width: 1000px; /* Much wider minimum */
+          max-height: 700px;
+          max-width: 1600px; /* Much wider maximum */
+          margin: 0 auto; /* Center it */
+        }
+        
+        .vouched-element {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100% !important;
+          height: 100% !important;
+          border: none; /* Remove any borders that might interfere */
+          background: transparent;
+        }
+        
+        /* Ensure iframe content is displayed properly */
+        .vouched-element iframe {
+          border: none;
+          width: 100%;
+          height: 100%;
+        }
+        
+        /* Desktop element should be LANDSCAPE */
+        .desktop-container .vouched-element {
+          min-width: 1000px;
+          min-height: 500px;
+        }
+        
+        /* Phone element should be narrow and tall */
+        .phone-container .vouched-element {
+          max-width: 450px;
+          min-height: 700px;
+        }
+        
+        /* Responsive adjustments - maintain LANDSCAPE for desktop */
+        @media (max-width: 1400px) {
+          .desktop-container {
+            height: 55vh;
+            width: 90vw;
+            min-height: 450px;
+            min-width: 800px;
+            max-height: 650px;
+            max-width: 1400px;
           }
         }
         
-        /* Dark mode adjustments */
-        .dark #vouched-element {
-          background-color: #1f2937;
+        @media (max-width: 1000px) {
+          .desktop-container {
+            height: 50vh;
+            width: 85vw;
+            min-height: 400px;
+            min-width: 700px;
+            max-height: 600px;
+            max-width: 1000px;
+          }
+        }
+        
+        @media (max-width: 768px) {
+          .desktop-container {
+            height: 45vh;
+            width: 80vw;
+            min-height: 350px;
+            min-width: 600px;
+            max-height: 500px;
+            max-width: 800px;
+          }
+          .phone-container {
+            max-width: 380px;
+            height: 80vh;
+            min-height: 600px;
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .desktop-container {
+            height: 40vh;
+            width: 75vw;
+            min-height: 300px;
+            min-width: 400px;
+            max-height: 450px;
+            max-width: 600px;
+          }
+          .phone-container {
+            max-width: 320px;
+            height: 75vh;
+            min-height: 500px;
+          }
         }
       `}</style>
     </div>
@@ -308,8 +447,8 @@ function ReverificationVerifyContent() {
 
 export default function ReverificationVerifyPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 dark:from-purple-950 dark:via-slate-900 dark:to-indigo-950 flex items-center justify-center">
-      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-600"></div>
+    <Suspense fallback={<div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950 dark:via-slate-900 dark:to-purple-950 flex items-center justify-center">
+      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
     </div>}>
       <ReverificationVerifyContent />
     </Suspense>

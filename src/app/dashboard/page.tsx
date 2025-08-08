@@ -14,7 +14,8 @@ import {
   ChartBarIcon,
   GlobeAltIcon,
   XMarkIcon,
-  EyeIcon
+  EyeIcon,
+  ArrowRightOnRectangleIcon
 } from '@heroicons/react/24/outline';
 import PageHeader from '../components/PageHeader';
 
@@ -39,7 +40,7 @@ function DashboardContent() {
       const storedFormData = localStorage.getItem('vouchedFormData');
       if (storedFormData) {
         const formData = JSON.parse(storedFormData);
-        const fullName = `${formData.firstName || ''} ${formData.lastName || ''}`.trim();
+        const fullName = `${formData.firstName || ''}`.trim();
         setUserName(fullName || 'User');
       }
     } catch (error) {
@@ -150,7 +151,17 @@ function DashboardContent() {
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950 dark:via-slate-900 dark:to-purple-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <PageHeader pageTitle="Dashboard" />
+        <PageHeader 
+          customRightContent={
+            <button
+              onClick={() => window.location.href = '/reverification/login'}
+              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
+            >
+              <ArrowRightOnRectangleIcon className="h-5 w-5" />
+              Log Out
+            </button>
+          }
+        />
 
         {/* Welcome Section */}
         <div className="text-center mb-12">
@@ -169,17 +180,10 @@ function DashboardContent() {
           
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-6">
             {isReverification() 
-              ? "Your identity has been successfully reverified. Your account remains secure with continued access to all services."
-              : "Your identity has been successfully verified. You now have access to all our premium services and features."
+              ? ""
+              : ""
             }
           </p>
-
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900/30 rounded-full">
-            <CheckCircleIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
-            <span className="text-sm font-medium text-green-800 dark:text-green-300">
-              {isReverification() ? 'Identity Reverified' : 'Identity Verified'} • Status: {getVerificationStatus()}
-            </span>
-          </div>
         </div>
 
         {/* Services Grid */}

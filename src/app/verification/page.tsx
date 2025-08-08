@@ -81,7 +81,7 @@ function VerificationPageContent() {
                       // Configure Vouched based on flow type and products
             const verificationData: Record<string, any> = {};
             
-            // Add basic identity data for CrossCheck and IDV
+            // Always add basic identity data (required for all products)
             if (formData.firstName) verificationData.firstName = formData.firstName;
             if (formData.lastName) verificationData.lastName = formData.lastName;
             if (formData.phone) verificationData.phone = formData.phone;
@@ -96,6 +96,13 @@ function VerificationPageContent() {
             // Add SSN for SSN Private verification
             if (config.enabledProducts.includes('ssnPrivate') && formData.ssn) {
               verificationData.ssn = formData.ssn;
+            }
+
+            // Ensure we have at least basic verification data even if no form data provided
+            if (!verificationData.firstName && !verificationData.lastName) {
+              // Provide minimal data to ensure Vouched loads
+              verificationData.firstName = '';
+              verificationData.lastName = '';
             }
 
             // Create proper Vouched configuration following working example
@@ -140,6 +147,7 @@ function VerificationPageContent() {
               // Add product configuration conditionally
               ...(config.enabledProducts.includes('crosscheck') && { crosscheck: true }),
               ...(config.enabledProducts.includes('dob-verification') && { dobVerification: true }),
+              ...(config.enabledProducts.includes('aml') && { aml: true }),
 
               // Add debug mode to get detailed error information
               debug: true,
@@ -326,7 +334,7 @@ function VerificationPageContent() {
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950 dark:via-slate-900 dark:to-purple-950">
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Header */}
-        <PageHeader pageTitle="Identity Verification" />
+        <PageHeader/>
         
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">

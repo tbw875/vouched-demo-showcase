@@ -3,17 +3,19 @@
 import { ChevronLeftIcon } from '@heroicons/react/24/outline';
 
 interface PageHeaderProps {
-  pageTitle: string;
+  pageTitle?: string;
   showBackButton?: boolean;
   backButtonText?: string;
   onBackClick?: () => void;
+  customRightContent?: React.ReactNode;
 }
 
 export default function PageHeader({ 
   pageTitle, 
   showBackButton = true, 
   backButtonText = "Back to Configuration",
-  onBackClick 
+  onBackClick,
+  customRightContent
 }: PageHeaderProps) {
   const handleBackClick = () => {
     if (onBackClick) {
@@ -37,14 +39,20 @@ export default function PageHeader({
         <div></div> // Spacer for layout
       )}
       
-      <div className="flex items-center gap-3">
-        <div className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold text-xl">
-          Vouched
+      {customRightContent ? (
+        customRightContent
+      ) : (
+        <div className="flex items-center gap-3">
+          <div className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold text-xl">
+            Vouched
+          </div>
+          {pageTitle && (
+            <div className="text-gray-600 dark:text-gray-300">
+              {pageTitle}
+            </div>
+          )}
         </div>
-        <div className="text-gray-600 dark:text-gray-300">
-          {pageTitle}
-        </div>
-      </div>
+      )}
     </div>
   );
 } 
