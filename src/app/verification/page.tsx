@@ -3,11 +3,12 @@
 import { useEffect, useState, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import PageHeader from '../components/PageHeader';
+import { SSNVerificationRequest, SSNApiResponse, isSSNVerificationResponse } from '../../types/ssn-api';
 
 // Extend Window interface for TypeScript
 declare global {
   interface Window {
-    Vouched: (config: Record<string, unknown>) => { mount: (selector: string) => void; unmount?: () => void };
+    Vouched: any;
   }
 }
 
@@ -31,6 +32,11 @@ function VerificationPageContent() {
   const searchParams = useSearchParams();
   const vouchedInstanceRef = useRef<Record<string, unknown> | null>(null);
   
+  // SSN verification state
+  const [ssnVerificationResult, setSsnVerificationResult] = useState<SSNApiResponse | null>(null);
+  const [ssnVerificationInProgress, setSsnVerificationInProgress] = useState(false);
+  const [ssnVerificationError, setSsnVerificationError] = useState<string | null>(null);
+  
   // Parse configuration from URL params
   const config: VouchedConfig = {
     flowType: (searchParams.get('flow') as 'desktop' | 'phone') || 'desktop',
@@ -47,6 +53,62 @@ function VerificationPageContent() {
 
   // Determine if we should show phone view based on configuration
   const isPhoneView = config.flowType === 'phone';
+
+  // SSN verification function
+  const performSSNVerification = async () => {
+    if (!config.enabledProducts.includes('ssnPrivate') || !formData.ssn || !formData.firstName || !formData.lastName || !formData.phone) {
+      console.log('SSN verification skipped - not enabled or missing required data (firstName, lastName, phone, ssn required)');
+      return;
+    }
+
+    setSsnVerificationInProgress(true);
+    setSsnVerificationError(null);
+
+    try {
+      console.log('Starting SSN verification...');
+      
+      const ssnRequest: SSNVerificationRequest = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        ssn: formData.ssn,
+        phone: formData.phone,
+        ...(formData.dateOfBirth && { dateOfBirth: formData.dateOfBirth })
+      };
+
+      const response = await fetch('/api/ssn-verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(ssnRequest),
+      });
+
+      const result: SSNApiResponse = await response.json();
+      
+      if (!response.ok) {
+        const errorMsg = 'error' in result ? result.error : 'Unknown error';
+        throw new Error(`SSN verification failed: ${errorMsg}`);
+      }
+
+      console.log('SSN verification completed:', result);
+      setSsnVerificationResult(result);
+
+      // Store SSN verification result for later display
+      if (isSSNVerificationResponse(result)) {
+        localStorage.setItem('ssnVerificationResult', JSON.stringify({
+          timestamp: new Date().toISOString(),
+          data: result
+        }));
+      }
+
+    } catch (error) {
+      console.error('SSN verification error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'SSN verification failed';
+      setSsnVerificationError(errorMessage);
+    } finally {
+      setSsnVerificationInProgress(false);
+    }
+  };
 
   // Initialize Vouched JS Plugin
   useEffect(() => {
@@ -76,7 +138,13 @@ function VerificationPageContent() {
             }
             
             console.log('Vouched element found, creating configuration...');
-                      // Configure Vouched based on flow type and products
+            
+            // Start SSN verification in parallel if enabled
+            if (config.enabledProducts.includes('ssnPrivate')) {
+              performSSNVerification();
+            }
+            
+            // Configure Vouched based on flow type and products
             const verificationData: Record<string, any> = {};
             
             // Always add basic identity data (required for all products)
@@ -91,16 +159,6 @@ function VerificationPageContent() {
               verificationData.birthDate = formData.dateOfBirth;
             }
             
-            // Add Driver's License data for Driver's License Verification
-            if (config.enabledProducts.includes('drivers-license-verification')) {
-              if (formData.driversLicenseNumber) verificationData.driversLicenseNumber = formData.driversLicenseNumber;
-              if (formData.driversLicenseState) verificationData.driversLicenseState = formData.driversLicenseState;
-            }
-            
-            // Add SSN for SSN Private verification
-            if (config.enabledProducts.includes('ssnPrivate') && formData.ssn) {
-              verificationData.ssn = formData.ssn;
-            }
 
             // Validate required data for product combinations
             const hasRequiredData = (products: string[], data: Record<string, any>): boolean => {
@@ -118,11 +176,6 @@ function VerificationPageContent() {
                 return false;
               }
               
-              // For SSN verification, require SSN
-              if (products.includes('ssnPrivate') && !data.ssn) {
-                console.error('SSN verification requires ssn');
-                return false;
-              }
               
               // For AML, require at least name data
               if (products.includes('aml') && (!data.firstName || !data.lastName)) {
@@ -173,8 +226,7 @@ function VerificationPageContent() {
                 lastName: verificationData.lastName || '',
                 email: verificationData.email || '',
                 phone: verificationData.phone || '',
-                ...(verificationData.birthDate && { birthDate: verificationData.birthDate }),
-                ...(verificationData.ssn && { ssn: verificationData.ssn })
+                ...(verificationData.birthDate && { birthDate: verificationData.birthDate })
               },
 
               // Webhook configuration - this sends verification results to your backend
@@ -361,12 +413,8 @@ function VerificationPageContent() {
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             Identity Verification
           </h1>
-          <p className="text-gray-600 dark:text-gray-300">
-            {config.flowType === 'desktop' 
-              ? 'Complete verification on desktop, then use your mobile device' 
-              : 'Complete verification on your mobile device'
-            }
-          </p>
+          
+
         </div>
 
         {/* Verification Container */}

@@ -6,6 +6,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { CheckCircleIcon, XCircleIcon, ClockIcon } from '@heroicons/react/24/outline';
 import PageHeader from '../components/PageHeader';
+import { SSNApiResponse, isSSNVerificationResponse } from '../../types/ssn-api';
 
 interface WebhookData {
   data: Record<string, unknown>;
@@ -17,6 +18,7 @@ function ResultsPageContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pollingCount, setPollingCount] = useState(0);
+  const [ssnVerificationData, setSsnVerificationData] = useState<SSNApiResponse | null>(null);
 
   const jobToken = searchParams.get('token');
   const formData = searchParams.get('formData') ? JSON.parse(searchParams.get('formData')!) : {};
@@ -34,6 +36,19 @@ function ResultsPageContent() {
   };
 
   const jobId = getJobId(webhookData);
+
+  // Load SSN verification data from localStorage
+  useEffect(() => {
+    const storedSSNData = localStorage.getItem('ssnVerificationResult');
+    if (storedSSNData) {
+      try {
+        const parsedData = JSON.parse(storedSSNData);
+        setSsnVerificationData(parsedData.data);
+      } catch (error) {
+        console.error('Error parsing SSN verification data:', error);
+      }
+    }
+  }, []);
 
   // Poll for webhook data
   useEffect(() => {
@@ -182,6 +197,97 @@ function ResultsPageContent() {
             </div>
           )}
         </div>
+
+        {/* SSN Verification Results */}
+        {ssnVerificationData && (
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-8 mb-8">
+            <div className="flex items-center gap-3 mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                SSN Verification Results
+              </h2>
+              {isSSNVerificationResponse(ssnVerificationData) && (
+                <div className="flex items-center gap-2">
+                  {ssnVerificationData.result.success ? (
+                    <CheckCircleIcon className="h-6 w-6 text-green-500" />
+                  ) : (
+                    <XCircleIcon className="h-6 w-6 text-red-500" />
+                  )}
+                  <span className={`text-sm font-medium ${
+                    ssnVerificationData.result.success 
+                      ? 'text-green-600 dark:text-green-400' 
+                      : 'text-red-600 dark:text-red-400'
+                  }`}>
+                    {ssnVerificationData.result.success ? 'Verified' : 'Failed'}
+                  </span>
+                </div>
+              )}
+            </div>
+            
+            {/* SSN Verification Summary */}
+            {isSSNVerificationResponse(ssnVerificationData) && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Verification ID</h3>
+                  <p className="text-gray-900 dark:text-white font-mono text-sm">{ssnVerificationData.id}</p>
+                </div>
+                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Status</h3>
+                  <p className="text-gray-900 dark:text-white">{ssnVerificationData.status}</p>
+                </div>
+                {ssnVerificationData.result.details && (
+                  <>
+                    {ssnVerificationData.result.details.ssnTrace && (
+                      <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">SSN Trace</h3>
+                        <p className={`${ssnVerificationData.result.details.ssnTrace.found ? 'text-green-600' : 'text-red-600'}`}>
+                          {ssnVerificationData.result.details.ssnTrace.found ? 'Found' : 'Not Found'}
+                        </p>
+                        {ssnVerificationData.result.details.ssnTrace.state && (
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            Issued in: {ssnVerificationData.result.details.ssnTrace.state}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                    {ssnVerificationData.result.details.identity && (
+                      <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Identity Match</h3>
+                        <div className="space-y-1 text-sm">
+                          <p>First Name: <span className={ssnVerificationData.result.details.identity.firstNameMatch ? 'text-green-600' : 'text-red-600'}>
+                            {ssnVerificationData.result.details.identity.firstNameMatch ? 'Match' : 'No Match'}
+                          </span></p>
+                          <p>Last Name: <span className={ssnVerificationData.result.details.identity.lastNameMatch ? 'text-green-600' : 'text-red-600'}>
+                            {ssnVerificationData.result.details.identity.lastNameMatch ? 'Match' : 'No Match'}
+                          </span></p>
+                          {ssnVerificationData.result.details.identity.dobMatch !== undefined && (
+                            <p>Date of Birth: <span className={ssnVerificationData.result.details.identity.dobMatch ? 'text-green-600' : 'text-red-600'}>
+                              {ssnVerificationData.result.details.identity.dobMatch ? 'Match' : 'No Match'}
+                            </span></p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+            
+            {/* Full SSN Data */}
+            <div className="overflow-hidden rounded-lg">
+              <SyntaxHighlighter
+                language="json"
+                style={oneDark}
+                customStyle={{
+                  margin: 0,
+                  borderRadius: '0.5rem',
+                  fontSize: '0.875rem',
+                }}
+              >
+                {JSON.stringify(ssnVerificationData, null, 2)}
+              </SyntaxHighlighter>
+            </div>
+          </div>
+        )}
 
         {/* Form Data Display */}
         {Object.keys(formData).length > 0 && (
