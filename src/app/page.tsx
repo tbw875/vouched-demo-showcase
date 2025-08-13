@@ -1,10 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronRightIcon, CheckIcon, ShieldCheckIcon, DocumentCheckIcon, UserGroupIcon } from '@heroicons/react/24/outline';
+import { ChevronRightIcon, ShieldCheckIcon, DocumentCheckIcon } from '@heroicons/react/24/outline';
 
-type FlowType = 'desktop' | 'phone';
-type WorkflowType = 'simultaneous' | 'step-up';
 type SSNMode = 'off' | 'last4' | 'full9';
 
 interface Product {
@@ -15,8 +13,6 @@ interface Product {
 }
 
 export default function ConfigurationPage() {
-  const [flowType, setFlowType] = useState<FlowType>('desktop');
-  const [workflowType, setWorkflowType] = useState<WorkflowType>('simultaneous');
   const [ssnMode, setSsnMode] = useState<SSNMode>('off');
   const [reverificationEnabled, setReverificationEnabled] = useState(false);
   const [products, setProducts] = useState<Product[]>([
@@ -71,8 +67,8 @@ export default function ConfigurationPage() {
     }
     
     console.log('Configuration:', {
-      flowType,
-      workflowType,
+      flow: 'desktop',
+      workflow: 'simultaneous',
       enabledProducts,
       ssnMode,
       reverificationEnabled,
@@ -80,8 +76,8 @@ export default function ConfigurationPage() {
     
     // Navigate to form fill page with configuration
     const params = new URLSearchParams({
-      flow: flowType,
-      workflow: workflowType,
+      flow: 'desktop', // Default to desktop flow
+      workflow: 'simultaneous', // Default to simultaneous workflow
       products: enabledProducts.join(','),
       ssnMode: ssnMode,
       reverification: reverificationEnabled.toString()
@@ -90,20 +86,7 @@ export default function ConfigurationPage() {
     window.location.href = `/form-fill?${params.toString()}`;
   };
 
-  const workflows = [
-    {
-      id: 'simultaneous',
-      name: 'Simultaneous',
-      description: 'Run checks simultaneously akin to VouchedFI',
-      icon: ShieldCheckIcon,
-    },
-    {
-      id: 'step-up',
-      name: 'Step Up',
-      description: 'Run checks sequentially, akin to VouchedRX',
-      icon: DocumentCheckIcon,
-    }
-  ];
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950 dark:via-slate-900 dark:to-purple-950">
@@ -125,105 +108,6 @@ export default function ConfigurationPage() {
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-700 p-8 space-y-10">
-          {/* Flow Type Selection */}
-          <div className="space-y-6">
-            <div className="flex items-center gap-3">
-              <UserGroupIcon className="h-8 w-8 text-indigo-600" />
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-                Choose Your Flow
-              </h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <button
-                onClick={() => setFlowType('desktop')}
-                className={`p-8 rounded-2xl border-2 text-left transition-all duration-200 transform hover:scale-105 ${
-                  flowType === 'desktop'
-                    ? 'border-indigo-500 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 shadow-lg'
-                    : 'border-gray-200 dark:border-gray-600 hover:border-indigo-300 dark:hover:border-indigo-400 hover:shadow-md'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                    Desktop Flow
-                  </h3>
-                  {flowType === 'desktop' && (
-                    <div className="bg-indigo-500 rounded-full p-1">
-                      <CheckIcon className="h-5 w-5 text-white" />
-                    </div>
-                  )}
-                </div>
-                <p className="text-gray-600 dark:text-gray-300">
-                  User completes verification on desktop, then hands off to mobile device via QR code or SMS
-                </p>
-              </button>
-              
-              <button
-                onClick={() => setFlowType('phone')}
-                className={`p-8 rounded-2xl border-2 text-left transition-all duration-200 transform hover:scale-105 ${
-                  flowType === 'phone'
-                    ? 'border-indigo-500 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 shadow-lg'
-                    : 'border-gray-200 dark:border-gray-600 hover:border-indigo-300 dark:hover:border-indigo-400 hover:shadow-md'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                    Phone Flow
-                  </h3>
-                  {flowType === 'phone' && (
-                    <div className="bg-indigo-500 rounded-full p-1">
-                      <CheckIcon className="h-5 w-5 text-white" />
-                    </div>
-                  )}
-                </div>
-                <p className="text-gray-600 dark:text-gray-300">
-                  User completes entire verification process directly on mobile device
-                </p>
-              </button>
-            </div>
-          </div>
-
-          {/* Workflow Selection */}
-          <div className="space-y-6">
-            <div className="flex items-center gap-3">
-              <ShieldCheckIcon className="h-8 w-8 text-indigo-600" />
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-                Select Workflow
-              </h2>
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {workflows.map((workflow) => {
-                const IconComponent = workflow.icon;
-                return (
-                  <button
-                    key={workflow.id}
-                    onClick={() => setWorkflowType(workflow.id as WorkflowType)}
-                    className={`p-8 rounded-2xl border-2 text-left transition-all duration-200 transform hover:scale-105 ${
-                      workflowType === workflow.id
-                        ? 'border-indigo-500 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 shadow-lg'
-                        : 'border-gray-200 dark:border-gray-600 hover:border-indigo-300 dark:hover:border-indigo-400 hover:shadow-md'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <IconComponent className="h-6 w-6 text-indigo-600" />
-                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                          {workflow.name}
-                        </h3>
-                      </div>
-                      {workflowType === workflow.id && (
-                        <div className="bg-indigo-500 rounded-full p-1">
-                          <CheckIcon className="h-5 w-5 text-white" />
-                        </div>
-                      )}
-                    </div>
-                    <p className="text-gray-600 dark:text-gray-300">
-                      {workflow.description}
-                    </p>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
 
           {/* Product Selection */}
           <div className="space-y-6">
@@ -468,19 +352,7 @@ export default function ConfigurationPage() {
             <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
               Configuration Summary
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-              <div className="text-center">
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Flow Type</div>
-                <div className="text-lg font-semibold text-indigo-600 dark:text-indigo-400 capitalize">
-                  {flowType}
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Workflow</div>
-                <div className="text-lg font-semibold text-indigo-600 dark:text-indigo-400">
-                  {workflowType === 'simultaneous' ? 'Simultaneous' : 'Step Up'}
-                </div>
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="text-center">
                 <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Products</div>
                 <div className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">
