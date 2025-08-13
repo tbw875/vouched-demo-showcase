@@ -62,10 +62,8 @@ function VerificationPageContent() {
     script.onload = () => {
       console.log('Vouched script loaded successfully');
       
-      // Add a small delay to ensure the script is fully initialized
-      setTimeout(() => {
-        if (window.Vouched) {
-          console.log('Vouched object found, initializing...');
+      if (window.Vouched) {
+        console.log('Vouched object found, initializing...');
           
           // Wait for the DOM element to be available
           const initializeVouched = () => {
@@ -243,38 +241,6 @@ function VerificationPageContent() {
             vouched.mount('#vouched-element');
             console.log('Vouched mount called successfully');
             
-            // Add a timeout to check if mounting actually worked
-            setTimeout(() => {
-              const iframeCheck = document.querySelector('#vouched-element iframe');
-              if (iframeCheck) {
-                console.log('✅ Vouched iframe found and mounted:', iframeCheck);
-                console.log('Iframe src:', iframeCheck.getAttribute('src'));
-                console.log('Iframe dimensions:', {
-                  width: iframeCheck.clientWidth,
-                  height: iframeCheck.clientHeight
-                });
-              } else {
-                console.log('❌ Vouched iframe NOT found after mounting');
-                console.log('Vouched element contents:', document.getElementById('vouched-element')?.innerHTML);
-                
-                // Try remounting as a fallback
-                console.log('Attempting to remount Vouched...');
-                try {
-                  if (vouchedInstanceRef.current && typeof (vouchedInstanceRef.current as any).unmount === 'function') {
-                    (vouchedInstanceRef.current as any).unmount();
-                  }
-                  setTimeout(() => {
-                    if (vouchedInstanceRef.current && typeof (vouchedInstanceRef.current as any).mount === 'function') {
-                      (vouchedInstanceRef.current as any).mount('#vouched-element');
-                      console.log('Remount attempt completed');
-                    }
-                  }, 1000);
-                } catch (remountError) {
-                  console.error('Remount failed:', remountError);
-                }
-              }
-            }, 3000); // Check after 3 seconds instead of 2
-            
           } catch (error) {
             console.error('Failed to initialize Vouched:', error);
             console.error('Error details:', {
@@ -285,16 +251,11 @@ function VerificationPageContent() {
           }
         };
         
-        // Give the DOM a moment to render
-        setTimeout(initializeVouched, 100);
+        // Call the initialization function
+        initializeVouched();
         } else {
-          console.error('Vouched object not found after script load');
+          console.error('Vouched object not found on window');
         }
-      }, 500); // Initial delay for script loading
-    };
-    
-    script.onerror = () => {
-      console.error('Failed to load Vouched script');
     };
     
     document.head.appendChild(script);
