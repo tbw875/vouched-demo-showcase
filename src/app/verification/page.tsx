@@ -96,11 +96,64 @@ function VerificationPageContent() {
               verificationData.ssn = formData.ssn;
             }
 
-            // Ensure we have at least basic verification data even if no form data provided
-            if (!verificationData.firstName && !verificationData.lastName) {
-              // Provide minimal data to ensure Vouched loads
-              verificationData.firstName = '';
-              verificationData.lastName = '';
+            // Validate required data for product combinations
+            const hasRequiredData = (products: string[], data: Record<string, any>): boolean => {
+              // For CrossCheck, require basic identity data
+              if (products.includes('crosscheck')) {
+                if (!data.firstName || !data.lastName || !data.email || !data.phone) {
+                  console.error('CrossCheck requires firstName, lastName, email, and phone');
+                  return false;
+                }
+              }
+              
+              // For DOB verification, require birth date
+              if (products.includes('dob-verification') && !data.birthDate) {
+                console.error('DOB verification requires birthDate');
+                return false;
+              }
+              
+              // For SSN verification, require SSN
+              if (products.includes('ssnPrivate') && !data.ssn) {
+                console.error('SSN verification requires ssn');
+                return false;
+              }
+              
+              // For AML, require at least name data
+              if (products.includes('aml') && (!data.firstName || !data.lastName)) {
+                console.error('AML requires firstName and lastName');
+                return false;
+              }
+              
+              return true;
+            };
+
+            // Check if we have required data for the selected products
+            if (!hasRequiredData(config.enabledProducts, verificationData)) {
+              console.error('Missing required verification data for selected products:', config.enabledProducts);
+              console.error('Available data:', verificationData);
+              // Show user-friendly error instead of loading indefinitely
+              const errorElement = document.getElementById('vouched-element');
+              if (errorElement) {
+                errorElement.innerHTML = `
+                  <div style="padding: 40px; text-align: center; color: #dc2626; font-family: system-ui;">
+                    <h3>Configuration Error</h3>
+                    <p>Missing required data for selected verification products.</p>
+                    <p>Please go back and ensure all required fields are filled.</p>
+                    <button onclick="window.history.back()" style="margin-top: 20px; padding: 10px 20px; background: #dc2626; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                      Go Back
+                    </button>
+                  </div>
+                `;
+              }
+              return;
+            }
+
+            // Only set minimal fallback data for ID verification only
+            if (config.enabledProducts.length === 1 && config.enabledProducts.includes('id-verification')) {
+              if (!verificationData.firstName && !verificationData.lastName) {
+                verificationData.firstName = '';
+                verificationData.lastName = '';
+              }
             }
 
             // Create proper Vouched configuration following working example
@@ -114,7 +167,7 @@ function VerificationPageContent() {
                 lastName: verificationData.lastName || '',
                 email: verificationData.email || '',
                 phone: verificationData.phone || '',
-                ...(verificationData.birthDate && { dob: verificationData.birthDate }),
+                ...(verificationData.birthDate && { birthDate: verificationData.birthDate }),
                 ...(verificationData.ssn && { ssn: verificationData.ssn })
               },
 
