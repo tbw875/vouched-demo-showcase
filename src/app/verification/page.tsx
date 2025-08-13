@@ -198,7 +198,7 @@ function VerificationPageContent() {
               // Add product configuration conditionally
               ...(config.enabledProducts.includes('crosscheck') && { crosscheck: true }),
               ...(config.enabledProducts.includes('dob-verification') && { dobVerification: true }),
-              ...(config.enabledProducts.includes('aml') && { aml: true }),
+              ...(config.enabledProducts.includes('aml') && { enableAML: true }),
 
               // Add debug mode to get detailed error information
               debug: true,
