@@ -91,6 +91,12 @@ function VerificationPageContent() {
               verificationData.birthDate = formData.dateOfBirth;
             }
             
+            // Add Driver's License data for Driver's License Verification
+            if (config.enabledProducts.includes('drivers-license-verification')) {
+              if (formData.driversLicenseNumber) verificationData.driversLicenseNumber = formData.driversLicenseNumber;
+              if (formData.driversLicenseState) verificationData.driversLicenseState = formData.driversLicenseState;
+            }
+            
             // Add SSN for SSN Private verification
             if (config.enabledProducts.includes('ssnPrivate') && formData.ssn) {
               verificationData.ssn = formData.ssn;
@@ -198,6 +204,7 @@ function VerificationPageContent() {
               // Add product configuration conditionally
               ...(config.enabledProducts.includes('crosscheck') && { crosscheck: true }),
               ...(config.enabledProducts.includes('dob-verification') && { dobVerification: true }),
+              ...(config.enabledProducts.includes('drivers-license-verification') && { enableDriversLicenseVerification: true }),
               ...(config.enabledProducts.includes('aml') && { enableAML: true }),
 
               // Add debug mode to get detailed error information

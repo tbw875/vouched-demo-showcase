@@ -29,19 +29,24 @@ const PRODUCT_CONFIGURATIONS = [
   { name: 'ID Verification Only', products: ['id-verification'], shouldLoadVouched: true },
   { name: 'CrossCheck Only', products: ['crosscheck'], shouldLoadVouched: true },
   { name: 'DOB Verification Only', products: ['dob-verification'], shouldLoadVouched: true },
+  { name: 'Driver\'s License Verification Only', products: ['drivers-license-verification'], shouldLoadVouched: true },
   { name: 'AML Check Only', products: ['aml'], shouldLoadVouched: true },
   { name: 'SSN Private Only', products: ['ssnPrivate'], shouldLoadVouched: true },
   
   // Combinations
   { name: 'IDV + CrossCheck', products: ['id-verification', 'crosscheck'], shouldLoadVouched: true },
   { name: 'IDV + DOB', products: ['id-verification', 'dob-verification'], shouldLoadVouched: true },
+  { name: 'IDV + DLV', products: ['id-verification', 'drivers-license-verification'], shouldLoadVouched: true },
   { name: 'IDV + AML', products: ['id-verification', 'aml'], shouldLoadVouched: true },
   { name: 'CrossCheck + DOB', products: ['crosscheck', 'dob-verification'], shouldLoadVouched: true },
+  { name: 'CrossCheck + DLV', products: ['crosscheck', 'drivers-license-verification'], shouldLoadVouched: true },
   { name: 'CrossCheck + AML', products: ['crosscheck', 'aml'], shouldLoadVouched: true },
+  { name: 'DOB + DLV', products: ['dob-verification', 'drivers-license-verification'], shouldLoadVouched: true },
   { name: 'DOB + AML', products: ['dob-verification', 'aml'], shouldLoadVouched: true },
+  { name: 'DLV + AML', products: ['drivers-license-verification', 'aml'], shouldLoadVouched: true },
   
   // All combinations
-  { name: 'All Products', products: ['id-verification', 'crosscheck', 'dob-verification', 'aml', 'ssnPrivate'], shouldLoadVouched: true },
+  { name: 'All Products', products: ['id-verification', 'crosscheck', 'dob-verification', 'drivers-license-verification', 'aml', 'ssnPrivate'], shouldLoadVouched: true },
   
   // Edge cases
   { name: 'No Products', products: [], shouldLoadVouched: true }, // Should still load with default IDV
@@ -165,6 +170,20 @@ describe('Product Configuration Tests', () => {
 
       expect(window.Vouched).toHaveBeenCalledWith(expect.objectContaining({
         dobVerification: true,
+      }));
+    });
+
+    it('should include enableDriversLicenseVerification configuration when drivers-license-verification is enabled', async () => {
+      const vouchedConfig = createVouchedConfig({
+        enabledProducts: ['drivers-license-verification'],
+        flowType: 'desktop',
+        workflowType: 'simultaneous',
+      });
+
+      await simulateVouchedInitialization(vouchedConfig);
+
+      expect(window.Vouched).toHaveBeenCalledWith(expect.objectContaining({
+        enableDriversLicenseVerification: true,
       }));
     });
 
@@ -339,6 +358,7 @@ function createVouchedConfig(config: {
     // Product-specific configurations
     ...(config.enabledProducts.includes('crosscheck') && { crosscheck: true }),
     ...(config.enabledProducts.includes('dob-verification') && { dobVerification: true }),
+    ...(config.enabledProducts.includes('drivers-license-verification') && { enableDriversLicenseVerification: true }),
     ...(config.enabledProducts.includes('aml') && { aml: true }),
     
     onDone: expect.any(Function),
