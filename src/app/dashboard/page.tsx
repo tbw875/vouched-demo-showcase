@@ -15,7 +15,13 @@ import {
   GlobeAltIcon,
   XMarkIcon,
   EyeIcon,
-  ArrowRightOnRectangleIcon
+  ArrowRightOnRectangleIcon,
+  HeartIcon,
+  CalendarIcon,
+  ClipboardDocumentListIcon,
+  BeakerIcon,
+  PlusIcon,
+  UserGroupIcon
 } from '@heroicons/react/24/outline';
 import PageHeader from '../components/PageHeader';
 
@@ -25,12 +31,24 @@ interface WebhookResponse {
   error?: string;
 }
 
+type UseCaseContext = 'healthcare' | 'financial' | 'generic';
+
+interface ServiceCard {
+  id: number;
+  title: string;
+  description: string;
+  icon: React.ComponentType<{ className?: string }>;
+  color: string;
+  features: string[];
+}
+
 function DashboardContent() {
   const searchParams = useSearchParams();
   const [userName, setUserName] = useState('');
   const [webhookData, setWebhookData] = useState<any>(null);
   const [showWebhookModal, setShowWebhookModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [useCaseContext, setUseCaseContext] = useState<UseCaseContext>('financial');
 
   const [reverificationEnabled, setReverificationEnabled] = useState(false);
 
@@ -57,6 +75,12 @@ function DashboardContent() {
       setReverificationEnabled(true);
     }
 
+    // Get use case context from URL parameters
+    const useCaseParam = searchParams.get('useCase') as UseCaseContext;
+    if (useCaseParam && ['healthcare', 'financial', 'generic'].includes(useCaseParam)) {
+      setUseCaseContext(useCaseParam);
+    }
+
     // Get webhook data from localStorage
     try {
       const storedJobData = localStorage.getItem('latestJobData');
@@ -69,59 +93,173 @@ function DashboardContent() {
     }
 
     setIsLoading(false);
-  }, []);
+  }, [searchParams]);
 
-  // Fake service cards data
-  const serviceCards = [
-    {
-      id: 1,
-      title: 'Digital Banking',
-      description: 'Access your accounts, transfer funds, and manage your finances securely.',
-      icon: BanknotesIcon,
-      color: 'from-green-500 to-emerald-600',
-      features: ['Account Balance', 'Money Transfer', 'Bill Pay', 'Mobile Deposit']
-    },
-    {
-      id: 2,
-      title: 'Credit Services',
-      description: 'Apply for loans, credit cards, and view your credit score.',
-      icon: CreditCardIcon,
-      color: 'from-blue-500 to-cyan-600',
-      features: ['Credit Score', 'Loan Applications', 'Credit Cards', 'Payment History']
-    },
-    {
-      id: 3,
-      title: 'Investment Portal',
-      description: 'Trade stocks, bonds, and manage your investment portfolio.',
-      icon: ChartBarIcon,
-      color: 'from-purple-500 to-indigo-600',
-      features: ['Stock Trading', 'Portfolio View', 'Market Analysis', 'Crypto Trading']
-    },
-    {
-      id: 4,
-      title: 'Insurance Hub',
-      description: 'Manage your policies, file claims, and get coverage quotes.',
-      icon: ShieldCheckIcon,
-      color: 'from-orange-500 to-red-600',
-      features: ['Policy Management', 'Claims Filing', 'Coverage Quotes', 'Risk Assessment']
-    },
-    {
-      id: 5,
-      title: 'Document Vault',
-      description: 'Securely store and access your important documents.',
-      icon: DocumentTextIcon,
-      color: 'from-teal-500 to-cyan-600',
-      features: ['Secure Storage', 'Document Sharing', 'Digital Signatures', 'Version Control']
-    },
-    {
-      id: 6,
-      title: 'Global Services',
-      description: 'International transfers, currency exchange, and global banking.',
-      icon: GlobeAltIcon,
-      color: 'from-pink-500 to-rose-600',
-      features: ['Wire Transfers', 'Currency Exchange', 'Global ATM', 'Travel Cards']
+  // Function to get service cards based on use case context
+  const getServiceCards = (): ServiceCard[] => {
+    switch (useCaseContext) {
+      case 'healthcare':
+        return [
+          {
+            id: 1,
+            title: 'View Prescriptions',
+            description: 'Access your current medications, refill prescriptions, and manage dosages.',
+            icon: BeakerIcon,
+            color: 'from-slate-500 to-slate-600',
+            features: ['Current Medications', 'Prescription Refills', 'Dosage Tracking', 'Drug Interactions']
+          },
+          {
+            id: 2,
+            title: 'After-Visit Summary',
+            description: 'Review your recent appointments, diagnoses, and treatment plans.',
+            icon: ClipboardDocumentListIcon,
+            color: 'from-slate-500 to-slate-600',
+            features: ['Visit History', 'Diagnosis Records', 'Treatment Plans', 'Doctor Notes']
+          },
+          {
+            id: 3,
+            title: 'Make an Appointment',
+            description: 'Schedule appointments with your healthcare providers.',
+            icon: CalendarIcon,
+            color: 'from-slate-500 to-slate-600',
+            features: ['Available Slots', 'Provider Selection', 'Appointment Reminders', 'Virtual Visits']
+          },
+          {
+            id: 4,
+            title: 'Health Records',
+            description: 'Access your complete medical history and test results.',
+            icon: DocumentTextIcon,
+            color: 'from-slate-500 to-slate-600',
+            features: ['Lab Results', 'Medical History', 'Immunization Records', 'Allergies']
+          },
+          {
+            id: 5,
+            title: 'Care Team',
+            description: 'Connect with your healthcare providers and care coordinators.',
+            icon: UserGroupIcon,
+            color: 'from-slate-500 to-slate-600',
+            features: ['Provider Directory', 'Secure Messaging', 'Care Coordination', 'Referrals']
+          },
+          {
+            id: 6,
+            title: 'Wellness Hub',
+            description: 'Track your health goals, vitals, and wellness activities.',
+            icon: HeartIcon,
+            color: 'from-slate-500 to-slate-600',
+            features: ['Vital Signs', 'Health Goals', 'Activity Tracking', 'Wellness Tips']
+          }
+        ];
+      
+      case 'financial':
+        return [
+          {
+            id: 1,
+            title: 'Digital Banking',
+            description: 'Access your accounts, transfer funds, and manage your finances securely.',
+            icon: BanknotesIcon,
+            color: 'from-teal-500 to-teal-600',
+            features: ['Account Balance', 'Money Transfer', 'Bill Pay', 'Mobile Deposit']
+          },
+          {
+            id: 2,
+            title: 'Credit Services',
+            description: 'Apply for loans, credit cards, and view your credit score.',
+            icon: CreditCardIcon,
+            color: 'from-teal-500 to-teal-600',
+            features: ['Credit Score', 'Loan Applications', 'Credit Cards', 'Payment History']
+          },
+          {
+            id: 3,
+            title: 'Investment Portal',
+            description: 'Trade stocks, bonds, and manage your investment portfolio.',
+            icon: ChartBarIcon,
+            color: 'from-teal-500 to-teal-600',
+            features: ['Stock Trading', 'Portfolio View', 'Market Analysis', 'Crypto Trading']
+          },
+          {
+            id: 4,
+            title: 'Insurance Hub',
+            description: 'Manage your policies, file claims, and get coverage quotes.',
+            icon: ShieldCheckIcon,
+            color: 'from-teal-500 to-teal-600',
+            features: ['Policy Management', 'Claims Filing', 'Coverage Quotes', 'Risk Assessment']
+          },
+          {
+            id: 5,
+            title: 'Document Vault',
+            description: 'Securely store and access your important documents.',
+            icon: DocumentTextIcon,
+            color: 'from-teal-500 to-teal-600',
+            features: ['Secure Storage', 'Document Sharing', 'Digital Signatures', 'Version Control']
+          },
+          {
+            id: 6,
+            title: 'Global Services',
+            description: 'International transfers, currency exchange, and global banking.',
+            icon: GlobeAltIcon,
+            color: 'from-teal-500 to-teal-600',
+            features: ['Wire Transfers', 'Currency Exchange', 'Global ATM', 'Travel Cards']
+          }
+        ];
+      
+      case 'generic':
+        return [
+          {
+            id: 1,
+            title: '',
+            description: '',
+            icon: PlusIcon,
+            color: 'from-gray-400 to-gray-500',
+            features: ['', '', '', '']
+          },
+          {
+            id: 2,
+            title: '',
+            description: '',
+            icon: PlusIcon,
+            color: 'from-gray-400 to-gray-500',
+            features: ['', '', '', '']
+          },
+          {
+            id: 3,
+            title: '',
+            description: '',
+            icon: PlusIcon,
+            color: 'from-gray-400 to-gray-500',
+            features: ['', '', '', '']
+          },
+          {
+            id: 4,
+            title: '',
+            description: '',
+            icon: PlusIcon,
+            color: 'from-gray-400 to-gray-500',
+            features: ['', '', '', '']
+          },
+          {
+            id: 5,
+            title: '',
+            description: '',
+            icon: PlusIcon,
+            color: 'from-gray-400 to-gray-500',
+            features: ['', '', '', '']
+          },
+          {
+            id: 6,
+            title: '',
+            description: '',
+            icon: PlusIcon,
+            color: 'from-gray-400 to-gray-500',
+            features: ['', '', '', '']
+          }
+        ];
+      
+      default:
+        return [];
     }
-  ];
+  };
+
+  const serviceCards = getServiceCards();
 
   const getVerificationStatus = () => {
     if (!webhookData) return 'unknown';
@@ -190,6 +328,8 @@ function DashboardContent() {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-12">
           {serviceCards.map((service) => {
             const IconComponent = service.icon;
+            const isGeneric = useCaseContext === 'generic';
+            
             return (
               <div key={service.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
                 {/* Card Header with Gradient */}
@@ -198,30 +338,58 @@ function DashboardContent() {
                     <div className="bg-white/20 rounded-lg p-3">
                       <IconComponent className="h-6 w-6" />
                     </div>
-                    <h3 className="text-xl font-bold">{service.title}</h3>
+                    <h3 className="text-xl font-bold">
+                      {isGeneric ? (
+                        <div className="h-6 bg-white/30 rounded-md w-32"></div>
+                      ) : (
+                        service.title
+                      )}
+                    </h3>
                   </div>
                 </div>
                 
                 {/* Card Content */}
                 <div className="p-6">
-                  <p className="text-gray-600 dark:text-gray-300 mb-6">
-                    {service.description}
-                  </p>
+                  <div className="text-gray-600 dark:text-gray-300 mb-6">
+                    {isGeneric ? (
+                      <div className="space-y-2">
+                        <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-full"></div>
+                        <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-3/4"></div>
+                      </div>
+                    ) : (
+                      service.description
+                    )}
+                  </div>
                   
                   {/* Features List */}
                   <div className="space-y-2 mb-6">
                     {service.features.map((feature, index) => (
                       <div key={index} className="flex items-center gap-2">
-                        <CheckCircleIcon className="h-4 w-4 text-green-500 flex-shrink-0" />
-                        <span className="text-sm text-gray-700 dark:text-gray-300">{feature}</span>
+                        {isGeneric ? (
+                          <>
+                            <div className="h-4 w-4 bg-gray-300 dark:bg-gray-600 rounded-full flex-shrink-0"></div>
+                            <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-24"></div>
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircleIcon className="h-4 w-4 text-green-500 flex-shrink-0" />
+                            <span className="text-sm text-gray-700 dark:text-gray-300">{feature}</span>
+                          </>
+                        )}
                       </div>
                     ))}
                   </div>
                   
                   {/* Action Button */}
-                  <button className="w-full py-3 px-4 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-medium rounded-lg transition-colors duration-200">
-                    Access Service
-                  </button>
+                  <div className="w-full py-3 px-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                    {isGeneric ? (
+                      <div className="h-5 bg-gray-300 dark:bg-gray-600 rounded w-24 mx-auto"></div>
+                    ) : (
+                      <button className="w-full text-gray-800 dark:text-gray-200 font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200 py-1 rounded">
+                        Access Service
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             );

@@ -48,6 +48,7 @@ function FormFillPageContent() {
   };
   
   const reverificationEnabled = searchParams.get('reverification') === 'true';
+  const useCaseContext = searchParams.get('useCase') || 'financial';
 
   // Get user's IP address
   useEffect(() => {
@@ -217,7 +218,8 @@ function FormFillPageContent() {
       workflow: config.workflowType,
       products: config.enabledProducts.join(','),
       formData: JSON.stringify(formData),
-      reverification: reverificationEnabled.toString()
+      reverification: reverificationEnabled.toString(),
+      useCase: useCaseContext
     });
 
     window.location.href = `/verification?${params.toString()}`;

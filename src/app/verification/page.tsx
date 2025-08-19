@@ -45,6 +45,7 @@ function VerificationPageContent() {
   };
   
   const reverificationEnabled = searchParams.get('reverification') === 'true';
+  const useCaseContext = searchParams.get('useCase') || 'financial';
 
   // Parse form data from URL params
   const formData: FormData = searchParams.get('formData') 
@@ -277,7 +278,11 @@ function VerificationPageContent() {
 
                 // Simple navigation based on success
                 if (job.result && job.result.success) {
-                  window.location.href = '/dashboard';
+                  const dashboardParams = new URLSearchParams({
+                    reverification: reverificationEnabled.toString(),
+                    useCase: useCaseContext
+                  });
+                  window.location.href = `/dashboard?${dashboardParams.toString()}`;
                 } else {
                   window.location.href = '/webhook-response';
                 }

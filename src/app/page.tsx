@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronRightIcon, ShieldCheckIcon, DocumentCheckIcon } from '@heroicons/react/24/outline';
+import { ChevronRightIcon, ShieldCheckIcon, DocumentCheckIcon, BuildingOffice2Icon, HeartIcon, CubeIcon } from '@heroicons/react/24/outline';
 
 type SSNMode = 'off' | 'last4' | 'full9';
+type UseCaseContext = 'healthcare' | 'financial' | 'generic';
 
 interface Product {
   id: string;
@@ -15,17 +16,19 @@ interface Product {
 export default function ConfigurationPage() {
   const [ssnMode, setSsnMode] = useState<SSNMode>('off');
   const [reverificationEnabled, setReverificationEnabled] = useState(false);
+  const [useCaseContext, setUseCaseContext] = useState<UseCaseContext>('financial');
+  const [showDevLinks, setShowDevLinks] = useState(false);
   const [products, setProducts] = useState<Product[]>([
     {
       id: 'id-verification',
       name: 'Visual ID Verification',
-      description: 'Verify government-issued IDs with advanced fraud detection',
+      description: 'Verify government-issued IDs with advanced fraud & deepfake detection',
       enabled: true,
     },
     {
       id: 'crosscheck',
       name: 'CrossCheck',
-      description: 'KYC Compliance with CrossCheck run simultaneously',
+      description: 'Know Your Customer with CrossCheck PII Risk Assessment',
       enabled: true,
     },
     {
@@ -80,7 +83,8 @@ export default function ConfigurationPage() {
       workflow: 'simultaneous', // Default to simultaneous workflow
       products: enabledProducts.join(','),
       ssnMode: ssnMode,
-      reverification: reverificationEnabled.toString()
+      reverification: reverificationEnabled.toString(),
+      useCase: useCaseContext
     });
     
     window.location.href = `/form-fill?${params.toString()}`;
@@ -345,18 +349,116 @@ export default function ConfigurationPage() {
             </div>
           </div>
 
+          {/* Use Case Context Selection */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <CubeIcon className="h-8 w-8 text-indigo-600" />
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+                Use Case Context
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Healthcare Option */}
+              <div 
+                onClick={() => setUseCaseContext('healthcare')}
+                className={`p-8 rounded-2xl border-2 transition-all duration-200 cursor-pointer ${
+                  useCaseContext === 'healthcare'
+                    ? 'border-rose-500 bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-900/30 dark:to-pink-900/30 shadow-lg'
+                    : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                }`}
+              >
+                <div className="flex flex-col items-center text-center">
+                  <div className={`p-4 rounded-full mb-4 ${
+                    useCaseContext === 'healthcare' ? 'bg-rose-100 dark:bg-rose-900/50' : 'bg-gray-100 dark:bg-gray-700'
+                  }`}>
+                    <HeartIcon className={`h-8 w-8 ${
+                      useCaseContext === 'healthcare' ? 'text-rose-600' : 'text-gray-600 dark:text-gray-300'
+                    }`} />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                    Healthcare
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm">
+                    For verifying you are treating the correct patient, and protecting their PHI.
+                  </p>
+                </div>
+              </div>
 
+              {/* Financial Services Option */}
+              <div 
+                onClick={() => setUseCaseContext('financial')}
+                className={`p-8 rounded-2xl border-2 transition-all duration-200 cursor-pointer ${
+                  useCaseContext === 'financial'
+                    ? 'border-emerald-500 bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/30 dark:to-green-900/30 shadow-lg'
+                    : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                }`}
+              >
+                <div className="flex flex-col items-center text-center">
+                  <div className={`p-4 rounded-full mb-4 ${
+                    useCaseContext === 'financial' ? 'bg-emerald-100 dark:bg-emerald-900/50' : 'bg-gray-100 dark:bg-gray-700'
+                  }`}>
+                    <BuildingOffice2Icon className={`h-8 w-8 ${
+                      useCaseContext === 'financial' ? 'text-emerald-600' : 'text-gray-600 dark:text-gray-300'
+                    }`} />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                    Financial Services
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm">
+                    For verifying your customer's identity, and ensuring they are eligible for financial services.
+                  </p>
+                </div>
+              </div>
+
+              {/* Generic Option */}
+              <div 
+                onClick={() => setUseCaseContext('generic')}
+                className={`p-8 rounded-2xl border-2 transition-all duration-200 cursor-pointer ${
+                  useCaseContext === 'generic'
+                    ? 'border-indigo-500 bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/30 dark:to-blue-900/30 shadow-lg'
+                    : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                }`}
+              >
+                <div className="flex flex-col items-center text-center">
+                  <div className={`p-4 rounded-full mb-4 ${
+                    useCaseContext === 'generic' ? 'bg-indigo-100 dark:bg-indigo-900/50' : 'bg-gray-100 dark:bg-gray-700'
+                  }`}>
+                    <CubeIcon className={`h-8 w-8 ${
+                      useCaseContext === 'generic' ? 'text-indigo-600' : 'text-gray-600 dark:text-gray-300'
+                    }`} />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                    Generic
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm">
+                  AI-Powered Identity Verification for Digital Onboarding / Remote IDV Workflows
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
 
           {/* Configuration Summary */}
           <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-2xl p-8 border border-indigo-100 dark:border-indigo-800">
             <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
               Configuration Summary
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div className="text-center">
                 <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Products</div>
                 <div className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">
                   {products.filter(p => p.enabled).length + (ssnMode !== 'off' ? 1 : 0)} enabled
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Use Case</div>
+                <div className={`text-lg font-semibold ${
+                  useCaseContext === 'healthcare' ? 'text-rose-600 dark:text-rose-400' :
+                  useCaseContext === 'financial' ? 'text-emerald-600 dark:text-emerald-400' :
+                  'text-indigo-600 dark:text-indigo-400'
+                }`}>
+                  {useCaseContext === 'healthcare' ? 'Healthcare' : 
+                   useCaseContext === 'financial' ? 'Financial' : 'Generic'}
                 </div>
               </div>
               <div className="text-center">
@@ -390,6 +492,53 @@ export default function ConfigurationPage() {
               <ChevronRightIcon className="h-6 w-6 ml-3 group-hover:translate-x-2 transition-transform duration-200" />
             </button>
           </div>
+        </div>
+
+        {/* Dev Navigation Links */}
+        <div className="text-center mt-8 space-y-4">
+          <button 
+            onClick={() => setShowDevLinks(!showDevLinks)}
+            className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium transition-colors duration-200"
+          >
+            {showDevLinks ? '↑ Hide dev' : '↓ dev'}
+          </button>
+          
+          {showDevLinks && (
+            <div className="space-y-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div>
+                <button 
+                  onClick={() => {
+                    const dashboardParams = new URLSearchParams({
+                      reverification: reverificationEnabled.toString(),
+                      useCase: useCaseContext
+                    });
+                    window.location.href = `/dashboard?${dashboardParams.toString()}`;
+                  }}
+                  className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium transition-colors duration-200"
+                >
+                  → Dashboard
+                </button>
+              </div>
+              
+              <div>
+                <button 
+                  onClick={() => window.location.href = '/reverification/login'}
+                  className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium transition-colors duration-200"
+                >
+                  → Reverification Page
+                </button>
+              </div>
+              
+              <div>
+                <button 
+                  onClick={() => window.location.href = '/webhook-response'}
+                  className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium transition-colors duration-200"
+                >
+                  → Failed Webhook Page
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
