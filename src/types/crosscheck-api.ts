@@ -23,6 +23,11 @@ export interface CrossCheckVerificationResponse {
     success: boolean;
     riskScore?: number;
     riskLevel?: 'low' | 'medium' | 'high';
+    confidences?: {
+      identity?: number;
+      phone?: number;
+      email?: number;
+    };
     details?: {
       phoneRisk?: {
         score: number;

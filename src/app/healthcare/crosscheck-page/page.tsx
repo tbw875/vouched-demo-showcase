@@ -174,22 +174,19 @@ function CrossCheckPageContent() {
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
             Healthcare Verification - CrossCheck
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300">
-            Step 1 of 3: PII Risk Assessment
-          </p>
         </div>
 
         {/* Progress Indicator */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <div className="flex items-center justify-center w-8 h-8 bg-indigo-600 text-white rounded-full text-sm font-semibold">
+              <div className="flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold text-white" style={{ backgroundColor: '#22C55E' }}>
                 1
               </div>
-              <span className="ml-3 text-sm font-medium text-indigo-600">CrossCheck</span>
+              <span className="ml-3 text-sm font-medium" style={{ color: '#22C55E' }}>CrossCheck</span>
             </div>
             <div className="flex-1 mx-4 h-1 bg-gray-200 rounded">
-              <div className="h-1 bg-indigo-600 rounded" style={{ width: '33%' }}></div>
+              <div className="h-1 rounded" style={{ width: '33%', backgroundColor: '#22C55E' }}></div>
             </div>
             <div className="flex items-center">
               <div className="flex items-center justify-center w-8 h-8 bg-gray-300 text-gray-600 rounded-full text-sm font-semibold">
@@ -214,9 +211,6 @@ function CrossCheckPageContent() {
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                 CrossCheck API Request
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                PII Risk Assessment request details
-              </p>
             </div>
             <div className="p-6">
               <JsonDisplay 
@@ -244,9 +238,6 @@ function CrossCheckPageContent() {
                   <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                     CrossCheck API Response
                   </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                    PII Risk Assessment results
-                  </p>
                 </div>
                 <div className="flex items-center space-x-2">
                   {getStatusIcon()}
@@ -257,6 +248,30 @@ function CrossCheckPageContent() {
               </div>
             </div>
             <div className="p-6">
+              {/* Score Display Section */}
+              {verificationResult && isCrossCheckVerificationResponse(verificationResult) && verificationResult.result?.confidences?.identity !== undefined && (
+                <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Score</h4>
+                      <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                        {Math.round(verificationResult.result.confidences.identity * 100)}%
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Status</h4>
+                      <p className={`text-2xl font-bold ${
+                        (verificationResult.result.confidences.identity * 100) >= 85 
+                          ? 'text-green-600' 
+                          : 'text-red-600'
+                      }`}>
+                        {(verificationResult.result.confidences.identity * 100) >= 85 ? 'Passed' : 'Failed'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
               <JsonDisplay 
                 data={isLoading ? 'Processing...' : 
                       verificationError ? { error: verificationError } :

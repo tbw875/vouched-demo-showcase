@@ -313,33 +313,30 @@ function HealthcareIDVPageContent() {
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
             Healthcare Verification - Identity Verification
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300">
-            Step 3 of 3: Document and Selfie Verification
-          </p>
         </div>
 
         {/* Progress Indicator */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <div className="flex items-center justify-center w-8 h-8 bg-green-600 text-white rounded-full text-sm font-semibold">
+              <div className="flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold text-white" style={{ backgroundColor: '#22C55E' }}>
                 ✓
               </div>
-              <span className="ml-3 text-sm font-medium text-green-600">CrossCheck</span>
+              <span className="ml-3 text-sm font-medium" style={{ color: '#22C55E' }}>CrossCheck</span>
             </div>
-            <div className="flex-1 mx-4 h-1 bg-green-600 rounded"></div>
+            <div className="flex-1 mx-4 h-1 rounded" style={{ backgroundColor: '#22C55E' }}></div>
             <div className="flex items-center">
-              <div className="flex items-center justify-center w-8 h-8 bg-green-600 text-white rounded-full text-sm font-semibold">
+              <div className="flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold text-white" style={{ backgroundColor: '#22C55E' }}>
                 ✓
               </div>
-              <span className="ml-3 text-sm font-medium text-green-600">DOB Verification</span>
+              <span className="ml-3 text-sm font-medium" style={{ color: '#22C55E' }}>DOB Verification</span>
             </div>
-            <div className="flex-1 mx-4 h-1 bg-green-600 rounded"></div>
+            <div className="flex-1 mx-4 h-1 rounded" style={{ backgroundColor: '#22C55E' }}></div>
             <div className="flex items-center">
-              <div className="flex items-center justify-center w-8 h-8 bg-indigo-600 text-white rounded-full text-sm font-semibold">
+              <div className="flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold text-white" style={{ backgroundColor: '#22C55E' }}>
                 3
               </div>
-              <span className="ml-3 text-sm font-medium text-indigo-600">ID Verification</span>
+              <span className="ml-3 text-sm font-medium" style={{ color: '#22C55E' }}>ID Verification</span>
             </div>
           </div>
         </div>
