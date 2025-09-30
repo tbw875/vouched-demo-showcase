@@ -147,14 +147,37 @@ function DOBPageContent() {
     return 'Ready to verify';
   };
 
+  // JSON syntax highlighting component
+  const JsonDisplay = ({ data, title }: { data: any; title: string }) => {
+    if (!data) return <div className="text-gray-500 italic">Waiting for {title.toLowerCase()}...</div>;
+    
+    const jsonString = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+    
+    return (
+      <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto max-w-none">
+        <pre className="text-sm text-gray-100 whitespace-pre-wrap break-words">
+          <code className="language-json">{jsonString}</code>
+        </pre>
+      </div>
+    );
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-pink-50 dark:from-rose-950 dark:via-slate-900 dark:to-pink-950">
-      <PageHeader 
-        pageTitle="Healthcare Verification - DOB Verification"
-        showBackButton={false}
-      />
-      
-      <div className="max-w-4xl mx-auto px-6 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950 dark:via-slate-900 dark:to-purple-950">
+      <div className="max-w-6xl mx-auto px-6 py-12">
+        {/* Header */}
+        <PageHeader/>
+        
+        {/* Page Title */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            Healthcare Verification - DOB Verification
+          </h1>
+          <p className="text-xl text-gray-600 dark:text-gray-300">
+            Step 2 of 3: Date of Birth Verification
+          </p>
+        </div>
+
         {/* Progress Indicator */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -166,13 +189,13 @@ function DOBPageContent() {
             </div>
             <div className="flex-1 mx-4 h-1 bg-green-600 rounded"></div>
             <div className="flex items-center">
-              <div className="flex items-center justify-center w-8 h-8 bg-rose-600 text-white rounded-full text-sm font-semibold">
+              <div className="flex items-center justify-center w-8 h-8 bg-indigo-600 text-white rounded-full text-sm font-semibold">
                 2
               </div>
-              <span className="ml-3 text-sm font-medium text-rose-600">DOB Verification</span>
+              <span className="ml-3 text-sm font-medium text-indigo-600">DOB Verification</span>
             </div>
             <div className="flex-1 mx-4 h-1 bg-gray-200 rounded">
-              <div className="h-1 bg-rose-600 rounded" style={{ width: '66%' }}></div>
+              <div className="h-1 bg-indigo-600 rounded" style={{ width: '66%' }}></div>
             </div>
             <div className="flex items-center">
               <div className="flex items-center justify-center w-8 h-8 bg-gray-300 text-gray-600 rounded-full text-sm font-semibold">
@@ -183,7 +206,7 @@ function DOBPageContent() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
           {/* Request Panel */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700">
             <div className="p-6 border-b border-gray-200 dark:border-gray-700">
@@ -195,21 +218,20 @@ function DOBPageContent() {
               </p>
             </div>
             <div className="p-6">
-              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
-                <pre className="text-sm text-gray-800 dark:text-gray-200 overflow-x-auto">
-{requestData ? JSON.stringify({
-  endpoint: '/api/healthcare/dob-route',
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  body: {
-    ...requestData,
-    phone: requestData.phone ? `***${requestData.phone.slice(-4)}` : undefined
-  }
-}, null, 2) : 'Preparing request...'}
-                </pre>
-              </div>
+              <JsonDisplay 
+                data={requestData ? {
+                  endpoint: '/api/healthcare/dob-route',
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: {
+                    ...requestData,
+                    phone: requestData.phone ? `***${requestData.phone.slice(-4)}` : undefined
+                  }
+                } : null}
+                title="request"
+              />
             </div>
           </div>
 
@@ -234,14 +256,13 @@ function DOBPageContent() {
               </div>
             </div>
             <div className="p-6">
-              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
-                <pre className="text-sm text-gray-800 dark:text-gray-200 overflow-x-auto">
-{isLoading ? 'Processing...' : 
- verificationError ? JSON.stringify({ error: verificationError }, null, 2) :
- verificationResult ? JSON.stringify(verificationResult, null, 2) :
- 'Waiting for verification...'}
-                </pre>
-              </div>
+              <JsonDisplay 
+                data={isLoading ? 'Processing...' : 
+                      verificationError ? { error: verificationError } :
+                      verificationResult ? verificationResult :
+                      null}
+                title="response"
+              />
             </div>
           </div>
         </div>
@@ -254,7 +275,7 @@ function DOBPageContent() {
             className={`inline-flex items-center px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-200 ${
               isLoading || (!verificationResult && !verificationError)
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-rose-600 hover:bg-rose-700 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-1'
+                : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-1'
             }`}
           >
             Continue to next step
@@ -275,8 +296,8 @@ function DOBPageContent() {
 export default function DOBPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-pink-50 dark:from-rose-950 dark:via-slate-900 dark:to-pink-950 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-rose-600"></div>
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950 dark:via-slate-900 dark:to-purple-950 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
       </div>
     }>
       <DOBPageContent />

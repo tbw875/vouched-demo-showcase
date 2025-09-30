@@ -303,13 +303,21 @@ function HealthcareIDVPageContent() {
   }, [config.enabledProducts, formData, reverificationEnabled, useCaseContext]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-pink-50 dark:from-rose-950 dark:via-slate-900 dark:to-pink-950">
-      <PageHeader 
-        pageTitle="Healthcare Verification - Identity Verification"
-        showBackButton={false}
-      />
-      
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950 dark:via-slate-900 dark:to-purple-950">
       <div className="max-w-6xl mx-auto px-6 py-12">
+        {/* Header */}
+        <PageHeader/>
+        
+        {/* Page Title */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            Healthcare Verification - Identity Verification
+          </h1>
+          <p className="text-xl text-gray-600 dark:text-gray-300">
+            Step 3 of 3: Document and Selfie Verification
+          </p>
+        </div>
+
         {/* Progress Indicator */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -328,10 +336,10 @@ function HealthcareIDVPageContent() {
             </div>
             <div className="flex-1 mx-4 h-1 bg-green-600 rounded"></div>
             <div className="flex items-center">
-              <div className="flex items-center justify-center w-8 h-8 bg-rose-600 text-white rounded-full text-sm font-semibold">
+              <div className="flex items-center justify-center w-8 h-8 bg-indigo-600 text-white rounded-full text-sm font-semibold">
                 3
               </div>
-              <span className="ml-3 text-sm font-medium text-rose-600">ID Verification</span>
+              <span className="ml-3 text-sm font-medium text-indigo-600">ID Verification</span>
             </div>
           </div>
         </div>
