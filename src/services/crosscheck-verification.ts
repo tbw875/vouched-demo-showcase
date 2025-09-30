@@ -32,14 +32,23 @@ export class CrossCheckVerificationService {
 
     try {
       // Format the request data according to Vouched API requirements
+      // Note: DOB is excluded from CrossCheck - it's handled separately in DOB verification
       const formattedRequest = {
         firstName: request.firstName,
         lastName: request.lastName,
         phone: this.formatPhoneNumber(request.phone),
         ...(request.email && { email: request.email }),
         ...(request.ipAddress && { ipAddress: request.ipAddress }),
-        ...(request.dateOfBirth && { dob: this.formatDateOfBirth(request.dateOfBirth) }),
-        ...(request.address && { address: request.address })
+        // Format address as object according to Vouched CrossCheck API specification
+        ...(request.address && { 
+          address: {
+            streetAddress: request.address.streetAddress,
+            city: request.address.city,
+            state: request.address.state,
+            postalCode: request.address.postalCode,
+            country: request.address.country
+          }
+        })
       };
 
       const requestUrl = `${this.baseUrl}/api/identity/crosscheck`;

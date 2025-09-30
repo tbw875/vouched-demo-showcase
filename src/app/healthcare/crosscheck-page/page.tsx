@@ -20,6 +20,11 @@ interface FormData {
   email?: string;
   ipAddress?: string;
   dateOfBirth?: string;
+  street?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
 }
 
 function CrossCheckPageContent() {
@@ -82,7 +87,17 @@ function CrossCheckPageContent() {
       phone: formData.phone,
       ...(formData.email && { email: formData.email }),
       ...(formData.ipAddress && { ipAddress: formData.ipAddress }),
-      ...(formData.dateOfBirth && { dateOfBirth: formData.dateOfBirth })
+      // Include address data for Healthcare use case
+      ...((formData.street || formData.city || formData.state || formData.postalCode || formData.country) && {
+        address: {
+          ...(formData.street && { streetAddress: formData.street }),
+          ...(formData.city && { city: formData.city }),
+          ...(formData.state && { state: formData.state }),
+          ...(formData.postalCode && { postalCode: formData.postalCode }),
+          ...(formData.country && { country: formData.country })
+        }
+      })
+      // Note: DOB is excluded from CrossCheck - it will be handled separately in DOB verification
     };
 
     setRequestData(crossCheckRequest);
@@ -271,9 +286,9 @@ function CrossCheckPageContent() {
             </div>
             <div className="p-6">
               {/* Identity Check Score Display */}
-              {verificationResult && (() => {
+              {verificationResult && verificationResult.result && (() => {
                 // Extract the identity score from the API response
-                const identityScore = verificationResult?.result?.confidences?.identity;
+                const identityScore = verificationResult.result.confidences?.identity;
                 const scorePercentage = identityScore ? Math.round(identityScore * 100) : null;
                 const isPassed = scorePercentage && scorePercentage >= 85;
                 

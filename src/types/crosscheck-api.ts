@@ -8,7 +8,7 @@ export interface CrossCheckVerificationRequest {
   ipAddress?: string;
   dateOfBirth?: string;
   address?: {
-    street?: string;
+    streetAddress?: string;
     city?: string;
     state?: string;
     postalCode?: string;

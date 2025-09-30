@@ -3,9 +3,8 @@
 export interface DOBVerificationRequest {
   firstName: string;
   lastName: string;
-  dateOfBirth: string;
-  phone?: string;
-  email?: string;
+  dob: string;  // Date of birth parameter name as required by Vouched API
+  phone: string;  // Required for DOB verification
 }
 
 export interface DOBVerificationResponse {

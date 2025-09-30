@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { ChevronRightIcon, UserIcon, PhoneIcon, EnvelopeIcon, CalendarIcon, IdentificationIcon } from '@heroicons/react/24/outline';
+import { ChevronRightIcon, UserIcon, PhoneIcon, EnvelopeIcon, CalendarIcon, IdentificationIcon, HomeIcon, MapPinIcon } from '@heroicons/react/24/outline';
 import PageHeader from '../components/PageHeader';
 
 interface VouchedConfig {
@@ -20,6 +20,11 @@ interface FormData {
   dateOfBirth?: string;
   ssn?: string;
   ipAddress?: string;
+  street?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
 }
 
 interface FormField {
@@ -110,6 +115,52 @@ function FormFillPageContent() {
           icon: EnvelopeIcon
         }
       );
+
+      // Add address fields for Healthcare use case
+      if (useCaseContext === 'healthcare') {
+        fields.push(
+          {
+            id: 'street',
+            label: 'Street Address',
+            type: 'text',
+            required: true,
+            placeholder: 'Enter your street address',
+            icon: HomeIcon
+          },
+          {
+            id: 'city',
+            label: 'City',
+            type: 'text',
+            required: true,
+            placeholder: 'Enter your city',
+            icon: MapPinIcon
+          },
+          {
+            id: 'state',
+            label: 'State',
+            type: 'text',
+            required: true,
+            placeholder: 'Enter your state',
+            icon: MapPinIcon
+          },
+          {
+            id: 'postalCode',
+            label: 'Postal Code',
+            type: 'text',
+            required: true,
+            placeholder: 'Enter your postal code',
+            icon: MapPinIcon
+          },
+          {
+            id: 'country',
+            label: 'Country',
+            type: 'text',
+            required: false,
+            placeholder: 'Enter your country (optional)',
+            icon: MapPinIcon
+          }
+        );
+      }
     }
 
     // DOB Verification fields

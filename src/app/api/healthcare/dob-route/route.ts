@@ -8,24 +8,37 @@ export async function POST(request: NextRequest) {
     const body: DOBVerificationRequest = await request.json();
     
     // Validate required fields
-    if (!body.firstName || !body.lastName || !body.dateOfBirth) {
+    if (!body.firstName || !body.lastName || !body.dob || !body.phone) {
       return NextResponse.json(
         {
           error: 'Validation Error',
-          message: 'firstName, lastName, and dateOfBirth are required fields',
+          message: 'firstName, lastName, dob, and phone are required fields',
           code: 'MISSING_REQUIRED_FIELDS'
         },
         { status: 400 }
       );
     }
 
+    // Validate phone number format (basic validation - will be formatted by service)
+    const phoneDigits = body.phone.replace(/\D/g, '');
+    if (phoneDigits.length < 10) {
+      return NextResponse.json(
+        {
+          error: 'Validation Error',
+          message: 'Phone number must contain at least 10 digits',
+          code: 'INVALID_PHONE_FORMAT'
+        },
+        { status: 400 }
+      );
+    }
+
     // Validate date of birth format
-    const dobDate = new Date(body.dateOfBirth);
+    const dobDate = new Date(body.dob);
     if (isNaN(dobDate.getTime())) {
       return NextResponse.json(
         {
           error: 'Validation Error',
-          message: 'dateOfBirth must be a valid date',
+          message: 'dob must be a valid date',
           code: 'INVALID_DATE_FORMAT'
         },
         { status: 400 }

@@ -47,14 +47,14 @@ function DOBPageContent() {
 
   // Auto-start DOB verification when component mounts
   useEffect(() => {
-    if (formData.firstName && formData.lastName && formData.dateOfBirth) {
+    if (formData.firstName && formData.lastName && formData.dateOfBirth && formData.phone) {
       performDOBVerification();
     }
   }, []);
 
   const performDOBVerification = async () => {
-    if (!formData.firstName || !formData.lastName || !formData.dateOfBirth) {
-      setVerificationError('Missing required data for DOB verification');
+    if (!formData.firstName || !formData.lastName || !formData.dateOfBirth || !formData.phone) {
+      setVerificationError('Missing required data for DOB verification (firstName, lastName, dateOfBirth, and phone are required)');
       return;
     }
 
@@ -64,10 +64,14 @@ function DOBPageContent() {
     const dobRequest: DOBVerificationRequest = {
       firstName: formData.firstName,
       lastName: formData.lastName,
-      dateOfBirth: formData.dateOfBirth,
-      ...(formData.phone && { phone: formData.phone }),
-      ...(formData.email && { email: formData.email })
+      dob: formData.dateOfBirth,  // Map dateOfBirth from form to dob parameter
+      phone: formData.phone  // Required field
     };
+
+    console.log('=== DOB PAGE DEBUG ===');
+    console.log('Form data:', formData);
+    console.log('DOB request being sent:', dobRequest);
+    console.log('======================');
 
     setRequestData(dobRequest);
 
@@ -131,7 +135,8 @@ function DOBPageContent() {
       return <XCircleIcon className="h-6 w-6 text-red-500" />;
     }
     if (verificationResult && isDOBVerificationResponse(verificationResult)) {
-      return verificationResult.result.success 
+      // For DOB verification, success is determined by dobMatch
+      return verificationResult.result.dobMatch 
         ? <CheckCircleIcon className="h-6 w-6 text-green-500" />
         : <XCircleIcon className="h-6 w-6 text-red-500" />;
     }
@@ -142,7 +147,8 @@ function DOBPageContent() {
     if (isLoading) return 'Processing DOB verification...';
     if (verificationError) return 'Verification failed';
     if (verificationResult && isDOBVerificationResponse(verificationResult)) {
-      return verificationResult.result.success ? 'Verification successful' : 'Verification failed';
+      // For DOB verification, success is determined by dobMatch, not just the general success field
+      return verificationResult.result.dobMatch ? 'DOB Match Found' : 'No DOB Match';
     }
     return 'Ready to verify';
   };
@@ -203,6 +209,28 @@ function DOBPageContent() {
           </div>
         </div>
 
+        {/* Continue Button */}
+        <div className="mb-8 text-center">
+          <button
+            onClick={handleContinueToNextStep}
+            disabled={isLoading || (!verificationResult && !verificationError)}
+            className={`inline-flex items-center px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-200 ${
+              isLoading || (!verificationResult && !verificationError)
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-1'
+            }`}
+          >
+            Continue to next step
+            <ChevronRightIcon className="ml-2 h-5 w-5" />
+          </button>
+          
+          {!verificationResult && !verificationError && !isLoading && (
+            <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+              DOB verification will start automatically
+            </p>
+          )}
+        </div>
+
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
           {/* Request Panel */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700">
@@ -238,15 +266,36 @@ function DOBPageContent() {
                     DOB Verification API Response
                   </h3>
                 </div>
-                <div className="flex items-center space-x-2">
-                  {getStatusIcon()}
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {getStatusText()}
-                  </span>
-                </div>
               </div>
             </div>
             <div className="p-6">
+              {/* DOB Match Display */}
+              {verificationResult && isDOBVerificationResponse(verificationResult) && (() => {
+                const dobMatch = verificationResult.result.dobMatch;
+                
+                return (
+                  <div className="mb-6 p-6 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl border border-indigo-200 dark:border-indigo-700">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-lg font-semibold text-indigo-900 dark:text-indigo-100 mb-2">DOB Verification</h4>
+                        <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                          {dobMatch ? 'Match Found' : 'No Match'}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <div className={`inline-flex items-center px-4 py-2 rounded-full text-lg font-semibold ${
+                          dobMatch
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
+                            : 'text-white dark:text-white'
+                        }`} style={!dobMatch ? { backgroundColor: '#EC4C3A' } : {}}>
+                          {dobMatch ? '✓ Passed' : '✕ Failed'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+              
               <JsonDisplay 
                 data={isLoading ? 'Processing...' : 
                       verificationError ? { error: verificationError } :
@@ -256,28 +305,6 @@ function DOBPageContent() {
               />
             </div>
           </div>
-        </div>
-
-        {/* Continue Button */}
-        <div className="mt-8 text-center">
-          <button
-            onClick={handleContinueToNextStep}
-            disabled={isLoading || (!verificationResult && !verificationError)}
-            className={`inline-flex items-center px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-200 ${
-              isLoading || (!verificationResult && !verificationError)
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-1'
-            }`}
-          >
-            Continue to next step
-            <ChevronRightIcon className="ml-2 h-5 w-5" />
-          </button>
-          
-          {!verificationResult && !verificationError && !isLoading && (
-            <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
-              DOB verification will start automatically
-            </p>
-          )}
         </div>
       </div>
     </div>

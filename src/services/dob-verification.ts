@@ -32,13 +32,18 @@ export class DOBVerificationService {
 
     try {
       // Format the request data according to Vouched API requirements
+      // Match the exact format from the working cURL example
       const formattedRequest = {
         firstName: request.firstName,
         lastName: request.lastName,
-        dob: this.formatDateOfBirth(request.dateOfBirth),
-        ...(request.phone && { phone: this.formatPhoneNumber(request.phone) }),
-        ...(request.email && { email: request.email })
+        phone: this.formatPhoneNumber(request.phone),
+        dob: this.formatDateOfBirth(request.dob)
       };
+
+      console.log('=== DOB REQUEST DEBUG ===');
+      console.log('Original request:', request);
+      console.log('Formatted request:', formattedRequest);
+      console.log('========================');
 
       const requestUrl = `${this.baseUrl}/api/dob/verify`;
       const requestHeaders = {
@@ -60,6 +65,11 @@ export class DOBVerificationService {
         phone: formattedRequest.phone ? `***${formattedRequest.phone.slice(-4)}` : 'not provided'
       });
       console.log('Request body length:', requestBody.length);
+      console.log('Expected cURL equivalent:');
+      console.log(`curl --location '${requestUrl}' \\`);
+      console.log(`--header 'Content-Type: application/json' \\`);
+      console.log(`--header 'X-API-Key: ${apiKey ? `${apiKey.substring(0, 8)}...${apiKey.substring(apiKey.length - 4)}` : 'MISSING'}' \\`);
+      console.log(`--data '${requestBody}'`);
       console.log('=============================================');
 
       // Make the request to the DOB verification endpoint
@@ -149,6 +159,11 @@ export class DOBVerificationService {
    * Format phone number for API consistency
    */
   private formatPhoneNumber(phone: string): string {
+    // If phone already has +, return as-is
+    if (phone.startsWith('+')) {
+      return phone;
+    }
+    
     // Remove all non-digit characters
     const digits = phone.replace(/\D/g, '');
     
@@ -162,27 +177,36 @@ export class DOBVerificationService {
       return `+${digits}`;
     }
     
-    // Otherwise, return as-is with + prefix if not already present
-    return digits.startsWith('+') ? digits : `+${digits}`;
+    // Otherwise, add + prefix to whatever digits we have
+    return `+${digits}`;
   }
 
   /**
    * Format date of birth for API consistency
+   * Pass the date exactly as user entered it without timezone manipulation
    */
   private formatDateOfBirth(dateOfBirth: string): string {
-    // Try to parse and format as YYYY-MM-DD
-    const date = new Date(dateOfBirth);
-    if (isNaN(date.getTime())) {
-      // If parsing fails, return as-is
+    // If it's already in YYYY-MM-DD format, return as-is
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateOfBirth)) {
       return dateOfBirth;
     }
     
-    // Format as YYYY-MM-DD
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
+    // If it's in other formats, try to convert without using Date constructor
+    // to avoid timezone issues
+    if (dateOfBirth.includes('/')) {
+      // Handle MM/DD/YYYY or DD/MM/YYYY format
+      const parts = dateOfBirth.split('/');
+      if (parts.length === 3) {
+        // Assume MM/DD/YYYY format (US standard)
+        const month = parts[0].padStart(2, '0');
+        const day = parts[1].padStart(2, '0');
+        const year = parts[2];
+        return `${year}-${month}-${day}`;
+      }
+    }
     
-    return `${year}-${month}-${day}`;
+    // If all else fails, return as-is to avoid any date manipulation
+    return dateOfBirth;
   }
 }
 

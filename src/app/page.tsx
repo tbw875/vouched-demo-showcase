@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronRightIcon, ShieldCheckIcon, DocumentCheckIcon, BuildingOffice2Icon, HeartIcon, CubeIcon } from '@heroicons/react/24/outline';
 
 type SSNMode = 'off' | 'last4' | 'full9';
@@ -60,6 +60,19 @@ export default function ConfigurationPage() {
       )
     );
   };
+
+  // Auto-toggle DOB verification when Healthcare use case is selected
+  useEffect(() => {
+    if (useCaseContext === 'healthcare') {
+      setProducts(prev => 
+        prev.map(product => 
+          product.id === 'dob-verification' 
+            ? { ...product, enabled: true }
+            : product
+        )
+      );
+    }
+  }, [useCaseContext]);
 
   const handleStartDemo = () => {
     const enabledProducts = products.filter(p => p.enabled).map(p => p.id);

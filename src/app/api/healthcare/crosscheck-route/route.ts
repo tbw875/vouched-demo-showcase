@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
       phone: body.phone ? `***${body.phone.slice(-4)}` : 'not provided',
       email: body.email || 'not provided',
       ipAddress: body.ipAddress || 'not provided',
-      dateOfBirth: body.dateOfBirth || 'not provided'
+      address: body.address ? 'provided' : 'not provided'
     });
 
     // Call the CrossCheck verification service with the API key

@@ -407,12 +407,12 @@ function HealthcareIDVPageContent() {
         }
         
         .desktop-container {
-          height: 60vh; /* Shorter height for landscape */
-          width: 95vw; /* Much wider - almost full screen */
-          min-height: 500px;
-          min-width: 1000px; /* Much wider minimum */
-          max-height: 700px;
-          max-width: 1600px; /* Much wider maximum */
+          height: 75vh; /* Taller height for better responsiveness */
+          width: 98vw; /* Almost full screen width */
+          min-height: 600px; /* Increased minimum height */
+          min-width: 1200px; /* Wider minimum */
+          max-height: 800px; /* Taller maximum */
+          max-width: 1800px; /* Wider maximum */
           margin: 0 auto; /* Center it */
         }
         
@@ -435,8 +435,8 @@ function HealthcareIDVPageContent() {
         
         /* Desktop element should be LANDSCAPE */
         .desktop-container .vouched-element {
-          min-width: 1000px;
-          min-height: 500px;
+          min-width: 1200px; /* Wider minimum */
+          min-height: 600px; /* Taller minimum */
         }
         
         /* Phone element should be narrow and tall */
@@ -446,25 +446,25 @@ function HealthcareIDVPageContent() {
         }
         
         /* Responsive adjustments - maintain LANDSCAPE for desktop */
-        @media (max-width: 1400px) {
+        @media (max-width: 1600px) {
           .desktop-container {
-            height: 55vh;
-            width: 90vw;
-            min-height: 450px;
-            min-width: 800px;
-            max-height: 650px;
-            max-width: 1400px;
+            height: 70vh; /* Keep taller */
+            width: 95vw; /* Keep wider */
+            min-height: 550px; /* Higher minimum */
+            min-width: 1000px; /* Wider minimum */
+            max-height: 750px; /* Taller maximum */
+            max-width: 1600px; /* Wider maximum */
           }
         }
         
-        @media (max-width: 1000px) {
+        @media (max-width: 1200px) {
           .desktop-container {
-            height: 50vh;
-            width: 85vw;
-            min-height: 400px;
-            min-width: 700px;
-            max-height: 600px;
-            max-width: 1000px;
+            height: 65vh; /* Keep larger */
+            width: 90vw; /* Keep wider */
+            min-height: 500px; /* Higher minimum */
+            min-width: 900px; /* Wider minimum */
+            max-height: 700px; /* Taller maximum */
+            max-width: 1200px; /* Wider maximum */
           }
         }
         
