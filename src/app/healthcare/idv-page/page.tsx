@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState, useRef, Suspense } from 'react';
+import React, { useEffect, useState, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import PageHeader from '../components/PageHeader';
-import { SSNVerificationRequest, SSNApiResponse, isSSNVerificationResponse } from '../../types/ssn-api';
+import PageHeader from '@/app/components/PageHeader';
+import { SSNVerificationRequest, SSNApiResponse, isSSNVerificationResponse } from '@/types/ssn-api';
 
 // Extend Window interface for TypeScript
 declare global {
@@ -28,7 +28,7 @@ interface FormData {
   ipAddress?: string;
 }
 
-function VerificationPageContent() {
+function HealthcareIDVPageContent() {
   const searchParams = useSearchParams();
   const vouchedInstanceRef = useRef<Record<string, unknown> | null>(null);
   
@@ -40,12 +40,12 @@ function VerificationPageContent() {
   // Parse configuration from URL params
   const config: VouchedConfig = {
     flowType: (searchParams.get('flow') as 'desktop' | 'phone') || 'desktop',
-    workflowType: (searchParams.get('workflow') as 'simultaneous' | 'step-up') || 'simultaneous',
+    workflowType: (searchParams.get('workflow') as 'simultaneous' | 'step-up') || 'step-up',
     enabledProducts: searchParams.get('products')?.split(',') || ['id-verification']
   };
   
   const reverificationEnabled = searchParams.get('reverification') === 'true';
-  const useCaseContext = searchParams.get('useCase') || 'financial';
+  const useCaseContext = searchParams.get('useCase') || 'healthcare';
 
   // Parse form data from URL params
   const formData: FormData = searchParams.get('formData') 
@@ -125,95 +125,45 @@ function VerificationPageContent() {
     script.onload = () => {
       console.log('Vouched script loaded successfully');
       
-      if (window.Vouched) {
-        console.log('Vouched object found, initializing...');
+      // Small delay to ensure script is fully loaded
+      setTimeout(() => {
+        if (window.Vouched) {
           
           // Wait for the DOM element to be available
           const initializeVouched = () => {
             const element = document.getElementById('vouched-element');
             if (!element) {
-              console.error('Vouched element not found');
-              // Retry after a short delay
+              console.log('Vouched element not found, retrying...');
               setTimeout(initializeVouched, 100);
               return;
             }
             
             console.log('Vouched element found, creating configuration...');
             
-            // Start SSN verification in parallel if enabled
-            if (config.enabledProducts.includes('ssnPrivate')) {
-              performSSNVerification();
-            }
-            
-            // Configure Vouched based on flow type and products
+            // Create verification data object
             const verificationData: Record<string, any> = {};
             
-            // Always add basic identity data (required for all products)
+            // Always add basic identity data
             if (formData.firstName) verificationData.firstName = formData.firstName;
             if (formData.lastName) verificationData.lastName = formData.lastName;
             if (formData.phone) verificationData.phone = formData.phone;
             if (formData.email) verificationData.email = formData.email;
             if (formData.ipAddress) verificationData.ipAddress = formData.ipAddress;
             
-            // Add DOB for DOB verification - MUST use birthDate parameter
+            // Add DOB for DOB verification
             if (config.enabledProducts.includes('dob-verification') && formData.dateOfBirth) {
               verificationData.birthDate = formData.dateOfBirth;
             }
             
-
-            // Validate required data for product combinations
-            const hasRequiredData = (products: string[], data: Record<string, any>): boolean => {
-              // For CrossCheck, require basic identity data
-              if (products.includes('crosscheck')) {
-                if (!data.firstName || !data.lastName || !data.email || !data.phone) {
-                  console.error('CrossCheck requires firstName, lastName, email, and phone');
-                  return false;
-                }
-              }
-              
-              // For DOB verification, require birth date
-              if (products.includes('dob-verification') && !data.birthDate) {
-                console.error('DOB verification requires birthDate');
-                return false;
-              }
-              
-              
-              // For AML, require at least name data
-              if (products.includes('aml') && (!data.firstName || !data.lastName)) {
-                console.error('AML requires firstName and lastName');
-                return false;
-              }
-              
-              return true;
-            };
-
-            // Check if we have required data for the selected products
-            if (!hasRequiredData(config.enabledProducts, verificationData)) {
-              console.error('Missing required verification data for selected products:', config.enabledProducts);
-              console.error('Available data:', verificationData);
-              // Show user-friendly error instead of loading indefinitely
-              const errorElement = document.getElementById('vouched-element');
-              if (errorElement) {
-                errorElement.innerHTML = `
-                  <div style="padding: 40px; text-align: center; color: #dc2626; font-family: system-ui;">
-                    <h3>Configuration Error</h3>
-                    <p>Missing required data for selected verification products.</p>
-                    <p>Please go back and ensure all required fields are filled.</p>
-                    <button onclick="window.history.back()" style="margin-top: 20px; padding: 10px 20px; background: #dc2626; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                      Go Back
-                    </button>
-                  </div>
-                `;
-              }
-              return;
+            // Add SSN for SSN Private verification
+            if (config.enabledProducts.includes('ssnPrivate') && formData.ssn) {
+              verificationData.ssn = formData.ssn;
             }
 
-            // Only set minimal fallback data for ID verification only
-            if (config.enabledProducts.length === 1 && config.enabledProducts.includes('id-verification')) {
-              if (!verificationData.firstName && !verificationData.lastName) {
-                verificationData.firstName = '';
-                verificationData.lastName = '';
-              }
+            // Ensure we have at least basic verification data
+            if (!verificationData.firstName && !verificationData.lastName) {
+              verificationData.firstName = '';
+              verificationData.lastName = '';
             }
 
             // Create proper Vouched configuration following working example
@@ -264,173 +214,131 @@ function VerificationPageContent() {
               debug: true,
 
               // Simple callback following Vouched documentation pattern
-              onDone: function(job: any) {
-                console.log("Verification complete", { token: job.token });
+              onDone: (job: any) => {
+                console.log('=== VOUCHED JOB COMPLETED ===');
+                console.log('Job data:', job);
+                console.log('Job ID:', job?.id);
+                console.log('Job status:', job?.status);
+                console.log('Job result:', job?.result);
+                console.log('============================');
                 
-                // Store essential data
-                if (job.id) {
-                  localStorage.setItem('vouchedJobId', job.id);
-                }
+                // Store the job data for webhook processing
                 localStorage.setItem('latestJobData', JSON.stringify({
                   timestamp: new Date().toISOString(),
                   data: job
                 }));
-
-                // Simple navigation based on success
-                if (job.result && job.result.success) {
-                  const dashboardParams = new URLSearchParams({
-                    reverification: reverificationEnabled.toString(),
-                    useCase: useCaseContext
-                  });
-                  window.location.href = `/dashboard?${dashboardParams.toString()}`;
-                } else {
-                  window.location.href = '/webhook-response';
-                }
+                
+                // Navigate to results page with job information
+                const resultsParams = new URLSearchParams({
+                  jobId: job?.id || 'unknown',
+                  status: job?.status || 'unknown',
+                  reverification: reverificationEnabled.toString(),
+                  useCase: useCaseContext
+                });
+                
+                window.location.href = `/results?${resultsParams.toString()}`;
               }
             };
 
-          try {
-            // Check if there's already an instance and clean it up first
-            if (vouchedInstanceRef.current) {
-              console.log("Cleaning up existing Vouched instance before creating a new one");
-              try {
-                if (typeof vouchedInstanceRef.current.unmount === 'function') {
-                  vouchedInstanceRef.current.unmount();
-                }
-                if (typeof vouchedInstanceRef.current.destroy === 'function') {
-                  vouchedInstanceRef.current.destroy();
-                }
-              } catch (cleanupError) {
-                console.warn("Error during cleanup:", cleanupError);
+            console.log('Initializing Vouched with config:', {
+              ...vouchedConfig,
+              verification: {
+                ...vouchedConfig.verification,
+                phone: vouchedConfig.verification.phone ? `***${vouchedConfig.verification.phone.slice(-4)}` : 'not provided'
               }
-              vouchedInstanceRef.current = null;
-            }
-            
-            // Set up message listener for Vouched events (since callbacks cause DataCloneError)
-            const messageHandler = (event: MessageEvent) => {
-              // Only listen to messages from Vouched
-              if (event.origin !== 'https://static.vouched.id') return;
-              
-              console.log('Received message from Vouched:', event.data);
-              
-              const { type, data } = event.data;
-              
-              if (type === 'VOUCHED_INIT') {
-                console.log('onInit called:', data);
-                console.log('Job ID:', data?.id);
-                console.log('Job Token:', data?.token);
-                console.log('Job Status:', data?.status);
-              }
-              
-              if (type === 'VOUCHED_SUBMIT') {
-                console.log("Photo submitted", data);
-                console.log("Job ID in onSubmit:", data?.job?.id);
-                console.log("Job Status in onSubmit:", data?.job?.status);
-              }
-              
-              if (type === 'VOUCHED_DONE') {
-                console.log("Scanning complete via postMessage", data);
-                // Navigation is now handled by onDone callback
-              }
-              
-              if (type === 'VOUCHED_CAMERA') {
-                console.log("Camera status", data);
-              }
-              
-              if (type === 'VOUCHED_ERROR') {
-                console.error('Vouched error', data);
-              }
-            };
-            
-            window.addEventListener('message', messageHandler);
-            
-            // Store handler for cleanup
-            (window as any)._vouchedMessageHandler = messageHandler;
-
-            // Initialize Vouched using the correct pattern
-            console.log('Initializing Vouched with config:', JSON.stringify(vouchedConfig, null, 2));
-            const vouched = window.Vouched(vouchedConfig);
-            
-            // Store the instance in ref
-            vouchedInstanceRef.current = vouched;
-            
-            console.log('About to mount Vouched to #vouched-element...');
-            vouched.mount('#vouched-element');
-            console.log('Vouched mount called successfully');
-            
-          } catch (error) {
-            console.error('Failed to initialize Vouched:', error);
-            console.error('Error details:', {
-              message: error instanceof Error ? error.message : String(error),
-              stack: error instanceof Error ? error.stack : undefined,
-              config: vouchedConfig
             });
-          }
-        };
-        
-        // Call the initialization function
-        initializeVouched();
+
+            try {
+              // Initialize Vouched
+              const vouchedInstance = window.Vouched(vouchedConfig);
+              vouchedInstanceRef.current = vouchedInstance;
+              
+              // Mount to the element
+              vouchedInstance.mount('#vouched-element');
+              
+              console.log('Vouched instance created and mounted successfully');
+              
+              // Perform SSN verification if enabled
+              if (config.enabledProducts.includes('ssnPrivate')) {
+                performSSNVerification();
+              }
+              
+            } catch (error) {
+              console.error('Error initializing Vouched:', error);
+            }
+          };
+
+          // Start initialization
+          initializeVouched();
+          
         } else {
-          console.error('Vouched object not found on window');
+          console.error('Vouched library not available after script load');
         }
+      }, 500); // Increased delay to ensure proper loading
     };
-    
+
+    script.onerror = () => {
+      console.error('Failed to load Vouched script');
+    };
+
     document.head.appendChild(script);
-    
+
+    // Cleanup function
     return () => {
-      // Cleanup message listener
-      if ((window as any)._vouchedMessageHandler) {
-        window.removeEventListener('message', (window as any)._vouchedMessageHandler);
-        delete (window as any)._vouchedMessageHandler;
-      }
-      
-      // Cleanup Vouched instance properly
-      if (vouchedInstanceRef.current) {
+      if (vouchedInstanceRef.current && typeof vouchedInstanceRef.current === 'object' && 'unmount' in vouchedInstanceRef.current) {
         try {
-          console.log("Cleaning up Vouched instance on unmount");
-          // If there's an unmount method, call it
-          if (typeof vouchedInstanceRef.current.unmount === 'function') {
-            vouchedInstanceRef.current.unmount();
-          }
-          // If there's a destroy method, call it
-          if (typeof vouchedInstanceRef.current.destroy === 'function') {
-            vouchedInstanceRef.current.destroy();
-          }
+          (vouchedInstanceRef.current as any).unmount();
         } catch (error) {
-          console.error('Error cleaning up Vouched:', error);
+          console.error('Error unmounting Vouched instance:', error);
         }
-        vouchedInstanceRef.current = null;
       }
+      vouchedInstanceRef.current = null;
       
-      if (document.head.contains(script)) {
-        document.head.removeChild(script);
+      // Remove script
+      const existingScript = document.querySelector('script[src="https://static.vouched.id/plugin/releases/latest/index.js"]');
+      if (existingScript) {
+        existingScript.remove();
       }
     };
-  }, []); // Only run once on mount
+  }, [config.enabledProducts, formData, reverificationEnabled, useCaseContext]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950 dark:via-slate-900 dark:to-purple-950">
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Header */}
-        <PageHeader/>
-        
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Identity Verification
-          </h1>
-          
-
+    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-pink-50 dark:from-rose-950 dark:via-slate-900 dark:to-pink-950">
+      <PageHeader 
+        pageTitle="Healthcare Verification - Identity Verification"
+        showBackButton={false}
+      />
+      
+      <div className="max-w-6xl mx-auto px-6 py-12">
+        {/* Progress Indicator */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <div className="flex items-center justify-center w-8 h-8 bg-green-600 text-white rounded-full text-sm font-semibold">
+                ✓
+              </div>
+              <span className="ml-3 text-sm font-medium text-green-600">CrossCheck</span>
+            </div>
+            <div className="flex-1 mx-4 h-1 bg-green-600 rounded"></div>
+            <div className="flex items-center">
+              <div className="flex items-center justify-center w-8 h-8 bg-green-600 text-white rounded-full text-sm font-semibold">
+                ✓
+              </div>
+              <span className="ml-3 text-sm font-medium text-green-600">DOB Verification</span>
+            </div>
+            <div className="flex-1 mx-4 h-1 bg-green-600 rounded"></div>
+            <div className="flex items-center">
+              <div className="flex items-center justify-center w-8 h-8 bg-rose-600 text-white rounded-full text-sm font-semibold">
+                3
+              </div>
+              <span className="ml-3 text-sm font-medium text-rose-600">ID Verification</span>
+            </div>
+          </div>
         </div>
 
-        {/* Verification Container */}
-        <div className="w-full flex justify-center items-center">
-          <div className={`
-            ${isPhoneView 
-              ? 'w-full max-w-lg mx-auto' 
-              : '' /* Desktop will use CSS-defined dimensions */
-            }
-            transition-all duration-300
-          `}>
+        {/* Verification Interface */}
+        <div className="flex flex-col items-center">
+          <div className="w-full max-w-4xl">
             {/* Container with styling based on configuration */}
             <div className={`
               ${isPhoneView 
@@ -462,7 +370,7 @@ function VerificationPageContent() {
                     </div>
                     <div className="flex-1 text-center">
                       <span className="text-sm text-gray-600 dark:text-gray-300">
-                        Identity Verification
+                        Healthcare Identity Verification
                       </span>
                     </div>
                   </div>
@@ -591,12 +499,14 @@ function VerificationPageContent() {
   );
 }
 
-export default function VerificationPage() {
+export default function HealthcareIDVPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950 dark:via-slate-900 dark:to-purple-950 flex items-center justify-center">
-      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
-    </div>}>
-      <VerificationPageContent />
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-pink-50 dark:from-rose-950 dark:via-slate-900 dark:to-pink-950 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-rose-600"></div>
+      </div>
+    }>
+      <HealthcareIDVPageContent />
     </Suspense>
   );
 }

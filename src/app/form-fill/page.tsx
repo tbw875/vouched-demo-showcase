@@ -212,7 +212,7 @@ function FormFillPageContent() {
     // Simulate processing time
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    // Navigate to verification page with form data
+    // Navigate based on use case context
     const params = new URLSearchParams({
       flow: config.flowType,
       workflow: config.workflowType,
@@ -222,7 +222,13 @@ function FormFillPageContent() {
       useCase: useCaseContext
     });
 
-    window.location.href = `/verification?${params.toString()}`;
+    // Healthcare use case follows step-up workflow
+    if (useCaseContext === 'healthcare') {
+      window.location.href = `/healthcare/crosscheck-page?${params.toString()}`;
+    } else {
+      // All other use cases follow existing simultaneous workflow
+      window.location.href = `/verification?${params.toString()}`;
+    }
   };
 
   return (
