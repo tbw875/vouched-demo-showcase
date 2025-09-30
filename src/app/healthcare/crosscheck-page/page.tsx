@@ -204,6 +204,28 @@ function CrossCheckPageContent() {
           </div>
         </div>
 
+        {/* Continue Button */}
+        <div className="mb-8 text-center">
+          <button
+            onClick={handleContinueToNextStep}
+            disabled={isLoading || (!verificationResult && !verificationError)}
+            className={`inline-flex items-center px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-200 ${
+              isLoading || (!verificationResult && !verificationError)
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-1'
+            }`}
+          >
+            Continue to next step
+            <ChevronRightIcon className="ml-2 h-5 w-5" />
+          </button>
+          
+          {!verificationResult && !verificationError && !isLoading && (
+            <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+              CrossCheck verification will start automatically
+            </p>
+          )}
+        </div>
+
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
           {/* Request Panel */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700">
@@ -248,29 +270,35 @@ function CrossCheckPageContent() {
               </div>
             </div>
             <div className="p-6">
-              {/* Score Display Section */}
-              {verificationResult && isCrossCheckVerificationResponse(verificationResult) && verificationResult.result?.confidences?.identity !== undefined && (
-                <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Score</h4>
-                      <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                        {Math.round(verificationResult.result.confidences.identity * 100)}%
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Status</h4>
-                      <p className={`text-2xl font-bold ${
-                        (verificationResult.result.confidences.identity * 100) >= 85 
-                          ? 'text-green-600' 
-                          : 'text-red-600'
-                      }`}>
-                        {(verificationResult.result.confidences.identity * 100) >= 85 ? 'Passed' : 'Failed'}
-                      </p>
+              {/* Identity Check Score Display */}
+              {verificationResult && (() => {
+                // Extract the identity score from the API response
+                const identityScore = verificationResult?.result?.confidences?.identity;
+                const scorePercentage = identityScore ? Math.round(identityScore * 100) : null;
+                const isPassed = scorePercentage && scorePercentage >= 85;
+                
+                return scorePercentage !== null ? (
+                  <div className="mb-6 p-6 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl border border-indigo-200 dark:border-indigo-700">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-lg font-semibold text-indigo-900 dark:text-indigo-100 mb-2">Identity Check Score</h4>
+                        <p className="text-4xl font-bold text-indigo-600 dark:text-indigo-400">
+                          {scorePercentage}%
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <div className={`inline-flex items-center px-4 py-2 rounded-full text-lg font-semibold ${
+                          isPassed
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
+                            : 'text-white dark:text-white'
+                        }`} style={!isPassed ? { backgroundColor: '#EC4C3A' } : {}}>
+                          {isPassed ? '✓ Passed' : '✕ Failed'}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                ) : null;
+              })()}
               
               <JsonDisplay 
                 data={isLoading ? 'Processing...' : 
@@ -281,28 +309,6 @@ function CrossCheckPageContent() {
               />
             </div>
           </div>
-        </div>
-
-        {/* Continue Button */}
-        <div className="mt-8 text-center">
-          <button
-            onClick={handleContinueToNextStep}
-            disabled={isLoading || (!verificationResult && !verificationError)}
-            className={`inline-flex items-center px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-200 ${
-              isLoading || (!verificationResult && !verificationError)
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-1'
-            }`}
-          >
-            Continue to next step
-            <ChevronRightIcon className="ml-2 h-5 w-5" />
-          </button>
-          
-          {!verificationResult && !verificationError && !isLoading && (
-            <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
-              CrossCheck verification will start automatically
-            </p>
-          )}
         </div>
       </div>
     </div>
