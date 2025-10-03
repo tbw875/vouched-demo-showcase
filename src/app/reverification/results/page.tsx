@@ -23,6 +23,7 @@ function ReverificationResultsContent() {
   const [token, setToken] = useState('');
   const [originalJobId, setOriginalJobId] = useState('');
   const [email, setEmail] = useState('');
+  const [currentJobId, setCurrentJobId] = useState('');
 
   useEffect(() => {
     setIsMounted(true);
@@ -75,6 +76,10 @@ function ReverificationResultsContent() {
             timestamp: jobData.timestamp,
             data: jobData.data
           }]);
+          // Extract current job ID from the data
+          if (jobData.data.id) {
+            setCurrentJobId(jobData.data.id);
+          }
           setLoading(false);
           return; // Don't poll if we have local data
         }
@@ -95,8 +100,13 @@ function ReverificationResultsContent() {
         const data = await res.json();
         setResponses(data.responses || []);
         
-        // If we got data, stop loading
+        // If we got data, stop loading and extract job ID
         if (data.responses && data.responses.length > 0) {
+          // Extract job ID from the latest response
+          const latestResponse = data.responses[data.responses.length - 1];
+          if (latestResponse.data && latestResponse.data.id) {
+            setCurrentJobId(latestResponse.data.id);
+          }
           setLoading(false);
           return true; // Signal to stop polling
         }
@@ -392,12 +402,24 @@ function ReverificationResultsContent() {
 
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-          <button 
-            onClick={() => window.location.href = '/'}
-            className="px-6 py-3 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-semibold rounded-lg transition-all duration-200"
-          >
-            Start New Verification
-          </button>
+          {currentJobId ? (
+            <button 
+              onClick={() => window.open(`https://app.vouched.id/account/jobs/${currentJobId}`, '_blank')}
+              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold rounded-lg transition-all duration-200 flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+              View Job in Vouched
+            </button>
+          ) : (
+            <button 
+              onClick={() => window.location.href = '/'}
+              className="px-6 py-3 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-semibold rounded-lg transition-all duration-200"
+            >
+              Start New Verification
+            </button>
+          )}
           
           <button 
             onClick={() => window.location.href = '/reverification/login'}

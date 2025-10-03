@@ -228,15 +228,24 @@ function HealthcareIDVPageContent() {
                   data: job
                 }));
                 
-                // Navigate to results page with job information
-                const resultsParams = new URLSearchParams({
-                  jobId: job?.id || 'unknown',
-                  status: job?.status || 'unknown',
-                  reverification: reverificationEnabled.toString(),
-                  useCase: useCaseContext
-                });
-                
-                window.location.href = `/results?${resultsParams.toString()}`;
+                // For healthcare workflows, redirect to dashboard instead of results
+                if (useCaseContext === 'healthcare') {
+                  console.log('Healthcare workflow detected, redirecting to dashboard...');
+                  const dashboardParams = new URLSearchParams({
+                    reverification: reverificationEnabled.toString(),
+                    useCase: useCaseContext
+                  });
+                  window.location.href = `/dashboard?${dashboardParams.toString()}`;
+                } else {
+                  // For other workflows, use the results page
+                  const resultsParams = new URLSearchParams({
+                    jobId: job?.id || 'unknown',
+                    status: job?.status || 'unknown',
+                    reverification: reverificationEnabled.toString(),
+                    useCase: useCaseContext
+                  });
+                  window.location.href = `/results?${resultsParams.toString()}`;
+                }
               }
             };
 
@@ -258,9 +267,12 @@ function HealthcareIDVPageContent() {
               
               console.log('Vouched instance created and mounted successfully');
               
-              // Perform SSN verification if enabled
+              // Perform SSN verification if enabled (only for workflows that explicitly include ssnPrivate)
               if (config.enabledProducts.includes('ssnPrivate')) {
+                console.log('SSN verification enabled, performing verification...');
                 performSSNVerification();
+              } else {
+                console.log('SSN verification not enabled for this workflow, skipping...');
               }
               
             } catch (error) {
@@ -304,7 +316,7 @@ function HealthcareIDVPageContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950 dark:via-slate-900 dark:to-purple-950">
-      <div className="max-w-6xl mx-auto px-6 py-12">
+      <div className="max-w-none mx-auto px-6 py-12">
         {/* Header */}
         <PageHeader/>
         
@@ -343,7 +355,7 @@ function HealthcareIDVPageContent() {
 
         {/* Verification Interface */}
         <div className="flex flex-col items-center">
-          <div className="w-full max-w-4xl">
+          <div className="w-full max-w-none">
             {/* Container with styling based on configuration */}
             <div className={`
               ${isPhoneView 
@@ -407,12 +419,12 @@ function HealthcareIDVPageContent() {
         }
         
         .desktop-container {
-          height: 75vh; /* Taller height for better responsiveness */
-          width: 98vw; /* Almost full screen width */
-          min-height: 600px; /* Increased minimum height */
-          min-width: 1200px; /* Wider minimum */
-          max-height: 800px; /* Taller maximum */
-          max-width: 1800px; /* Wider maximum */
+          height: 80vh; /* Even taller height for better responsiveness */
+          width: 100vw; /* Full screen width */
+          min-height: 700px; /* Increased minimum height */
+          min-width: 1400px; /* Much wider minimum */
+          max-height: 900px; /* Taller maximum */
+          max-width: 2000px; /* Much wider maximum */
           margin: 0 auto; /* Center it */
         }
         
@@ -422,21 +434,38 @@ function HealthcareIDVPageContent() {
           left: 0;
           width: 100% !important;
           height: 100% !important;
+          min-width: 100% !important;
+          min-height: 100% !important;
           border: none; /* Remove any borders that might interfere */
           background: transparent;
+          overflow: visible; /* Allow content to extend beyond container if needed */
         }
         
         /* Ensure iframe content is displayed properly */
         .vouched-element iframe {
           border: none;
+          width: 100% !important;
+          height: 100% !important;
+          min-width: 100% !important;
+          min-height: 100% !important;
+        }
+        
+        /* Ensure iframe content doesn't wrap text */
+        .vouched-element iframe body {
+          white-space: nowrap;
+          overflow-x: auto;
+        }
+        
+        /* Force iframe to use full available space */
+        .vouched-element iframe html {
           width: 100%;
           height: 100%;
         }
         
         /* Desktop element should be LANDSCAPE */
         .desktop-container .vouched-element {
-          min-width: 1200px; /* Wider minimum */
-          min-height: 600px; /* Taller minimum */
+          min-width: 1400px; /* Much wider minimum */
+          min-height: 700px; /* Taller minimum */
         }
         
         /* Phone element should be narrow and tall */
@@ -446,25 +475,25 @@ function HealthcareIDVPageContent() {
         }
         
         /* Responsive adjustments - maintain LANDSCAPE for desktop */
-        @media (max-width: 1600px) {
+        @media (max-width: 1800px) {
           .desktop-container {
-            height: 70vh; /* Keep taller */
-            width: 95vw; /* Keep wider */
-            min-height: 550px; /* Higher minimum */
-            min-width: 1000px; /* Wider minimum */
-            max-height: 750px; /* Taller maximum */
-            max-width: 1600px; /* Wider maximum */
+            height: 75vh; /* Keep taller */
+            width: 98vw; /* Keep wider */
+            min-height: 650px; /* Higher minimum */
+            min-width: 1200px; /* Wider minimum */
+            max-height: 850px; /* Taller maximum */
+            max-width: 1800px; /* Wider maximum */
           }
         }
         
-        @media (max-width: 1200px) {
+        @media (max-width: 1400px) {
           .desktop-container {
-            height: 65vh; /* Keep larger */
-            width: 90vw; /* Keep wider */
-            min-height: 500px; /* Higher minimum */
-            min-width: 900px; /* Wider minimum */
-            max-height: 700px; /* Taller maximum */
-            max-width: 1200px; /* Wider maximum */
+            height: 70vh; /* Keep larger */
+            width: 95vw; /* Keep wider */
+            min-height: 600px; /* Higher minimum */
+            min-width: 1000px; /* Wider minimum */
+            max-height: 800px; /* Taller maximum */
+            max-width: 1400px; /* Wider maximum */
           }
         }
         

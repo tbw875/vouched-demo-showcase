@@ -49,6 +49,7 @@ function DashboardContent() {
   const [showWebhookModal, setShowWebhookModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [useCaseContext, setUseCaseContext] = useState<UseCaseContext>('financial');
+  const [currentJobId, setCurrentJobId] = useState('');
 
   const [reverificationEnabled, setReverificationEnabled] = useState(false);
 
@@ -87,6 +88,10 @@ function DashboardContent() {
       if (storedJobData) {
         const jobData = JSON.parse(storedJobData);
         setWebhookData(jobData.data);
+        // Extract job ID from the data
+        if (jobData.data && jobData.data.id) {
+          setCurrentJobId(jobData.data.id);
+        }
       }
     } catch (error) {
       console.error('Error loading webhook data:', error);
@@ -406,7 +411,17 @@ function DashboardContent() {
             View Webhook Response
           </button>
 
-          {reverificationEnabled && (
+          {currentJobId ? (
+            <button
+              onClick={() => window.open(`https://app.vouched.id/account/jobs/${currentJobId}`, '_blank')}
+              className="flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl"
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+              View Job in Vouched
+            </button>
+          ) : reverificationEnabled ? (
             <button
               onClick={() => window.location.href = '/reverification/login'}
               className="flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl"
@@ -414,7 +429,7 @@ function DashboardContent() {
               <ShieldCheckIcon className="h-5 w-5" />
               Start Reverification
             </button>
-          )}
+          ) : null}
         </div>
 
         {/* Back to Configuration */}

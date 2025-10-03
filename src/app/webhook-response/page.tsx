@@ -22,6 +22,7 @@ function WebhookResponsePageContent() {
   const [isMounted, setIsMounted] = useState(false);
   const [pollingCount, setPollingCount] = useState(0);
   const [formData, setFormData] = useState<any>({});
+  const [currentJobId, setCurrentJobId] = useState('');
   
   const reverificationEnabled = searchParams.get('reverification') === 'true';
 
@@ -47,6 +48,10 @@ function WebhookResponsePageContent() {
         if (stored) {
           const parsedData = JSON.parse(stored);
           setLocalJobData(parsedData);
+          // Extract job ID from the data
+          if (parsedData.data && parsedData.data.id) {
+            setCurrentJobId(parsedData.data.id);
+          }
           console.log('Loaded local job data:', parsedData);
         }
       } catch (error) {
@@ -359,7 +364,17 @@ function WebhookResponsePageContent() {
                 Go to Dashboard
               </button>
               
-              {reverificationEnabled && (
+              {currentJobId ? (
+                <button 
+                  className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl flex items-center gap-3 justify-center"
+                  onClick={() => window.open(`https://app.vouched.id/account/jobs/${currentJobId}`, '_blank')}
+                >
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                  View Job in Vouched
+                </button>
+              ) : reverificationEnabled ? (
                 <button 
                   className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl flex items-center gap-3 justify-center"
                   onClick={() => window.location.href = '/reverification/login'}
@@ -367,7 +382,7 @@ function WebhookResponsePageContent() {
                   <ArrowPathIcon className="h-5 w-5" />
                   Start Reverification
                 </button>
-              )}
+              ) : null}
             </div>
           </div>
         )}
