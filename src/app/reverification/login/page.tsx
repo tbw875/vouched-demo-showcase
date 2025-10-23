@@ -155,17 +155,6 @@ export default function ReverificationLoginPage() {
               </button>
             </div>
           </form>
-
-          {/* Info Card */}
-          <div className="mt-8 p-6 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-200 dark:border-purple-700">
-            <h3 className="text-lg font-semibold text-purple-900 dark:text-purple-200 mb-2">
-              What is Reverification?
-            </h3>
-            <p className="text-sm text-purple-700 dark:text-purple-300">
-              Reverification allows you to verify your identity again and compare the new verification 
-              against your original one. This helps ensure consistent identity verification over time.
-            </p>
-          </div>
         </div>
 
         {/* Back Button */}
