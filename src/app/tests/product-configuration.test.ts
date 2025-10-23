@@ -173,7 +173,7 @@ describe('Product Configuration Tests', () => {
       }));
     });
 
-    it('should include enableDriversLicenseVerification configuration when drivers-license-verification is enabled', async () => {
+    it('should include enableDriversLicenseValidation configuration when drivers-license-verification is enabled', async () => {
       const vouchedConfig = createVouchedConfig({
         enabledProducts: ['drivers-license-verification'],
         flowType: 'desktop',
@@ -183,7 +183,7 @@ describe('Product Configuration Tests', () => {
       await simulateVouchedInitialization(vouchedConfig);
 
       expect(window.Vouched).toHaveBeenCalledWith(expect.objectContaining({
-        enableDriversLicenseVerification: true,
+        enableDriversLicenseValidation: true,
       }));
     });
 
@@ -358,7 +358,7 @@ function createVouchedConfig(config: {
     // Product-specific configurations
     ...(config.enabledProducts.includes('crosscheck') && { crosscheck: true }),
     ...(config.enabledProducts.includes('dob-verification') && { dobVerification: true }),
-    ...(config.enabledProducts.includes('drivers-license-verification') && { enableDriversLicenseVerification: true }),
+    ...(config.enabledProducts.includes('drivers-license-verification') && { enableDriversLicenseValidation: true }),
     ...(config.enabledProducts.includes('aml') && { aml: true }),
     
     onDone: expect.any(Function),

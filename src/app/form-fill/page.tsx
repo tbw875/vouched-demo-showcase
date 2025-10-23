@@ -9,6 +9,7 @@ interface VouchedConfig {
   flowType: 'desktop' | 'phone';
   workflowType: 'simultaneous' | 'step-up';
   enabledProducts: string[];
+  disabledProducts: string[];
   ssnMode: 'off' | 'last4' | 'full9';
 }
 
@@ -48,7 +49,8 @@ function FormFillPageContent() {
   const config: VouchedConfig = {
     flowType: (searchParams.get('flow') as 'desktop' | 'phone') || 'desktop',
     workflowType: (searchParams.get('workflow') as 'simultaneous' | 'step-up') || 'simultaneous',
-    enabledProducts: searchParams.get('products')?.split(',') || ['id-verification'],
+    enabledProducts: searchParams.get('products')?.split(',').filter(p => p) || ['id-verification'],
+    disabledProducts: searchParams.get('disabledProducts')?.split(',').filter(p => p) || [],
     ssnMode: (searchParams.get('ssnMode') as 'off' | 'last4' | 'full9') || 'off'
   };
   
@@ -268,6 +270,7 @@ function FormFillPageContent() {
       flow: config.flowType,
       workflow: config.workflowType,
       products: config.enabledProducts.join(','),
+      disabledProducts: config.disabledProducts.join(','),
       formData: JSON.stringify(formData),
       reverification: reverificationEnabled.toString(),
       useCase: useCaseContext

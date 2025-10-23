@@ -126,7 +126,6 @@ function VerificationPageContent() {
       console.log('Vouched script loaded successfully');
       
       if (window.Vouched) {
-        console.log('Vouched object found, initializing...');
           
           // Wait for the DOM element to be available
           const initializeVouched = () => {
@@ -138,7 +137,6 @@ function VerificationPageContent() {
               return;
             }
             
-            console.log('Vouched element found, creating configuration...');
             
             // Start SSN verification in parallel if enabled
             if (config.enabledProducts.includes('ssnPrivate')) {
@@ -227,7 +225,10 @@ function VerificationPageContent() {
                 lastName: verificationData.lastName || '',
                 email: verificationData.email || '',
                 phone: verificationData.phone || '',
-                ...(verificationData.birthDate && { birthDate: verificationData.birthDate })
+                ...(verificationData.birthDate && { birthDate: verificationData.birthDate }),
+                // Product configuration goes inside verification object per Vouched docs
+                enableCrossCheck: config.enabledProducts.includes('crosscheck'),
+                enableDriversLicenseValidation: config.enabledProducts.includes('drivers-license-verification'),
               },
 
               // Webhook configuration - this sends verification results to your backend
@@ -254,11 +255,9 @@ function VerificationPageContent() {
                 name: "avant",
               },
 
-              // Add product configuration conditionally
-              ...(config.enabledProducts.includes('crosscheck') && { enableCrossCheck: true }),
-              ...(config.enabledProducts.includes('dob-verification') && { dobVerification: true }),
-              ...(config.enabledProducts.includes('drivers-license-verification') && { enableDriversLicenseVerification: true }),
-              ...(config.enabledProducts.includes('aml') && { enableAML: true }),
+              // Other product configurations at root level
+              dobVerification: config.enabledProducts.includes('dob-verification'),
+              enableAML: config.enabledProducts.includes('aml'),
 
               // Add debug mode to get detailed error information
               debug: true,
@@ -348,7 +347,16 @@ function VerificationPageContent() {
             (window as any)._vouchedMessageHandler = messageHandler;
 
             // Initialize Vouched using the correct pattern
-            console.log('Initializing Vouched with config:', JSON.stringify(vouchedConfig, null, 2));
+            console.log('=== VOUCHED PRODUCT CONFIGURATION ===');
+            console.log('Enabled Products:', config.enabledProducts);
+            console.log('Disabled Products:', config.disabledProducts);
+            console.log('Product Keys Being Sent to Vouched:');
+            console.log('  verification.enableCrossCheck:', vouchedConfig.verification.enableCrossCheck);
+            console.log('  verification.enableDriversLicenseValidation:', vouchedConfig.verification.enableDriversLicenseValidation);
+            console.log('  dobVerification (root):', vouchedConfig.dobVerification);
+            console.log('  enableAML (root):', vouchedConfig.enableAML);
+            console.log('Full Vouched Config:', JSON.stringify(vouchedConfig, null, 2));
+            console.log('=====================================');
             const vouched = window.Vouched(vouchedConfig);
             
             // Store the instance in ref

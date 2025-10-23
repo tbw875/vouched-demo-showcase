@@ -76,6 +76,7 @@ export default function ConfigurationPage() {
 
   const handleStartDemo = () => {
     const enabledProducts = products.filter(p => p.enabled).map(p => p.id);
+    const disabledProducts = products.filter(p => !p.enabled).map(p => p.id);
     
     // Add ssnPrivate to products if it's not 'off'
     if (ssnMode !== 'off') {
@@ -86,6 +87,7 @@ export default function ConfigurationPage() {
       flow: 'desktop',
       workflow: 'simultaneous',
       enabledProducts,
+      disabledProducts,
       ssnMode,
       reverificationEnabled,
     });
@@ -95,6 +97,7 @@ export default function ConfigurationPage() {
       flow: 'desktop', // Default to desktop flow
       workflow: 'simultaneous', // Default to simultaneous workflow
       products: enabledProducts.join(','),
+      disabledProducts: disabledProducts.join(','),
       ssnMode: ssnMode,
       reverification: reverificationEnabled.toString(),
       useCase: useCaseContext

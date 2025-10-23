@@ -10,6 +10,7 @@ interface VouchedConfig {
   flowType: 'desktop' | 'phone';
   workflowType: 'simultaneous' | 'step-up';
   enabledProducts: string[];
+  disabledProducts: string[];
   ssnMode: 'off' | 'last4' | 'full9';
 }
 
@@ -33,7 +34,8 @@ function DOBPageContent() {
   const config: VouchedConfig = {
     flowType: (searchParams.get('flow') as 'desktop' | 'phone') || 'desktop',
     workflowType: (searchParams.get('workflow') as 'simultaneous' | 'step-up') || 'step-up',
-    enabledProducts: searchParams.get('products')?.split(',') || ['dob-verification'],
+    enabledProducts: searchParams.get('products')?.split(',').filter(p => p) || ['dob-verification'],
+    disabledProducts: searchParams.get('disabledProducts')?.split(',').filter(p => p) || [],
     ssnMode: (searchParams.get('ssnMode') as 'off' | 'last4' | 'full9') || 'off'
   };
   

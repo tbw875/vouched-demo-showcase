@@ -16,6 +16,7 @@ interface VouchedConfig {
   flowType: 'desktop' | 'phone';
   workflowType: 'simultaneous' | 'step-up';
   enabledProducts: string[];
+  disabledProducts: string[];
 }
 
 interface FormData {
@@ -41,7 +42,8 @@ function HealthcareIDVPageContent() {
   const config: VouchedConfig = {
     flowType: (searchParams.get('flow') as 'desktop' | 'phone') || 'desktop',
     workflowType: (searchParams.get('workflow') as 'simultaneous' | 'step-up') || 'step-up',
-    enabledProducts: searchParams.get('products')?.split(',') || ['id-verification']
+    enabledProducts: searchParams.get('products')?.split(',').filter(p => p) || ['id-verification'],
+    disabledProducts: searchParams.get('disabledProducts')?.split(',').filter(p => p) || []
   };
   
   const reverificationEnabled = searchParams.get('reverification') === 'true';
@@ -177,7 +179,10 @@ function HealthcareIDVPageContent() {
                 lastName: verificationData.lastName || '',
                 email: verificationData.email || '',
                 phone: verificationData.phone || '',
-                ...(verificationData.birthDate && { birthDate: verificationData.birthDate })
+                ...(verificationData.birthDate && { birthDate: verificationData.birthDate }),
+                // Product configuration goes inside verification object per Vouched docs
+                enableCrossCheck: config.enabledProducts.includes('crosscheck'),
+                enableDriversLicenseValidation: config.enabledProducts.includes('drivers-license-verification'),
               },
 
               // Webhook configuration - this sends verification results to your backend
@@ -204,11 +209,9 @@ function HealthcareIDVPageContent() {
                 name: "avant",
               },
 
-              // Add product configuration conditionally
-              ...(config.enabledProducts.includes('crosscheck') && { enableCrossCheck: true }),
-              ...(config.enabledProducts.includes('dob-verification') && { dobVerification: true }),
-              ...(config.enabledProducts.includes('drivers-license-verification') && { enableDriversLicenseVerification: true }),
-              ...(config.enabledProducts.includes('aml') && { enableAML: true }),
+              // Other product configurations at root level
+              dobVerification: config.enabledProducts.includes('dob-verification'),
+              enableAML: config.enabledProducts.includes('aml'),
 
               // Add debug mode to get detailed error information
               debug: true,
@@ -249,13 +252,16 @@ function HealthcareIDVPageContent() {
               }
             };
 
-            console.log('Initializing Vouched with config:', {
-              ...vouchedConfig,
-              verification: {
-                ...vouchedConfig.verification,
-                phone: vouchedConfig.verification.phone ? `***${vouchedConfig.verification.phone.slice(-4)}` : 'not provided'
-              }
-            });
+            console.log('=== VOUCHED PRODUCT CONFIGURATION (Healthcare) ===');
+            console.log('Enabled Products:', config.enabledProducts);
+            console.log('Disabled Products:', config.disabledProducts);
+            console.log('Product Keys Being Sent to Vouched:');
+            console.log('  verification.enableCrossCheck:', vouchedConfig.verification.enableCrossCheck);
+            console.log('  verification.enableDriversLicenseValidation:', vouchedConfig.verification.enableDriversLicenseValidation);
+            console.log('  dobVerification (root):', vouchedConfig.dobVerification);
+            console.log('  enableAML (root):', vouchedConfig.enableAML);
+            console.log('Full Vouched Config:', JSON.stringify(vouchedConfig, null, 2));
+            console.log('==================================================');
 
             try {
               // Initialize Vouched
