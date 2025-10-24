@@ -4,6 +4,9 @@
  * These tests validate the product configuration logic without complex DOM mocking.
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// Test files use 'any' for mocking and flexible test data
+
 describe('Product Configuration Logic', () => {
   // Test the configuration generation logic
   describe('Vouched Configuration Generation', () => {

@@ -29,7 +29,7 @@ function ResultsPageContent() {
     
     // Try different possible locations for jobID
     return (data.id as string) || 
-           ((data.job as any)?.id as string) || 
+           ((data.job as Record<string, unknown>)?.id as string) || 
            (data.jobId as string) || 
            (data.extractedJobId as string) ||
            null;

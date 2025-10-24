@@ -52,7 +52,8 @@ function DOBPageContent() {
     if (formData.firstName && formData.lastName && formData.dateOfBirth && formData.phone) {
       performDOBVerification();
     }
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run once on mount - form data is intentionally not a dependency
 
   const performDOBVerification = async () => {
     if (!formData.firstName || !formData.lastName || !formData.dateOfBirth || !formData.phone) {
@@ -130,7 +131,7 @@ function DOBPageContent() {
   };
 
   // JSON syntax highlighting component
-  const JsonDisplay = ({ data, title }: { data: any; title: string }) => {
+  const JsonDisplay = ({ data, title }: { data: unknown; title: string }) => {
     if (!data) return <div className="text-gray-500 italic">Waiting for {title.toLowerCase()}...</div>;
     
     const jsonString = typeof data === 'string' ? data : JSON.stringify(data, null, 2);

@@ -9,7 +9,7 @@ import PageHeader from '../../components/PageHeader';
 
 interface WebhookResponse {
   timestamp: string;
-  data?: any;
+  data?: Record<string, unknown>;
   error?: string;
 }
 
@@ -152,11 +152,12 @@ function ReverificationResultsContent() {
   const getJobId = (response: WebhookResponse | null): string | null => {
     if (!response?.data) return null;
     
+    const data = response.data as Record<string, unknown>;
     // Try different possible locations for jobID
-    return response.data.id || 
-           response.data.job?.id || 
-           response.data.jobId || 
-           response.data.extractedJobId ||
+    return (data.id as string) || 
+           ((data.job as Record<string, unknown>)?.id as string) || 
+           (data.jobId as string) || 
+           (data.extractedJobId as string) ||
            null;
   };
 
@@ -345,7 +346,7 @@ function ReverificationResultsContent() {
                   <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Confidence Score</label>
                   <p className="text-gray-900 dark:text-white font-medium">
                     {latestResponse.data?.confidenceScore 
-                      ? `${Math.round(latestResponse.data.confidenceScore * 100)}%`
+                      ? `${Math.round((latestResponse.data.confidenceScore as number) * 100)}%`
                       : 'Not available'
                     }
                   </p>

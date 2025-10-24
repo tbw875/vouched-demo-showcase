@@ -5,6 +5,9 @@
  * for all product configurations to ensure everything works end-to-end.
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// Test files use 'any' for mocking and flexible test data
+
 import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 
 // Test configurations for all possible product combinations

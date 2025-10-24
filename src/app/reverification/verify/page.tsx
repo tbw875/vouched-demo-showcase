@@ -3,12 +3,11 @@
 import { useEffect, useRef, Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import PageHeader from '../../components/PageHeader';
-
-// Vouched global is already declared elsewhere
+import { VouchedConfig as VouchedSDKConfig, VouchedJob, VouchedInstance, VouchedMessageEvent } from '@/types/vouched';
 
 function ReverificationVerifyContent() {
   const searchParams = useSearchParams();
-  const vouchedInstanceRef = useRef<Record<string, unknown> | null>(null);
+  const vouchedInstanceRef = useRef<VouchedInstance | null>(null);
   const [isPhoneView, setIsPhoneView] = useState(false);
   
   const originalJobId = searchParams.get('originalJobId');
@@ -55,8 +54,13 @@ function ReverificationVerifyContent() {
             
             console.log('Vouched element found, creating reverification configuration...');
             
+            if (!originalJobId) {
+              console.error('No originalJobId provided for reverification');
+              return;
+            }
+            
             // Configure Vouched for Reverification following working pattern
-            const vouchedConfig = {
+            const vouchedConfig: VouchedSDKConfig = {
               // The exact App ID that works
               appId: "wYd4PAXW3W2~xHNRx~-cdUpFl!*SFs",
 
@@ -95,7 +99,7 @@ function ReverificationVerifyContent() {
               debug: true,
 
               // Simple reverification callback following Vouched docs pattern
-              onReverify: function(job: any) {
+              onReverify: function(job: VouchedJob) {
                 console.log("Reverification complete", { token: job.token });
                 
                 // Store essential data for dashboard access
@@ -134,19 +138,20 @@ function ReverificationVerifyContent() {
               }
 
               // Set up message listener for reverification events
-              const messageHandler = (event: MessageEvent) => {
+              const messageHandler = (event: MessageEvent<VouchedMessageEvent>) => {
                 // Only listen to messages from Vouched
                 if (event.origin !== 'https://static.vouched.id') return;
                 
                 console.log('Received reverification message from Vouched:', event.data);
                 
                 const { type, data } = event.data;
+                const jobData = data as Record<string, unknown> | undefined;
                 
                 if (type === 'VOUCHED_INIT') {
                   console.log('Reverification onInit called:', data);
-                  console.log('Job ID:', data?.id);
-                  console.log('Job Token:', data?.token);
-                  console.log('Job Status:', data?.status);
+                  console.log('Job ID:', jobData?.id);
+                  console.log('Job Token:', jobData?.token);
+                  console.log('Job Status:', jobData?.status);
                 }
                 
                 if (type === 'VOUCHED_REVERIFY' || type === 'VOUCHED_DONE') {
@@ -167,7 +172,7 @@ function ReverificationVerifyContent() {
               window.addEventListener('message', messageHandler);
               
               // Store handler for cleanup
-              (window as any)._vouchedReverifyMessageHandler = messageHandler;
+              (window as Window & { _vouchedReverifyMessageHandler?: typeof messageHandler })._vouchedReverifyMessageHandler = messageHandler;
 
               console.log('Creating Vouched reverification instance with config:', vouchedConfig);
               
@@ -214,12 +219,13 @@ function ReverificationVerifyContent() {
     // Add script to document head
     document.head.appendChild(script);
 
-    // Cleanup function
+    // Cleanup function    
     return () => {
       // Cleanup message listener
-      if ((window as any)._vouchedReverifyMessageHandler) {
-        window.removeEventListener('message', (window as any)._vouchedReverifyMessageHandler);
-        delete (window as any)._vouchedReverifyMessageHandler;
+      const windowWithHandler = window as Window & { _vouchedReverifyMessageHandler?: (event: MessageEvent) => void };
+      if (windowWithHandler._vouchedReverifyMessageHandler) {
+        window.removeEventListener('message', windowWithHandler._vouchedReverifyMessageHandler);
+        delete windowWithHandler._vouchedReverifyMessageHandler;
       }
       
       // Cleanup Vouched instance properly
@@ -244,8 +250,8 @@ function ReverificationVerifyContent() {
         document.head.removeChild(script);
       }
     };
-
-  }, []); // Empty dependency array - run once on mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array - run once on mount - intentionally ignoring originalJobId to prevent re-initialization
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950 dark:via-slate-900 dark:to-purple-950">

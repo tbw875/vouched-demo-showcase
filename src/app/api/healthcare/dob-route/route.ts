@@ -60,21 +60,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Validate email format if provided
-    if (body.email) {
-      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailPattern.test(body.email)) {
-        return NextResponse.json(
-          {
-            error: 'Validation Error',
-            message: 'Invalid email format',
-            code: 'INVALID_EMAIL_FORMAT'
-          },
-          { status: 400 }
-        );
-      }
-    }
-
     // Get API key from environment variables (server-side only)
     const apiKey = process.env.VOUCHED_PRIVATE_API_KEY;
     if (!apiKey) {
@@ -92,9 +77,8 @@ export async function POST(request: NextRequest) {
     console.log('Processing DOB verification request for:', {
       firstName: body.firstName,
       lastName: body.lastName,
-      dateOfBirth: body.dateOfBirth,
-      phone: body.phone ? `***${body.phone.slice(-4)}` : 'not provided',
-      email: body.email || 'not provided'
+      dob: body.dob,
+      phone: body.phone ? `***${body.phone.slice(-4)}` : 'not provided'
     });
 
     // Call the DOB verification service with the API key

@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 // In-memory store for webhook responses (in a real app, this would be a database)
 // Using a global variable for demo purposes only
 declare global {
-  var vouchedWebhookResponses: any[];
+  var vouchedWebhookResponses: Array<{ timestamp: string; data?: unknown; error?: string }>;
 }
 
 // Initialize the global store if it doesn't exist

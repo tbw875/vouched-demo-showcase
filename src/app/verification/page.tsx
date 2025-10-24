@@ -4,15 +4,9 @@ import { useEffect, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import PageHeader from '../components/PageHeader';
 import { SSNVerificationRequest, SSNApiResponse, isSSNVerificationResponse } from '../../types/ssn-api';
+import { VouchedConfig as VouchedSDKConfig, VouchedJob, VouchedInstance, VouchedMessageEvent } from '../../types/vouched';
 
-// Extend Window interface for TypeScript
-declare global {
-  interface Window {
-    Vouched: any;
-  }
-}
-
-interface VouchedConfig {
+interface AppConfig {
   flowType: 'desktop' | 'phone';
   workflowType: 'simultaneous' | 'step-up';
   enabledProducts: string[];
@@ -30,10 +24,10 @@ interface FormData {
 
 function VerificationPageContent() {
   const searchParams = useSearchParams();
-  const vouchedInstanceRef = useRef<Record<string, unknown> | null>(null);
+  const vouchedInstanceRef = useRef<VouchedInstance | null>(null);
   
   // Parse configuration from URL params
-  const config: VouchedConfig = {
+  const config: AppConfig = {
     flowType: (searchParams.get('flow') as 'desktop' | 'phone') || 'desktop',
     workflowType: (searchParams.get('workflow') as 'simultaneous' | 'step-up') || 'simultaneous',
     enabledProducts: searchParams.get('products')?.split(',') || ['id-verification']
@@ -131,7 +125,7 @@ function VerificationPageContent() {
             }
             
             // Configure Vouched based on flow type and products
-            const verificationData: Record<string, any> = {};
+            const verificationData: Record<string, string | boolean> = {};
             
             // Always add basic identity data (required for all products)
             if (formData.firstName) verificationData.firstName = formData.firstName;
@@ -147,7 +141,7 @@ function VerificationPageContent() {
             
 
             // Validate required data for product combinations
-            const hasRequiredData = (products: string[], data: Record<string, any>): boolean => {
+            const hasRequiredData = (products: string[], data: Record<string, string | boolean>): boolean => {
               // For CrossCheck, require basic identity data
               if (products.includes('crosscheck')) {
                 if (!data.firstName || !data.lastName || !data.email || !data.phone) {
@@ -202,17 +196,17 @@ function VerificationPageContent() {
             }
 
             // Create proper Vouched configuration following working example
-            const vouchedConfig = {
+            const vouchedConfig: VouchedSDKConfig = {
               // The exact App ID that works
               appId: "wYd4PAXW3W2~xHNRx~-cdUpFl!*SFs",
 
               // Required verification information for comparison
               verification: {
-                firstName: verificationData.firstName || '',
-                lastName: verificationData.lastName || '',
-                email: verificationData.email || '',
-                phone: verificationData.phone || '',
-                ...(verificationData.birthDate && { birthDate: verificationData.birthDate }),
+                firstName: (typeof verificationData.firstName === 'string' ? verificationData.firstName : '') || '',
+                lastName: (typeof verificationData.lastName === 'string' ? verificationData.lastName : '') || '',
+                email: (typeof verificationData.email === 'string' ? verificationData.email : '') || '',
+                phone: (typeof verificationData.phone === 'string' ? verificationData.phone : '') || '',
+                ...(typeof verificationData.birthDate === 'string' && verificationData.birthDate && { birthDate: verificationData.birthDate }),
                 // Product configuration goes inside verification object per Vouched docs
                 enableCrossCheck: config.enabledProducts.includes('crosscheck'),
                 enableDriversLicenseValidation: config.enabledProducts.includes('drivers-license-verification'),
@@ -250,7 +244,7 @@ function VerificationPageContent() {
               debug: true,
 
               // Simple callback following Vouched documentation pattern
-              onDone: function(job: any) {
+              onDone: function(job: VouchedJob) {
                 console.log("Verification complete", { token: job.token });
                 
                 // Store essential data
@@ -293,25 +287,26 @@ function VerificationPageContent() {
             }
             
             // Set up message listener for Vouched events (since callbacks cause DataCloneError)
-            const messageHandler = (event: MessageEvent) => {
+            const messageHandler = (event: MessageEvent<VouchedMessageEvent>) => {
               // Only listen to messages from Vouched
               if (event.origin !== 'https://static.vouched.id') return;
               
               console.log('Received message from Vouched:', event.data);
               
               const { type, data } = event.data;
+              const jobData = data as Record<string, unknown> | undefined;
               
               if (type === 'VOUCHED_INIT') {
                 console.log('onInit called:', data);
-                console.log('Job ID:', data?.id);
-                console.log('Job Token:', data?.token);
-                console.log('Job Status:', data?.status);
+                console.log('Job ID:', jobData?.id);
+                console.log('Job Token:', jobData?.token);
+                console.log('Job Status:', jobData?.status);
               }
               
               if (type === 'VOUCHED_SUBMIT') {
                 console.log("Photo submitted", data);
-                console.log("Job ID in onSubmit:", data?.job?.id);
-                console.log("Job Status in onSubmit:", data?.job?.status);
+                console.log("Job ID in onSubmit:", (jobData?.job as Record<string, unknown>)?.id);
+                console.log("Job Status in onSubmit:", (jobData?.job as Record<string, unknown>)?.status);
               }
               
               if (type === 'VOUCHED_DONE') {
@@ -331,15 +326,14 @@ function VerificationPageContent() {
             window.addEventListener('message', messageHandler);
             
             // Store handler for cleanup
-            (window as any)._vouchedMessageHandler = messageHandler;
+            (window as Window & { _vouchedMessageHandler?: typeof messageHandler })._vouchedMessageHandler = messageHandler;
 
             // Initialize Vouched using the correct pattern
             console.log('=== VOUCHED PRODUCT CONFIGURATION ===');
             console.log('Enabled Products:', config.enabledProducts);
-            console.log('Disabled Products:', config.disabledProducts);
             console.log('Product Keys Being Sent to Vouched:');
-            console.log('  verification.enableCrossCheck:', vouchedConfig.verification.enableCrossCheck);
-            console.log('  verification.enableDriversLicenseValidation:', vouchedConfig.verification.enableDriversLicenseValidation);
+            console.log('  verification.enableCrossCheck:', vouchedConfig.verification?.enableCrossCheck);
+            console.log('  verification.enableDriversLicenseValidation:', vouchedConfig.verification?.enableDriversLicenseValidation);
             console.log('  dobVerification (root):', vouchedConfig.dobVerification);
             console.log('  enableAML (root):', vouchedConfig.enableAML);
             console.log('Full Vouched Config:', JSON.stringify(vouchedConfig, null, 2));
@@ -374,9 +368,10 @@ function VerificationPageContent() {
     
     return () => {
       // Cleanup message listener
-      if ((window as any)._vouchedMessageHandler) {
-        window.removeEventListener('message', (window as any)._vouchedMessageHandler);
-        delete (window as any)._vouchedMessageHandler;
+      const windowWithHandler = window as Window & { _vouchedMessageHandler?: (event: MessageEvent) => void };
+      if (windowWithHandler._vouchedMessageHandler) {
+        window.removeEventListener('message', windowWithHandler._vouchedMessageHandler);
+        delete windowWithHandler._vouchedMessageHandler;
       }
       
       // Cleanup Vouched instance properly
@@ -401,7 +396,8 @@ function VerificationPageContent() {
         document.head.removeChild(script);
       }
     };
-  }, []); // Only run once on mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount - intentionally ignoring dependencies to prevent re-initialization
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950 dark:via-slate-900 dark:to-purple-950">

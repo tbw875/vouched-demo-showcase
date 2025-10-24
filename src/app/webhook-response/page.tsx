@@ -6,10 +6,11 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { CheckCircleIcon, XCircleIcon, ClockIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import PageHeader from '../components/PageHeader';
+import { VouchedJob } from '@/types/vouched';
 
 interface WebhookResponse {
   timestamp: string;
-  data?: any;
+  data?: VouchedJob;
   error?: string;
 }
 
@@ -18,10 +19,10 @@ function WebhookResponsePageContent() {
   const [responses, setResponses] = useState<WebhookResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const pollingInterval = 1000; // 1 second polling interval
-  const [localJobData, setLocalJobData] = useState<any>(null);
+  const [localJobData, setLocalJobData] = useState<WebhookResponse | null>(null);
   const [isMounted, setIsMounted] = useState(false);
   const [pollingCount, setPollingCount] = useState(0);
-  const [formData, setFormData] = useState<any>({});
+  const [formData, setFormData] = useState<Record<string, string>>({});
   const [currentJobId, setCurrentJobId] = useState('');
   
   const reverificationEnabled = searchParams.get('reverification') === 'true';
@@ -156,8 +157,8 @@ function WebhookResponsePageContent() {
   };
 
   // Transform form data to match what was actually sent to Vouched
-  const transformToVouchedParameters = (rawFormData: any) => {
-    const vouchedData: Record<string, any> = {};
+  const transformToVouchedParameters = (rawFormData: Record<string, string>) => {
+    const vouchedData: Record<string, string> = {};
     
     // Basic identity data (always included when available)
     if (rawFormData.firstName) vouchedData.firstName = rawFormData.firstName;
@@ -186,11 +187,12 @@ function WebhookResponsePageContent() {
   const getJobId = (response: WebhookResponse | null): string | null => {
     if (!response?.data) return null;
     
+    const data = response.data as unknown as Record<string, unknown>;
     // Try different possible locations for jobID
-    return response.data.id || 
-           response.data.job?.id || 
-           response.data.jobId || 
-           response.data.extractedJobId ||
+    return (data?.id as string) || 
+           ((data?.job as Record<string, unknown>)?.id as string) || 
+           (data?.jobId as string) || 
+           (data?.extractedJobId as string) ||
            null;
   };
 

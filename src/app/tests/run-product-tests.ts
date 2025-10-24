@@ -5,6 +5,9 @@
  * the Vouched element loads and webhooks populate correctly for each one.
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// Test utility script uses 'any' for flexible configuration objects
+
 interface TestResult {
   productConfig: string;
   vouchedLoaded: boolean;

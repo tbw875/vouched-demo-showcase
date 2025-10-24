@@ -38,7 +38,7 @@ interface ServiceCard {
 function DashboardContent() {
   const searchParams = useSearchParams();
   const [userName, setUserName] = useState('');
-  const [webhookData, setWebhookData] = useState<any>(null);
+  const [webhookData, setWebhookData] = useState<Record<string, unknown> | null>(null);
   const [showWebhookModal, setShowWebhookModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [useCaseContext, setUseCaseContext] = useState<UseCaseContext>('financial');

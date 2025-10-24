@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
     }
     
     console.log('Found webhook data for job_id:', lookupKey);
-    return NextResponse.json({ data });
+    return NextResponse.json({ data: data as Record<string, unknown> });
     
   } catch (error) {
     console.error('GET webhook error:', error);

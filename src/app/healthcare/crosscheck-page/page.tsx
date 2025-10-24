@@ -48,7 +48,7 @@ function CrossCheckPageContent() {
   const useCaseContext = searchParams.get('useCase') || 'healthcare';
 
   // JSON syntax highlighting component
-  const JsonDisplay = ({ data, title }: { data: any; title: string }) => {
+  const JsonDisplay = ({ data, title }: { data: unknown; title: string }) => {
     if (!data) return <div className="text-gray-500 italic">Waiting for {title.toLowerCase()}...</div>;
     
     const jsonString = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
@@ -72,7 +72,8 @@ function CrossCheckPageContent() {
     if (formData.firstName && formData.lastName && formData.phone) {
       performCrossCheckVerification();
     }
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run once on mount - form data is intentionally not a dependency
 
   const performCrossCheckVerification = async () => {
     if (!formData.firstName || !formData.lastName || !formData.phone) {
@@ -288,7 +289,7 @@ function CrossCheckPageContent() {
             </div>
             <div className="p-6">
               {/* Identity Check Score Display */}
-              {verificationResult && verificationResult.result && (() => {
+              {verificationResult && 'result' in verificationResult && verificationResult.result && (() => {
                 // Extract the identity score from the API response
                 const identityScore = verificationResult.result.confidences?.identity;
                 const scorePercentage = identityScore ? Math.round(identityScore * 100) : null;

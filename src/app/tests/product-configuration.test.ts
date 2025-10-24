@@ -11,6 +11,9 @@
  * 4. Form fields are generated conditionally, but Vouched element should load regardless
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// Test files use 'any' for mocking and flexible test data
+
 import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 
 // Mock window.Vouched for testing

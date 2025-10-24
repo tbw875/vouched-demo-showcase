@@ -4,15 +4,9 @@ import React, { useEffect, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import PageHeader from '@/app/components/PageHeader';
 import { SSNVerificationRequest, SSNApiResponse, isSSNVerificationResponse } from '@/types/ssn-api';
+import { VouchedConfig as VouchedSDKConfig, VouchedJob, VouchedInstance } from '@/types/vouched';
 
-// Extend Window interface for TypeScript
-declare global {
-  interface Window {
-    Vouched: any;
-  }
-}
-
-interface VouchedConfig {
+interface AppConfig {
   flowType: 'desktop' | 'phone';
   workflowType: 'simultaneous' | 'step-up';
   enabledProducts: string[];
@@ -31,10 +25,10 @@ interface FormData {
 
 function HealthcareIDVPageContent() {
   const searchParams = useSearchParams();
-  const vouchedInstanceRef = useRef<Record<string, unknown> | null>(null);
+  const vouchedInstanceRef = useRef<VouchedInstance | null>(null);
   
   // Parse configuration from URL params
-  const config: VouchedConfig = {
+  const config: AppConfig = {
     flowType: (searchParams.get('flow') as 'desktop' | 'phone') || 'desktop',
     workflowType: (searchParams.get('workflow') as 'simultaneous' | 'step-up') || 'step-up',
     enabledProducts: searchParams.get('products')?.split(',').filter(p => p) || ['id-verification'],
@@ -130,7 +124,7 @@ function HealthcareIDVPageContent() {
             console.log('Vouched element found, creating configuration...');
             
             // Create verification data object
-            const verificationData: Record<string, any> = {};
+            const verificationData: Record<string, string | boolean> = {};
             
             // Always add basic identity data
             if (formData.firstName) verificationData.firstName = formData.firstName;
@@ -156,17 +150,17 @@ function HealthcareIDVPageContent() {
             }
 
             // Create proper Vouched configuration following working example
-            const vouchedConfig = {
+            const vouchedConfig: VouchedSDKConfig = {
               // The exact App ID that works
               appId: "wYd4PAXW3W2~xHNRx~-cdUpFl!*SFs",
 
               // Required verification information for comparison
               verification: {
-                firstName: verificationData.firstName || '',
-                lastName: verificationData.lastName || '',
-                email: verificationData.email || '',
-                phone: verificationData.phone || '',
-                ...(verificationData.birthDate && { birthDate: verificationData.birthDate }),
+                firstName: (typeof verificationData.firstName === 'string' ? verificationData.firstName : '') || '',
+                lastName: (typeof verificationData.lastName === 'string' ? verificationData.lastName : '') || '',
+                email: (typeof verificationData.email === 'string' ? verificationData.email : '') || '',
+                phone: (typeof verificationData.phone === 'string' ? verificationData.phone : '') || '',
+                ...(typeof verificationData.birthDate === 'string' && verificationData.birthDate && { birthDate: verificationData.birthDate }),
                 // Product configuration goes inside verification object per Vouched docs
                 enableCrossCheck: config.enabledProducts.includes('crosscheck'),
                 enableDriversLicenseValidation: config.enabledProducts.includes('drivers-license-verification'),
@@ -204,7 +198,7 @@ function HealthcareIDVPageContent() {
               debug: true,
 
               // Simple callback following Vouched documentation pattern
-              onDone: (job: any) => {
+              onDone: (job: VouchedJob) => {
                 console.log('=== VOUCHED JOB COMPLETED ===');
                 console.log('Job data:', job);
                 console.log('Job ID:', job?.id);
@@ -243,8 +237,8 @@ function HealthcareIDVPageContent() {
             console.log('Enabled Products:', config.enabledProducts);
             console.log('Disabled Products:', config.disabledProducts);
             console.log('Product Keys Being Sent to Vouched:');
-            console.log('  verification.enableCrossCheck:', vouchedConfig.verification.enableCrossCheck);
-            console.log('  verification.enableDriversLicenseValidation:', vouchedConfig.verification.enableDriversLicenseValidation);
+            console.log('  verification.enableCrossCheck:', vouchedConfig.verification?.enableCrossCheck);
+            console.log('  verification.enableDriversLicenseValidation:', vouchedConfig.verification?.enableDriversLicenseValidation);
             console.log('  dobVerification (root):', vouchedConfig.dobVerification);
             console.log('  enableAML (root):', vouchedConfig.enableAML);
             console.log('Full Vouched Config:', JSON.stringify(vouchedConfig, null, 2));
@@ -290,9 +284,9 @@ function HealthcareIDVPageContent() {
 
     // Cleanup function
     return () => {
-      if (vouchedInstanceRef.current && typeof vouchedInstanceRef.current === 'object' && 'unmount' in vouchedInstanceRef.current) {
+      if (vouchedInstanceRef.current?.unmount) {
         try {
-          (vouchedInstanceRef.current as any).unmount();
+          vouchedInstanceRef.current.unmount();
         } catch (error) {
           console.error('Error unmounting Vouched instance:', error);
         }
@@ -305,7 +299,8 @@ function HealthcareIDVPageContent() {
         existingScript.remove();
       }
     };
-  }, [config.enabledProducts, formData, reverificationEnabled, useCaseContext]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount - intentionally ignoring dependencies to prevent re-initialization
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950 dark:via-slate-900 dark:to-purple-950">

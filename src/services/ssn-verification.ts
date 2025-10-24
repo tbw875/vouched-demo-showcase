@@ -81,7 +81,7 @@ export class SSNVerificationService {
         responseData = JSON.parse(responseText);
         console.log('Response body (parsed JSON):', responseData);
       } catch (jsonError) {
-        console.error('JSON parsing failed:', jsonError.message);
+        console.error('JSON parsing failed:', jsonError instanceof Error ? jsonError.message : 'Unknown error');
         console.error('Raw response text:', responseText.substring(0, 500));
         console.log('=================================');
         return {
