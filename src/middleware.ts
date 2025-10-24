@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 // Protect all routes except public ones
 export default withAuth(
-  function middleware(req) {
+  function middleware() {
     // This function runs after the user is authenticated
     return NextResponse.next();
   },
