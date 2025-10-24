@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     console.log('Webhook received:', JSON.stringify(body, null, 2));
     
     // Extract job token from various possible locations
-    let jobToken = body.token || body.job?.token || body.jobToken;
+    const jobToken = body.token || body.job?.token || body.jobToken;
     let jobId = jobToken;
     
     // If we have a token that looks like a JWT, decode it to get the job_id

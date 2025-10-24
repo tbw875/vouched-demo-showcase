@@ -17,7 +17,7 @@ function WebhookResponsePageContent() {
   const searchParams = useSearchParams();
   const [responses, setResponses] = useState<WebhookResponse[]>([]);
   const [loading, setLoading] = useState(true);
-  const [pollingInterval, setPollingInterval] = useState<number>(1000); // 1 second polling interval
+  const pollingInterval = 1000; // 1 second polling interval
   const [localJobData, setLocalJobData] = useState<any>(null);
   const [isMounted, setIsMounted] = useState(false);
   const [pollingCount, setPollingCount] = useState(0);
@@ -119,10 +119,6 @@ function WebhookResponsePageContent() {
     timestamp: localJobData.timestamp,
     data: localJobData.data
   } : null);
-
-  // Check if we're using webhook data or local data
-  const isUsingWebhookData = responses.length > 0;
-  const isUsingLocalData = !isUsingWebhookData && localJobData;
 
   const getVerificationStatus = () => {
     if (!latestResponse) return 'pending';
@@ -327,7 +323,7 @@ function WebhookResponsePageContent() {
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
             <p className="text-gray-500 mb-4">No verification data found</p>
             <p className="text-sm text-gray-400 mb-6">
-              This usually means the verification process wasn't completed or there was an error.
+              This usually means the verification process wasn&apos;t completed or there was an error.
             </p>
             <button 
               className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-lg transition-all duration-200"

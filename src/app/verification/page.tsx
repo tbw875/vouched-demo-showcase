@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef, Suspense } from 'react';
+import { useEffect, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import PageHeader from '../components/PageHeader';
 import { SSNVerificationRequest, SSNApiResponse, isSSNVerificationResponse } from '../../types/ssn-api';
@@ -32,11 +32,6 @@ function VerificationPageContent() {
   const searchParams = useSearchParams();
   const vouchedInstanceRef = useRef<Record<string, unknown> | null>(null);
   
-  // SSN verification state
-  const [ssnVerificationResult, setSsnVerificationResult] = useState<SSNApiResponse | null>(null);
-  const [ssnVerificationInProgress, setSsnVerificationInProgress] = useState(false);
-  const [ssnVerificationError, setSsnVerificationError] = useState<string | null>(null);
-  
   // Parse configuration from URL params
   const config: VouchedConfig = {
     flowType: (searchParams.get('flow') as 'desktop' | 'phone') || 'desktop',
@@ -61,9 +56,6 @@ function VerificationPageContent() {
       console.log('SSN verification skipped - not enabled or missing required data (firstName, lastName, phone, ssn required)');
       return;
     }
-
-    setSsnVerificationInProgress(true);
-    setSsnVerificationError(null);
 
     try {
       console.log('Starting SSN verification...');
@@ -92,7 +84,6 @@ function VerificationPageContent() {
       }
 
       console.log('SSN verification completed:', result);
-      setSsnVerificationResult(result);
 
       // Store SSN verification result for later display
       if (isSSNVerificationResponse(result)) {
@@ -104,10 +95,6 @@ function VerificationPageContent() {
 
     } catch (error) {
       console.error('SSN verification error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'SSN verification failed';
-      setSsnVerificationError(errorMessage);
-    } finally {
-      setSsnVerificationInProgress(false);
     }
   };
 

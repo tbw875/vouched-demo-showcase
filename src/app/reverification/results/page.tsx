@@ -389,7 +389,7 @@ function ReverificationResultsContent() {
             <ArrowPathIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-500 mb-4">No reverification data found</p>
             <p className="text-sm text-gray-400 mb-6">
-              This usually means the reverification process wasn't completed or there was an error.
+              This usually means the reverification process wasn&apos;t completed or there was an error.
             </p>
             <button 
               className="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold rounded-lg transition-all duration-200"

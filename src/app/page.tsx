@@ -421,7 +421,7 @@ export default function ConfigurationPage() {
                     Financial Services
                   </h3>
                   <p className="text-gray-600 dark:text-gray-300 text-sm">
-                    For verifying your customer's identity, and ensuring they are eligible for financial services.
+                    For verifying your customer&apos;s identity, and ensuring they are eligible for financial services.
                   </p>
                 </div>
               </div>

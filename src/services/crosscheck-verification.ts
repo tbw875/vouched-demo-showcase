@@ -2,11 +2,8 @@
 
 import { 
   CrossCheckVerificationRequest, 
-  CrossCheckVerificationResponse, 
-  CrossCheckVerificationError,
-  CrossCheckApiResponse,
-  isCrossCheckVerificationResponse,
-  isCrossCheckVerificationError 
+  CrossCheckVerificationResponse,
+  CrossCheckApiResponse
 } from '../types/crosscheck-api';
 
 export class CrossCheckVerificationService {

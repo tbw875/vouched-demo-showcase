@@ -2,11 +2,8 @@
 
 import { 
   DOBVerificationRequest, 
-  DOBVerificationResponse, 
-  DOBVerificationError,
-  DOBApiResponse,
-  isDOBVerificationResponse,
-  isDOBVerificationError 
+  DOBVerificationResponse,
+  DOBApiResponse
 } from '../types/dob-api';
 
 export class DOBVerificationService {

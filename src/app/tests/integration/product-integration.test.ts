@@ -179,7 +179,7 @@ describe('Product Integration Tests', () => {
       describe(`${testConfig.name}`, () => {
         it('should load Vouched element with correct configuration', async () => {
           // Simulate the verification page flow
-          const vouchedConfig = await simulateVerificationFlow(
+          await simulateVerificationFlow(
             testConfig.products,
             testConfig.formData
           );
@@ -230,7 +230,7 @@ describe('Product Integration Tests', () => {
           };
 
           // Simulate onDone callback
-          const vouchedConfig = await simulateVerificationFlow(
+          await simulateVerificationFlow(
             testConfig.products,
             testConfig.formData
           );
@@ -258,7 +258,7 @@ describe('Product Integration Tests', () => {
             products: testConfig.products,
           };
 
-          const vouchedConfig = await simulateVerificationFlow(
+          await simulateVerificationFlow(
             testConfig.products,
             testConfig.formData
           );
@@ -279,7 +279,7 @@ describe('Product Integration Tests', () => {
   describe('Form Field Generation Tests', () => {
     it('should generate correct form fields for each product configuration', () => {
       TEST_CONFIGURATIONS.forEach(testConfig => {
-        const formFields = generateFormFields(testConfig.products, 'off');
+        const formFields = generateFormFields(testConfig.products);
         
         if (testConfig.products.includes('crosscheck')) {
           expect(formFields.some(field => field.id === 'firstName')).toBe(true);
@@ -302,7 +302,7 @@ describe('Product Integration Tests', () => {
   describe('Error Handling Tests', () => {
     it('should handle missing form data gracefully', async () => {
       // Test with minimal/missing form data
-      const vouchedConfig = await simulateVerificationFlow(['id-verification'], {});
+      await simulateVerificationFlow(['id-verification'], {});
 
       expect(window.Vouched).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -316,7 +316,7 @@ describe('Product Integration Tests', () => {
 
     it('should handle invalid product configurations', async () => {
       // Test with invalid product
-      const vouchedConfig = await simulateVerificationFlow(['invalid-product'], {});
+      await simulateVerificationFlow(['invalid-product'], {});
 
       // Should still load with basic configuration
       expect(window.Vouched).toHaveBeenCalled();
@@ -340,7 +340,7 @@ describe('Product Integration Tests', () => {
 // Helper functions
 async function simulateVerificationFlow(products: string[], formData: any) {
   // Simulate form data storage
-  (localStorage.setItem as jest.MockedFunction<any>).mockImplementation((key, value) => {
+  (localStorage.setItem as jest.MockedFunction<any>).mockImplementation((key) => {
     if (key === 'vouchedFormData') {
       return JSON.stringify(formData);
     }
@@ -417,7 +417,7 @@ async function simulateVerificationFlow(products: string[], formData: any) {
   return vouchedConfig;
 }
 
-function generateFormFields(products: string[], ssnMode: string) {
+function generateFormFields(products: string[]) {
   const fields: any[] = [];
 
   // CrossCheck fields

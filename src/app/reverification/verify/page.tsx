@@ -11,7 +11,6 @@ function ReverificationVerifyContent() {
   const vouchedInstanceRef = useRef<Record<string, unknown> | null>(null);
   const [isPhoneView, setIsPhoneView] = useState(false);
   
-  const email = searchParams.get('email');
   const originalJobId = searchParams.get('originalJobId');
 
   // Detect device type - for reverification, we'll default to desktop but allow phone mode

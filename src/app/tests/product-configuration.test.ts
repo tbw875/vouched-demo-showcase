@@ -55,7 +55,6 @@ const PRODUCT_CONFIGURATIONS = [
 
 const FLOW_TYPES = ['desktop', 'phone'] as const;
 const WORKFLOW_TYPES = ['simultaneous', 'step-up'] as const;
-const SSN_MODES = ['off', 'last4', 'full9'] as const;
 
 describe('Product Configuration Tests', () => {
   let mockVouchedInstance: any;

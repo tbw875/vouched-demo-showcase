@@ -8,7 +8,6 @@ import {
   CheckCircleIcon, 
   CreditCardIcon, 
   BanknotesIcon, 
-  BuildingLibraryIcon,
   ShieldCheckIcon,
   DocumentTextIcon,
   ChartBarIcon,
@@ -24,12 +23,6 @@ import {
   UserGroupIcon
 } from '@heroicons/react/24/outline';
 import PageHeader from '../components/PageHeader';
-
-interface WebhookResponse {
-  timestamp: string;
-  data?: any;
-  error?: string;
-}
 
 type UseCaseContext = 'healthcare' | 'financial' | 'generic';
 
@@ -265,12 +258,6 @@ function DashboardContent() {
   };
 
   const serviceCards = getServiceCards();
-
-  const getVerificationStatus = () => {
-    if (!webhookData) return 'unknown';
-    const result = webhookData.result;
-    return result?.success ? 'verified' : 'pending';
-  };
 
   const isReverification = () => {
     // Check if this is a reverification by looking at the stored data

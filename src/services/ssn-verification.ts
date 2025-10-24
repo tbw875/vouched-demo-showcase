@@ -2,11 +2,8 @@
 
 import { 
   SSNVerificationRequest, 
-  SSNVerificationResponse, 
-  SSNVerificationError,
-  SSNApiResponse,
-  isSSNVerificationResponse,
-  isSSNVerificationError 
+  SSNVerificationResponse,
+  SSNApiResponse
 } from '../types/ssn-api';
 
 export class SSNVerificationService {
