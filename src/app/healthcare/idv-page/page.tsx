@@ -133,8 +133,8 @@ function HealthcareIDVPageContent() {
             if (formData.email) verificationData.email = formData.email;
             if (formData.ipAddress) verificationData.ipAddress = formData.ipAddress;
             
-            // Add DOB for DOB verification
-            if (config.enabledProducts.includes('dob-verification') && formData.dateOfBirth) {
+            // Add DOB for Visual IDV or DOB verification
+            if ((config.enabledProducts.includes('id-verification') || config.enabledProducts.includes('dob-verification')) && formData.dateOfBirth) {
               verificationData.birthDate = formData.dateOfBirth;
             }
             

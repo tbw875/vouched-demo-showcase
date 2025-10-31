@@ -80,8 +80,8 @@ function FormFillPageContent() {
   const generateFormFields = (): FormField[] => {
     const fields: FormField[] = [];
 
-    // CrossCheck fields
-    if (config.enabledProducts.includes('crosscheck')) {
+    // Name fields - show for Visual IDV or CrossCheck
+    if (config.enabledProducts.includes('id-verification') || config.enabledProducts.includes('crosscheck')) {
       fields.push(
         {
           id: 'firstName',
@@ -98,7 +98,13 @@ function FormFillPageContent() {
           required: true,
           placeholder: 'Enter your last name',
           icon: UserIcon
-        },
+        }
+      );
+    }
+
+    // Additional CrossCheck fields (phone, email)
+    if (config.enabledProducts.includes('crosscheck')) {
+      fields.push(
         {
           id: 'phone',
           label: 'Phone Number',
@@ -165,8 +171,8 @@ function FormFillPageContent() {
       }
     }
 
-    // DOB Verification fields
-    if (config.enabledProducts.includes('dob-verification')) {
+    // DOB field - show for Visual IDV or DOB Verification
+    if (config.enabledProducts.includes('id-verification') || config.enabledProducts.includes('dob-verification')) {
       fields.push({
         id: 'dateOfBirth',
         label: 'Date of Birth',
