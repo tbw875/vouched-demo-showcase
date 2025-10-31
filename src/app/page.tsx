@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ChevronRightIcon, ShieldCheckIcon, DocumentCheckIcon, BuildingOffice2Icon, HeartIcon, CubeIcon } from '@heroicons/react/24/outline';
+import { ChevronRightIcon, ShieldCheckIcon, DocumentCheckIcon, BuildingOffice2Icon, HeartIcon, CubeIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 type SSNMode = 'off' | 'last4' | 'full9';
 type UseCaseContext = 'healthcare' | 'financial' | 'generic';
@@ -18,6 +18,7 @@ export default function ConfigurationPage() {
   const reverificationEnabled = true; // Reverification is always available
   const [useCaseContext, setUseCaseContext] = useState<UseCaseContext>('financial');
   const [showDevLinks, setShowDevLinks] = useState(false);
+  const [showAmlModal, setShowAmlModal] = useState(false);
   const [products, setProducts] = useState<Product[]>([
     {
       id: 'id-verification',
@@ -231,7 +232,8 @@ export default function ConfigurationPage() {
               {products.filter(product => product.id === 'aml').map((product) => (
                 <div
                   key={product.id}
-                  className={`p-8 rounded-2xl border-2 transition-all duration-200 ${
+                  onClick={() => setShowAmlModal(true)}
+                  className={`p-8 rounded-2xl border-2 transition-all duration-200 cursor-pointer ${
                     product.enabled
                       ? 'border-emerald-500 bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/30 dark:to-green-900/30 shadow-lg'
                       : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
@@ -245,14 +247,20 @@ export default function ConfigurationPage() {
                       <input
                         type="checkbox"
                         checked={product.enabled}
-                        onChange={() => toggleProduct(product.id)}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          toggleProduct(product.id);
+                        }}
                         className="sr-only peer"
                       />
                       <div className="w-12 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
                     </label>
                   </div>
-                  <p className="text-gray-600 dark:text-gray-300">
+                  <p className="text-gray-600 dark:text-gray-300 mb-3">
                     {product.description}
+                  </p>
+                  <p className="text-gray-600 dark:text-gray-300">
+                    <span className="font-bold text-red-600 dark:text-red-500">NOTE:</span> Not currently enabled. Coming soon.
                   </p>
                 </div>
               ))}
@@ -524,6 +532,58 @@ export default function ConfigurationPage() {
           )}
         </div>
       </div>
+
+      {/* AML Check Modal */}
+      {showAmlModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" onClick={() => setShowAmlModal(false)}>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full" onClick={(e) => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                AML Check
+              </h3>
+              <button
+                onClick={() => setShowAmlModal(false)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                <XMarkIcon className="h-6 w-6 text-gray-500" />
+              </button>
+            </div>
+            
+            {/* Modal Content */}
+            <div className="p-6">
+              <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0">
+                    <svg className="h-6 w-6 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-semibold text-amber-900 dark:text-amber-200 mb-2">
+                      AML Check Not Currently Enabled
+                    </h4>
+                    <p className="text-amber-800 dark:text-amber-300">
+                      The AML (Anti-Money Laundering) Check feature is not currently enabled in this demo environment. 
+                      This feature checks users against OFAC, PEP, and police watchlists to help ensure compliance with 
+                      regulatory requirements.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-end">
+                <button
+                  onClick={() => setShowAmlModal(false)}
+                  className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors"
+                >
+                  Got it
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
