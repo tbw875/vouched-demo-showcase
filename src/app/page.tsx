@@ -227,7 +227,7 @@ export default function ConfigurationPage() {
                 </div>
               ))}
               
-              {/* Row 3: AML Check and Reverification */}
+              {/* Row 3: AML Check and SSN Collection */}
               {products.filter(product => product.id === 'aml').map((product) => (
                 <div
                   key={product.id}
@@ -257,37 +257,12 @@ export default function ConfigurationPage() {
                 </div>
               ))}
               
-              {/* Reverification Card */}
+              {/* SSN Collection Card */}
               <div className={`p-8 rounded-2xl border-2 transition-all duration-200 ${
-                reverificationEnabled
-                  ? 'border-purple-500 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/30 dark:to-indigo-900/30 shadow-lg'
+                ssnMode !== 'off'
+                  ? 'border-emerald-500 bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/30 dark:to-green-900/30 shadow-lg'
                   : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
               }`}>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                      Reverification
-                    </h3>
-                  </div>
-                  
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={reverificationEnabled}
-                      onChange={(e) => setReverificationEnabled(e.target.checked)}
-                      className="sr-only peer"
-                    />
-                    <div className="w-12 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 dark:peer-focus:ring-purple-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-purple-600"></div>
-                  </label>
-                </div>
-                
-                <p className="text-gray-600 dark:text-gray-300">
-                  Passwordless Login 
-                </p>
-              </div>
-              
-              {/* SSN Collection Card - Spans 2 columns */}
-              <div className="md:col-span-2 p-8 rounded-2xl border-2 border-gray-200 dark:border-gray-600 transition-all duration-200">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-3">
                     <ShieldCheckIcon className="h-6 w-6 text-indigo-600" />
@@ -357,8 +332,8 @@ export default function ConfigurationPage() {
                 {/* Description based on selected mode */}
                 <p className="text-gray-600 dark:text-gray-300">
                   {ssnMode === 'off' && "SSN information will not be collected during verification"}
-                  {ssnMode === 'last4' && "Collect only the last 4 digits of SSN for enhanced security"}
-                  {ssnMode === 'full9' && "Collect full SSN (XXX-XX-XXXX) for comprehensive verification"}
+                  {ssnMode === 'last4' && "SSN verified against authoritative databases - Last 4 digits collected"}
+                  {ssnMode === 'full9' && "SSN verified against authoritative databases - Full 9 digits collected"}
                 </p>
               </div>
 
@@ -459,7 +434,7 @@ export default function ConfigurationPage() {
             <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
               Configuration Summary
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="text-center">
                 <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Products</div>
                 <div className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">
@@ -485,14 +460,6 @@ export default function ConfigurationPage() {
                   'text-red-600 dark:text-red-400'
                 }`}>
                   {ssnMode === 'off' ? 'Off' : ssnMode === 'last4' ? 'Last 4 Digits' : 'Full 9 Digits'}
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Reverification</div>
-                <div className={`text-lg font-semibold ${
-                  reverificationEnabled ? 'text-purple-600 dark:text-purple-400' : 'text-gray-600 dark:text-gray-400'
-                }`}>
-                  {reverificationEnabled ? 'Enabled' : 'Disabled'}
                 </div>
               </div>
             </div>
