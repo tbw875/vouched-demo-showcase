@@ -15,7 +15,7 @@ interface Product {
 
 export default function ConfigurationPage() {
   const [ssnMode, setSsnMode] = useState<SSNMode>('off');
-  const [reverificationEnabled, setReverificationEnabled] = useState(false);
+  const reverificationEnabled = true; // Reverification is always available
   const [useCaseContext, setUseCaseContext] = useState<UseCaseContext>('financial');
   const [showDevLinks, setShowDevLinks] = useState(false);
   const [products, setProducts] = useState<Product[]>([
