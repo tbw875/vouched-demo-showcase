@@ -13,8 +13,8 @@ The SSN verification functionality uses Vouched's private `ssnPrivate` API endpo
 Create a `.env.local` file in the project root with the following variables:
 
 ```bash
-# Your private SSN API key from Vouched
-VOUCHED_SSN_PRIVATE_API_KEY=your_private_ssn_api_key_here
+# Your private API key from Vouched (used for SSN and other private APIs)
+VOUCHED_PRIVATE_API_KEY=your_private_api_key_here
 
 # Vouched SSN Private API Base URL (default is correct)
 VOUCHED_SSN_API_BASE_URL=https://verify.vouched.id

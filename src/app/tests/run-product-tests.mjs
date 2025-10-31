@@ -176,7 +176,7 @@ class ProductConfigurationTester {
     }
 
     const vouchedConfig = {
-      appId: "wYd4PAXW3W2~xHNRx~-cdUpFl!*SFs",
+      appId: process.env.NEXT_PUBLIC_VOUCHED_APP_ID || "wYd4PAXW3W2~xHNRx~-cdUpFl!*SFs",
       verification: verificationData,
       callbackURL: `${this.baseUrl}/api/vouched-webhook`,
       crossDevice: true,

@@ -341,7 +341,7 @@ function createVouchedConfig(config: {
   }
 
   return {
-    appId: "wYd4PAXW3W2~xHNRx~-cdUpFl!*SFs",
+    appId: process.env.NEXT_PUBLIC_VOUCHED_APP_ID || "wYd4PAXW3W2~xHNRx~-cdUpFl!*SFs",
     verification: verificationData,
     callbackURL: `${window.location.origin}/api/vouched-webhook`,
     crossDevice: true,

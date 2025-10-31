@@ -46,9 +46,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Get API key from environment variables (server-side only)
-    const apiKey = process.env.VOUCHED_SSN_PRIVATE_API_KEY;
+    const apiKey = process.env.VOUCHED_PRIVATE_API_KEY;
     if (!apiKey) {
-      console.error('VOUCHED_SSN_PRIVATE_API_KEY is not set in environment variables');
+      console.error('VOUCHED_PRIVATE_API_KEY is not set in environment variables');
       return NextResponse.json(
         {
           error: 'Configuration Error',
@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   // Return service configuration status for debugging
-  const apiKey = process.env.VOUCHED_SSN_PRIVATE_API_KEY;
+  const apiKey = process.env.VOUCHED_PRIVATE_API_KEY;
   const configStatus = ssnVerificationService.getConfigStatus(Boolean(apiKey));
   
   return NextResponse.json({

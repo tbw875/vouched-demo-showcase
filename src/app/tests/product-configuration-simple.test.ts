@@ -37,7 +37,7 @@ describe('Product Configuration Logic', () => {
       }
 
       return {
-        appId: "wYd4PAXW3W2~xHNRx~-cdUpFl!*SFs",
+        appId: process.env.NEXT_PUBLIC_VOUCHED_APP_ID || "wYd4PAXW3W2~xHNRx~-cdUpFl!*SFs",
         verification: verificationData,
         callbackURL: `http://localhost:3000/api/vouched-webhook`,
         crossDevice: true,
