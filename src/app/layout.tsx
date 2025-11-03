@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import SessionProvider from "./components/SessionProvider";
@@ -33,6 +34,11 @@ export default function RootLayout({
           <AuthHeader />
           {children}
         </SessionProvider>
+        <Script
+          src="https://kya.vouched.id/pixel.js"
+          data-project-id="vouched-demo-app-a5p626"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
