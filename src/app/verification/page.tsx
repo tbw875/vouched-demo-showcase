@@ -437,15 +437,6 @@ function VerificationPageContent() {
           </div>
         </div>
 
-        {/* Dev Navigation - Hidden on mobile */}
-        <div className="dev-navigation text-center mt-8">
-          <button
-            onClick={() => window.location.href = '/'}
-            className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium"
-          >
-            ← Back to Configuration
-          </button>
-        </div>
       </div>
 
       <style jsx>{`
@@ -511,10 +502,18 @@ function VerificationPageContent() {
 
         /* Mobile: Full-screen iframe experience */
         @media (max-width: 768px) {
+          /* Ensure html and body are full height */
+          :global(html),
+          :global(body) {
+            height: 100%;
+            overflow: hidden;
+          }
+
           /* Hide everything except iframe on mobile */
           .page-container {
             padding: 0 !important;
             max-width: 100% !important;
+            height: 100%;
           }
 
           .page-header {
@@ -526,8 +525,8 @@ function VerificationPageContent() {
           }
 
           .verification-wrapper {
-            width: 100vw !important;
-            height: 100vh !important;
+            width: 100% !important;
+            height: 100% !important;
             position: fixed;
             top: 0;
             left: 0;
@@ -547,46 +546,32 @@ function VerificationPageContent() {
           }
 
           .desktop-container {
-            height: 100vh !important;
-            width: 100vw !important;
-            max-width: 100vw !important;
-            min-width: 100vw !important;
-            min-height: 100vh !important;
-            max-height: 100vh !important;
+            height: 100% !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 100% !important;
+            min-height: 100% !important;
+            max-height: 100% !important;
             margin: 0 !important;
           }
 
           .desktop-container .vouched-element {
-            min-width: 100vw !important;
-            min-height: 100vh !important;
-          }
-
-          /* Dev navigation - position at bottom, visible when needed */
-          .dev-navigation {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            z-index: 50;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 12px;
-            margin: 0;
-          }
-
-          .dev-navigation button {
-            color: white !important;
+            height: 100% !important;
+            width: 100% !important;
+            min-width: 100% !important;
+            min-height: 100% !important;
           }
         }
 
         @media (max-width: 480px) {
           /* Same full-screen treatment for smaller mobile devices */
           .desktop-container {
-            height: 100vh !important;
-            width: 100vw !important;
-            max-width: 100vw !important;
-            min-width: 100vw !important;
-            min-height: 100vh !important;
-            max-height: 100vh !important;
+            height: 100% !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 100% !important;
+            min-height: 100% !important;
+            max-height: 100% !important;
           }
         }
       `}</style>
