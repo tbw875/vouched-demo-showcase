@@ -416,12 +416,12 @@ function ReverificationVerifyContent() {
         
         @media (max-width: 768px) {
           .desktop-container {
-            height: 45vh;
-            width: 80vw;
-            min-height: 350px;
-            min-width: 600px;
-            max-height: 500px;
-            max-width: 800px;
+            height: 80vh;
+            width: 100%;
+            max-width: 100vw;
+            min-width: 100%;
+            min-height: 500px;
+            max-height: none;
           }
           .phone-container {
             max-width: 380px;
@@ -429,15 +429,15 @@ function ReverificationVerifyContent() {
             min-height: 600px;
           }
         }
-        
+
         @media (max-width: 480px) {
           .desktop-container {
-            height: 40vh;
-            width: 75vw;
-            min-height: 300px;
-            min-width: 400px;
-            max-height: 450px;
-            max-width: 600px;
+            height: 85vh;
+            width: 100%;
+            max-width: 100vw;
+            min-width: 100%;
+            min-height: 400px;
+            max-height: none;
           }
           .phone-container {
             max-width: 320px;
