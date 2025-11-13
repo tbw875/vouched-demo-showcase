@@ -7,7 +7,6 @@ import { SSNVerificationRequest, SSNApiResponse, isSSNVerificationResponse } fro
 import { VouchedConfig as VouchedSDKConfig, VouchedJob, VouchedInstance } from '@/types/vouched';
 
 interface AppConfig {
-  flowType: 'desktop' | 'phone';
   workflowType: 'simultaneous' | 'step-up';
   enabledProducts: string[];
   disabledProducts: string[];
@@ -29,22 +28,18 @@ function HealthcareIDVPageContent() {
   
   // Parse configuration from URL params
   const config: AppConfig = {
-    flowType: (searchParams.get('flow') as 'desktop' | 'phone') || 'desktop',
     workflowType: (searchParams.get('workflow') as 'simultaneous' | 'step-up') || 'step-up',
     enabledProducts: searchParams.get('products')?.split(',').filter(p => p) || ['id-verification'],
     disabledProducts: searchParams.get('disabledProducts')?.split(',').filter(p => p) || []
   };
-  
+
   const reverificationEnabled = searchParams.get('reverification') === 'true';
   const useCaseContext = searchParams.get('useCase') || 'healthcare';
 
   // Parse form data from URL params
-  const formData: FormData = searchParams.get('formData') 
-    ? JSON.parse(searchParams.get('formData')!) 
+  const formData: FormData = searchParams.get('formData')
+    ? JSON.parse(searchParams.get('formData')!)
     : {};
-
-  // Determine if we should show phone view based on configuration
-  const isPhoneView = config.flowType === 'phone';
 
   // SSN verification function
   const performSSNVerification = async () => {
@@ -304,19 +299,21 @@ function HealthcareIDVPageContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950 dark:via-slate-900 dark:to-purple-950">
-      <div className="max-w-none mx-auto px-6 py-12">
+      <div className="page-container max-w-none mx-auto px-6 py-12">
         {/* Header */}
-        <PageHeader/>
-        
+        <div className="page-header">
+          <PageHeader/>
+        </div>
+
         {/* Page Title */}
-        <div className="text-center mb-8">
+        <div className="page-title text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
             Healthcare Verification - Identity Verification
           </h1>
         </div>
 
         {/* Progress Indicator */}
-        <div className="mb-8">
+        <div className="progress-indicator mb-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <div className="flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold text-white" style={{ backgroundColor: '#22C55E' }}>
@@ -343,51 +340,41 @@ function HealthcareIDVPageContent() {
 
         {/* Verification Interface */}
         <div className="flex flex-col items-center">
-          <div className="w-full max-w-none">
-            {/* Container with styling based on configuration */}
-            <div className={`
-              ${isPhoneView 
-                ? 'bg-gray-900 rounded-3xl p-2 shadow-2xl' 
-                : 'bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700'
-              }
-              overflow-hidden
-            `}>
-              {/* Phone frame styling */}
-              {isPhoneView && (
-                <div className="bg-black rounded-2xl p-1">
-                  <div className="bg-gray-100 dark:bg-gray-800 rounded-xl overflow-hidden">
-                    {/* Phone notch */}
-                    <div className="bg-black h-6 flex items-center justify-center">
-                      <div className="w-16 h-1 bg-gray-600 rounded-full"></div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
+          <div className="verification-wrapper w-full max-w-none">
+            {/* Container with styling */}
+            <div className="verification-card bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
               {/* Desktop frame styling */}
-              {!isPhoneView && (
-                <div className="bg-gray-100 dark:bg-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-600">
-                  <div className="flex items-center gap-3">
-                    <div className="flex gap-2">
-                      <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                      <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                    </div>
-                    <div className="flex-1 text-center">
-                      <span className="text-sm text-gray-600 dark:text-gray-300">
-                        Healthcare Identity Verification
-                      </span>
-                    </div>
+              <div className="desktop-frame bg-gray-100 dark:bg-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+                <div className="flex items-center gap-3">
+                  <div className="flex gap-2">
+                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                    <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  </div>
+                  <div className="flex-1 text-center">
+                    <span className="text-sm text-gray-600 dark:text-gray-300">
+                      Healthcare Identity Verification
+                    </span>
                   </div>
                 </div>
-              )}
-              
+              </div>
+
               {/* Vouched Container */}
-              <div className={`vouched-container ${isPhoneView ? 'phone-container' : 'desktop-container'}`}>
+              <div className="vouched-container desktop-container">
                 <div id="vouched-element" className="vouched-element"></div>
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Dev Navigation - Hidden on mobile */}
+        <div className="dev-navigation text-center mt-8">
+          <button
+            onClick={() => window.location.href = '/'}
+            className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium"
+          >
+            ← Back to Configuration
+          </button>
         </div>
       </div>
 
@@ -395,125 +382,145 @@ function HealthcareIDVPageContent() {
         .vouched-container {
           position: relative;
           overflow: hidden;
-          background: white; /* Ensure background color */
+          background: white;
         }
-        
-        .phone-container {
-          height: 90vh;
+
+        .desktop-container {
+          height: 80vh;
+          width: 100vw;
           min-height: 700px;
-          width: 100%;
-          max-width: 450px; /* Portrait - very narrow and tall */
+          min-width: 1400px;
+          max-height: 900px;
+          max-width: 2000px;
           margin: 0 auto;
         }
-        
-        .desktop-container {
-          height: 80vh; /* Even taller height for better responsiveness */
-          width: 100vw; /* Full screen width */
-          min-height: 700px; /* Increased minimum height */
-          min-width: 1400px; /* Much wider minimum */
-          max-height: 900px; /* Taller maximum */
-          max-width: 2000px; /* Much wider maximum */
-          margin: 0 auto; /* Center it */
-        }
-        
+
         .vouched-element {
           position: absolute;
           top: 0;
           left: 0;
           width: 100% !important;
           height: 100% !important;
-          min-width: 100% !important;
-          min-height: 100% !important;
-          border: none; /* Remove any borders that might interfere */
+          border: none;
           background: transparent;
-          overflow: visible; /* Allow content to extend beyond container if needed */
         }
-        
-        /* Ensure iframe content is displayed properly */
+
         .vouched-element iframe {
           border: none;
-          width: 100% !important;
-          height: 100% !important;
-          min-width: 100% !important;
-          min-height: 100% !important;
-        }
-        
-        /* Ensure iframe content doesn't wrap text */
-        .vouched-element iframe body {
-          white-space: nowrap;
-          overflow-x: auto;
-        }
-        
-        /* Force iframe to use full available space */
-        .vouched-element iframe html {
           width: 100%;
           height: 100%;
         }
-        
-        /* Desktop element should be LANDSCAPE */
+
         .desktop-container .vouched-element {
-          min-width: 1400px; /* Much wider minimum */
-          min-height: 700px; /* Taller minimum */
-        }
-        
-        /* Phone element should be narrow and tall */
-        .phone-container .vouched-element {
-          max-width: 450px;
+          min-width: 1400px;
           min-height: 700px;
         }
-        
-        /* Responsive adjustments - maintain LANDSCAPE for desktop */
+
+        /* Tablet adjustments */
         @media (max-width: 1800px) {
           .desktop-container {
-            height: 75vh; /* Keep taller */
-            width: 98vw; /* Keep wider */
-            min-height: 650px; /* Higher minimum */
-            min-width: 1200px; /* Wider minimum */
-            max-height: 850px; /* Taller maximum */
-            max-width: 1800px; /* Wider maximum */
+            height: 75vh;
+            width: 98vw;
+            min-height: 650px;
+            min-width: 1200px;
+            max-height: 850px;
+            max-width: 1800px;
           }
         }
-        
+
         @media (max-width: 1400px) {
           .desktop-container {
-            height: 70vh; /* Keep larger */
-            width: 95vw; /* Keep wider */
-            min-height: 600px; /* Higher minimum */
-            min-width: 1000px; /* Wider minimum */
-            max-height: 800px; /* Taller maximum */
-            max-width: 1400px; /* Wider maximum */
+            height: 70vh;
+            width: 95vw;
+            min-height: 600px;
+            min-width: 1000px;
+            max-height: 800px;
+            max-width: 1400px;
           }
         }
-        
+
+        /* Mobile: Full-screen iframe experience */
         @media (max-width: 768px) {
-          .desktop-container {
-            height: 80vh;
-            width: 100%;
-            max-width: 100vw;
-            min-width: 100%;
-            min-height: 500px;
-            max-height: none;
+          /* Hide everything except iframe on mobile */
+          .page-container {
+            padding: 0 !important;
+            max-width: 100% !important;
           }
-          .phone-container {
-            max-width: 380px;
-            height: 80vh;
-            min-height: 600px;
+
+          .page-header {
+            display: none;
+          }
+
+          .page-title {
+            display: none;
+          }
+
+          .progress-indicator {
+            display: none;
+          }
+
+          .verification-wrapper {
+            width: 100vw !important;
+            height: 100vh !important;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 10;
+          }
+
+          .verification-card {
+            width: 100% !important;
+            height: 100% !important;
+            border: none !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+          }
+
+          .desktop-frame {
+            display: none;
+          }
+
+          .desktop-container {
+            height: 100vh !important;
+            width: 100vw !important;
+            max-width: 100vw !important;
+            min-width: 100vw !important;
+            min-height: 100vh !important;
+            max-height: 100vh !important;
+            margin: 0 !important;
+          }
+
+          .desktop-container .vouched-element {
+            min-width: 100vw !important;
+            min-height: 100vh !important;
+          }
+
+          /* Dev navigation - position at bottom, visible when needed */
+          .dev-navigation {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 12px;
+            margin: 0;
+          }
+
+          .dev-navigation button {
+            color: white !important;
           }
         }
 
         @media (max-width: 480px) {
+          /* Same full-screen treatment for smaller mobile devices */
           .desktop-container {
-            height: 85vh;
-            width: 100%;
-            max-width: 100vw;
-            min-width: 100%;
-            min-height: 400px;
-            max-height: none;
-          }
-          .phone-container {
-            max-width: 320px;
-            height: 75vh;
-            min-height: 500px;
+            height: 100vh !important;
+            width: 100vw !important;
+            max-width: 100vw !important;
+            min-width: 100vw !important;
+            min-height: 100vh !important;
+            max-height: 100vh !important;
           }
         }
       `}</style>

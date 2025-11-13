@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, Suspense, useState } from 'react';
+import { useEffect, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import PageHeader from '../../components/PageHeader';
 import { VouchedConfig as VouchedSDKConfig, VouchedJob, VouchedInstance, VouchedMessageEvent } from '@/types/vouched';
@@ -8,22 +8,8 @@ import { VouchedConfig as VouchedSDKConfig, VouchedJob, VouchedInstance, Vouched
 function ReverificationVerifyContent() {
   const searchParams = useSearchParams();
   const vouchedInstanceRef = useRef<VouchedInstance | null>(null);
-  const [isPhoneView, setIsPhoneView] = useState(false);
-  
-  const originalJobId = searchParams.get('originalJobId');
 
-  // Detect device type - for reverification, we'll default to desktop but allow phone mode
-  useEffect(() => {
-    const checkDeviceType = () => {
-      const isMobile = window.innerWidth <= 768;
-      setIsPhoneView(isMobile);
-    };
-    
-    checkDeviceType();
-    window.addEventListener('resize', checkDeviceType);
-    
-    return () => window.removeEventListener('resize', checkDeviceType);
-  }, []);
+  const originalJobId = searchParams.get('originalJobId');
 
   // Initialize Vouched JS Plugin for Reverification
   useEffect(() => {
@@ -255,84 +241,57 @@ function ReverificationVerifyContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950 dark:via-slate-900 dark:to-purple-950">
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="page-container max-w-7xl mx-auto px-6 py-8">
         {/* Header */}
-        <PageHeader pageTitle="Identity Reverification" />
-        
-        <div className="text-center mb-8">
+        <div className="page-header">
+          <PageHeader pageTitle="Identity Reverification" />
+        </div>
+
+        <div className="page-title text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             Identity Reverification
           </h1>
           <p className="text-gray-600 dark:text-gray-300">
-            {isPhoneView 
-              ? 'Complete reverification on your mobile device' 
-              : 'Complete reverification on desktop, then use your mobile device'
-            }
+            Complete reverification to verify your identity
           </p>
         </div>
 
         {/* Verification Container */}
         <div className="w-full flex justify-center items-center">
-          <div className={`
-            ${isPhoneView 
-              ? 'w-full max-w-lg mx-auto' 
-              : '' /* Desktop will use CSS-defined dimensions */
-            }
-            transition-all duration-300
-          `}>
-            {/* Container with styling based on configuration */}
-            <div className={`
-              ${isPhoneView 
-                ? 'bg-gray-900 rounded-3xl p-2 shadow-2xl' 
-                : 'bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700'
-              }
-              overflow-hidden
-            `}>
-              {/* Phone frame styling */}
-              {isPhoneView && (
-                <div className="bg-black rounded-2xl p-1">
-                  <div className="bg-gray-100 dark:bg-gray-800 rounded-xl overflow-hidden">
-                    {/* Phone notch */}
-                    <div className="bg-black h-6 flex items-center justify-center">
-                      <div className="w-16 h-1 bg-gray-600 rounded-full"></div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
+          <div className="verification-wrapper">
+            {/* Container with styling */}
+            <div className="verification-card bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
               {/* Desktop frame styling */}
-              {!isPhoneView && (
-                <div className="bg-gray-100 dark:bg-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-600">
-                  <div className="flex items-center gap-3">
-                    <div className="flex gap-2">
-                      <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                      <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                    </div>
-                    <div className="flex-1 text-center">
-                      <span className="text-sm text-gray-600 dark:text-gray-300">
-                        Identity Reverification
-                      </span>
-                    </div>
+              <div className="desktop-frame bg-gray-100 dark:bg-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+                <div className="flex items-center gap-3">
+                  <div className="flex gap-2">
+                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                    <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  </div>
+                  <div className="flex-1 text-center">
+                    <span className="text-sm text-gray-600 dark:text-gray-300">
+                      Identity Reverification
+                    </span>
                   </div>
                 </div>
-              )}
-              
+              </div>
+
               {/* Vouched Container */}
-              <div className={`vouched-container ${isPhoneView ? 'phone-container' : 'desktop-container'}`}>
+              <div className="vouched-container desktop-container">
                 <div id="vouched-element" className="vouched-element"></div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Back Button */}
-        <div className="text-center mt-8">
-          <button 
-            onClick={() => window.history.back()}
+        {/* Dev Navigation - Hidden on mobile */}
+        <div className="dev-navigation text-center mt-8">
+          <button
+            onClick={() => window.location.href = '/'}
             className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium"
           >
-            ← Back to Login
+            ← Back to Configuration
           </button>
         </div>
       </div>
@@ -341,57 +300,41 @@ function ReverificationVerifyContent() {
         .vouched-container {
           position: relative;
           overflow: hidden;
-          background: white; /* Ensure background color */
+          background: white;
         }
-        
-        .phone-container {
-          height: 90vh;
-          min-height: 700px;
-          width: 100%;
-          max-width: 450px; /* Portrait - very narrow and tall */
+
+        .desktop-container {
+          height: 60vh;
+          width: 95vw;
+          min-height: 500px;
+          min-width: 1000px;
+          max-height: 700px;
+          max-width: 1600px;
           margin: 0 auto;
         }
-        
-        .desktop-container {
-          height: 60vh; /* Shorter height for landscape */
-          width: 95vw; /* Much wider - almost full screen */
-          min-height: 500px;
-          min-width: 1000px; /* Much wider minimum */
-          max-height: 700px;
-          max-width: 1600px; /* Much wider maximum */
-          margin: 0 auto; /* Center it */
-        }
-        
+
         .vouched-element {
           position: absolute;
           top: 0;
           left: 0;
           width: 100% !important;
           height: 100% !important;
-          border: none; /* Remove any borders that might interfere */
+          border: none;
           background: transparent;
         }
-        
-        /* Ensure iframe content is displayed properly */
+
         .vouched-element iframe {
           border: none;
           width: 100%;
           height: 100%;
         }
-        
-        /* Desktop element should be LANDSCAPE */
+
         .desktop-container .vouched-element {
           min-width: 1000px;
           min-height: 500px;
         }
-        
-        /* Phone element should be narrow and tall */
-        .phone-container .vouched-element {
-          max-width: 450px;
-          min-height: 700px;
-        }
-        
-        /* Responsive adjustments - maintain LANDSCAPE for desktop */
+
+        /* Tablet adjustments */
         @media (max-width: 1400px) {
           .desktop-container {
             height: 55vh;
@@ -402,7 +345,7 @@ function ReverificationVerifyContent() {
             max-width: 1400px;
           }
         }
-        
+
         @media (max-width: 1000px) {
           .desktop-container {
             height: 50vh;
@@ -413,36 +356,85 @@ function ReverificationVerifyContent() {
             max-width: 1000px;
           }
         }
-        
+
+        /* Mobile: Full-screen iframe experience */
         @media (max-width: 768px) {
-          .desktop-container {
-            height: 80vh;
-            width: 100%;
-            max-width: 100vw;
-            min-width: 100%;
-            min-height: 500px;
-            max-height: none;
+          /* Hide everything except iframe on mobile */
+          .page-container {
+            padding: 0 !important;
+            max-width: 100% !important;
           }
-          .phone-container {
-            max-width: 380px;
-            height: 80vh;
-            min-height: 600px;
+
+          .page-header {
+            display: none;
+          }
+
+          .page-title {
+            display: none;
+          }
+
+          .verification-wrapper {
+            width: 100vw !important;
+            height: 100vh !important;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 10;
+          }
+
+          .verification-card {
+            width: 100% !important;
+            height: 100% !important;
+            border: none !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+          }
+
+          .desktop-frame {
+            display: none;
+          }
+
+          .desktop-container {
+            height: 100vh !important;
+            width: 100vw !important;
+            max-width: 100vw !important;
+            min-width: 100vw !important;
+            min-height: 100vh !important;
+            max-height: 100vh !important;
+            margin: 0 !important;
+          }
+
+          .desktop-container .vouched-element {
+            min-width: 100vw !important;
+            min-height: 100vh !important;
+          }
+
+          /* Dev navigation - position at bottom, visible when needed */
+          .dev-navigation {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 12px;
+            margin: 0;
+          }
+
+          .dev-navigation button {
+            color: white !important;
           }
         }
 
         @media (max-width: 480px) {
+          /* Same full-screen treatment for smaller mobile devices */
           .desktop-container {
-            height: 85vh;
-            width: 100%;
-            max-width: 100vw;
-            min-width: 100%;
-            min-height: 400px;
-            max-height: none;
-          }
-          .phone-container {
-            max-width: 320px;
-            height: 75vh;
-            min-height: 500px;
+            height: 100vh !important;
+            width: 100vw !important;
+            max-width: 100vw !important;
+            min-width: 100vw !important;
+            min-height: 100vh !important;
+            max-height: 100vh !important;
           }
         }
       `}</style>
