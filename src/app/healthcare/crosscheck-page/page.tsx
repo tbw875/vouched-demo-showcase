@@ -90,7 +90,6 @@ function CrossCheckPageContent() {
       phone: formData.phone,
       ...(formData.email && { email: formData.email }),
       ...(formData.ipAddress && { ipAddress: formData.ipAddress }),
-      // Include address data for Healthcare use case
       ...((formData.street || formData.city || formData.state || formData.postalCode || formData.country) && {
         address: {
           ...(formData.street && { streetAddress: formData.street }),

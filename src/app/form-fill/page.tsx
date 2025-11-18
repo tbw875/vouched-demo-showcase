@@ -2,8 +2,9 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { ChevronRightIcon, UserIcon, PhoneIcon, EnvelopeIcon, CalendarIcon, IdentificationIcon, HomeIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import { ChevronRightIcon, UserIcon, PhoneIcon, EnvelopeIcon, CalendarIcon, IdentificationIcon } from '@heroicons/react/24/outline';
 import PageHeader from '../components/PageHeader';
+import AddressAutocomplete from '../components/AddressAutocomplete';
 
 interface VouchedConfig {
   flowType: 'desktop' | 'phone';
@@ -44,6 +45,8 @@ function FormFillPageContent() {
   const [formData, setFormData] = useState<FormData>({});
   const [errors, setErrors] = useState<Partial<FormData>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [showAddressAutocomplete, setShowAddressAutocomplete] = useState(false);
+  const [addressError, setAddressError] = useState<string>('');
   
   // Parse configuration from URL params
   const config: VouchedConfig = {
@@ -56,6 +59,12 @@ function FormFillPageContent() {
   
   const reverificationEnabled = searchParams.get('reverification') === 'true';
   const useCaseContext = searchParams.get('useCase') || 'financial';
+
+  useEffect(() => {
+    if (useCaseContext === 'healthcare' && config.enabledProducts.includes('crosscheck')) {
+      setShowAddressAutocomplete(true);
+    }
+  }, [useCaseContext, config.enabledProducts]);
 
   // Get user's IP address
   useEffect(() => {
@@ -123,52 +132,6 @@ function FormFillPageContent() {
           icon: EnvelopeIcon
         }
       );
-
-      // Add address fields for Healthcare use case
-      if (useCaseContext === 'healthcare') {
-        fields.push(
-          {
-            id: 'street',
-            label: 'Street Address',
-            type: 'text',
-            required: true,
-            placeholder: 'Enter your street address',
-            icon: HomeIcon
-          },
-          {
-            id: 'city',
-            label: 'City',
-            type: 'text',
-            required: true,
-            placeholder: 'Enter your city',
-            icon: MapPinIcon
-          },
-          {
-            id: 'state',
-            label: 'State',
-            type: 'text',
-            required: true,
-            placeholder: 'Enter your state',
-            icon: MapPinIcon
-          },
-          {
-            id: 'postalCode',
-            label: 'Postal Code',
-            type: 'text',
-            required: true,
-            placeholder: 'Enter your postal code',
-            icon: MapPinIcon
-          },
-          {
-            id: 'country',
-            label: 'Country',
-            type: 'text',
-            required: false,
-            placeholder: 'Enter your country (optional)',
-            icon: MapPinIcon
-          }
-        );
-      }
     }
 
     // DOB field - show for Visual IDV or DOB Verification
@@ -238,6 +201,27 @@ function FormFillPageContent() {
     }
   };
 
+  // Handle address selection from Google Places Autocomplete
+  const handleAddressSelect = (addressComponents: {
+    street?: string;
+    city?: string;
+    state?: string;
+    postalCode?: string;
+    country?: string;
+  }) => {
+    console.log('Address received from autocomplete:', addressComponents);
+    
+    setFormData(prev => ({
+      ...prev,
+      ...addressComponents
+    }));
+    
+    // Clear address error when a valid address is selected
+    if (addressError) {
+      setAddressError('');
+    }
+  };
+
   const validateForm = (): boolean => {
     const newErrors: Partial<FormData> = {};
 
@@ -252,7 +236,27 @@ function FormFillPageContent() {
       }
     });
 
+    // Validate address fields if address autocomplete is shown
+    if (showAddressAutocomplete) {
+      const hasAllAddressFields = formData.street && formData.city && formData.state && formData.postalCode;
+      
+      console.log('Validating address fields:', {
+        hasStreet: !!formData.street,
+        hasCity: !!formData.city,
+        hasState: !!formData.state,
+        hasPostalCode: !!formData.postalCode,
+        allValid: hasAllAddressFields
+      });
+      
+      if (!hasAllAddressFields) {
+        setAddressError('Please select a complete address from the dropdown');
+        setErrors(newErrors);
+        return false;
+      }
+    }
+
     setErrors(newErrors);
+    setAddressError('');
     return Object.keys(newErrors).length === 0;
   };
 
@@ -343,6 +347,15 @@ function FormFillPageContent() {
                 </div>
               );
             })}
+
+            {/* Address Autocomplete for Healthcare Use Case */}
+            {showAddressAutocomplete && (
+              <AddressAutocomplete
+                onAddressSelect={handleAddressSelect}
+                error={addressError}
+                required={true}
+              />
+            )}
 
             {/* Submit Button */}
             <div className="pt-6">
