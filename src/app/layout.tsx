@@ -36,11 +36,13 @@ export default function RootLayout({
           {children}
         </SessionProvider>
         <Analytics />
-        <Script
-          src="https://kya.vouched.id/pixel.js"
-          data-project-id="vouched-demo-app-a5p626"
-          strategy="afterInteractive"
-        />
+        {process.env.NEXT_PUBLIC_KYA_PROJECT_ID && (
+          <Script
+            src="https://kya.vouched.id/pixel.js"
+            data-project-id={process.env.NEXT_PUBLIC_KYA_PROJECT_ID}
+            strategy="afterInteractive"
+          />
+        )}
       </body>
     </html>
   );

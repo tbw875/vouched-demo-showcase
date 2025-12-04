@@ -12,8 +12,17 @@ KYA is a detection pixel from Vouched that identifies if an AI Agent is accessin
 
 ### Configuration
 - **Pixel Source**: `https://kya.vouched.id/pixel.js`
-- **Project ID**: `vouched-demo-app-a5p626`
+- **Project ID**: Set via `NEXT_PUBLIC_KYA_PROJECT_ID` environment variable
 - **Loading Strategy**: `afterInteractive` (loads after interactive content)
+
+### Environment Variable
+Add the following to your `.env.local`:
+
+```env
+NEXT_PUBLIC_KYA_PROJECT_ID=your-kya-project-id-here
+```
+
+Get your project ID from the Vouched dashboard. The KYA pixel will only load if this environment variable is set.
 
 ### How It Works
 The KYA pixel is implemented as a Next.js Script component in the root layout (`src/app/layout.tsx`). It loads asynchronously after the page becomes interactive, ensuring it doesn't block initial page rendering.
@@ -28,11 +37,13 @@ The script is placed in the body of the root layout, after all application conte
 
 ### Code
 ```tsx
-<Script
-  src="https://kya.vouched.id/pixel.js"
-  data-project-id="vouched-demo-app-a5p626"
-  strategy="afterInteractive"
-/>
+{process.env.NEXT_PUBLIC_KYA_PROJECT_ID && (
+  <Script
+    src="https://kya.vouched.id/pixel.js"
+    data-project-id={process.env.NEXT_PUBLIC_KYA_PROJECT_ID}
+    strategy="afterInteractive"
+  />
+)}
 ```
 
 ## Dependencies
@@ -46,4 +57,4 @@ The KYA pixel automatically:
 - Provides visibility without user-facing changes
 
 ## Last Updated
-November 3, 2025 - Initial implementation
+December 4, 2025 - Moved project ID to environment variable

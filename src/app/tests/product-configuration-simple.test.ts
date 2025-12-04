@@ -37,7 +37,7 @@ describe('Product Configuration Logic', () => {
       }
 
       return {
-        appId: process.env.NEXT_PUBLIC_VOUCHED_APP_ID || "wYd4PAXW3W2~xHNRx~-cdUpFl!*SFs",
+        appId: process.env.NEXT_PUBLIC_VOUCHED_APP_ID,
         verification: verificationData,
         callbackURL: `http://localhost:3000/api/vouched-webhook`,
         crossDevice: true,
@@ -63,7 +63,7 @@ describe('Product Configuration Logic', () => {
     it('should create valid configuration for ID Verification only', () => {
       const config = createVouchedConfig(['id-verification']);
       
-      expect(config.appId).toBe("wYd4PAXW3W2~xHNRx~-cdUpFl!*SFs");
+      expect(config.appId).toBe(process.env.NEXT_PUBLIC_VOUCHED_APP_ID);
       expect(config.callbackURL).toBe("http://localhost:3000/api/vouched-webhook");
       expect(config.verification.firstName).toBe('');
       expect(config.verification.lastName).toBe('');
@@ -159,7 +159,7 @@ describe('Product Configuration Logic', () => {
     it('should handle empty products array', () => {
       const config = createVouchedConfig([]);
       
-      expect(config.appId).toBe("wYd4PAXW3W2~xHNRx~-cdUpFl!*SFs");
+      expect(config.appId).toBe(process.env.NEXT_PUBLIC_VOUCHED_APP_ID);
       expect(config.callbackURL).toBe("http://localhost:3000/api/vouched-webhook");
       expect(config.verification.firstName).toBe('');
       expect(config.verification.lastName).toBe('');
@@ -171,7 +171,7 @@ describe('Product Configuration Logic', () => {
     it('should handle invalid products gracefully', () => {
       const config = createVouchedConfig(['invalid-product']);
       
-      expect(config.appId).toBe("wYd4PAXW3W2~xHNRx~-cdUpFl!*SFs");
+      expect(config.appId).toBe(process.env.NEXT_PUBLIC_VOUCHED_APP_ID);
       expect(config.callbackURL).toBe("http://localhost:3000/api/vouched-webhook");
       expect(config.verification.firstName).toBe('');
       expect(config.verification.lastName).toBe('');

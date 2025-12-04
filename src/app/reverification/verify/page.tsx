@@ -48,7 +48,7 @@ function ReverificationVerifyContent() {
             // Configure Vouched for Reverification following working pattern
             const vouchedConfig: VouchedSDKConfig = {
               // Use environment variable for App ID (public key)
-              appId: process.env.NEXT_PUBLIC_VOUCHED_APP_ID || "wYd4PAXW3W2~xHNRx~-cdUpFl!*SFs",
+              appId: process.env.NEXT_PUBLIC_VOUCHED_APP_ID!,
 
               // Specify reverification job
               type: 'reverify',

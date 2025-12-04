@@ -147,7 +147,7 @@ function HealthcareIDVPageContent() {
             // Create proper Vouched configuration following working example
             const vouchedConfig: VouchedSDKConfig = {
               // Use environment variable for App ID (public key)
-              appId: process.env.NEXT_PUBLIC_VOUCHED_APP_ID || "wYd4PAXW3W2~xHNRx~-cdUpFl!*SFs",
+              appId: process.env.NEXT_PUBLIC_VOUCHED_APP_ID!,
 
               // Required verification information for comparison
               verification: {
