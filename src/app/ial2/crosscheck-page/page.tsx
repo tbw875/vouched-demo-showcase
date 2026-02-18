@@ -20,7 +20,6 @@ interface FormData {
   phone?: string;
   email?: string;
   ipAddress?: string;
-  dateOfBirth?: string;
 }
 
 interface CrossCheckElement {
