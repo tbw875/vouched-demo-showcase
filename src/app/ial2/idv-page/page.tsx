@@ -102,6 +102,10 @@ function IAL2IDVPageContent() {
               dobVerification: false,
               enableAML: false,
 
+              nist: {
+                ial2ComplianceEnabled: true,
+              },
+
               debug: true,
 
               onDone: (job: VouchedJob) => {
