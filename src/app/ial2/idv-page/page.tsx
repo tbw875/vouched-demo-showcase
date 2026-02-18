@@ -334,9 +334,9 @@ function IAL2IDVPageContent() {
       lastName: formData.lastName || '<lastName>',
       phone: formData.phone || '<phone>',
       ...(formData.email ? { email: formData.email } : {}),
+      ...(formData.dateOfBirth ? { birthDate: (() => { const [y,m,d] = formData.dateOfBirth!.split('-'); return `${m}/${d}/${y}`; })() } : {}),
       callbackURL: 'https://<your-domain>/api/vouched-webhook',
       send: true,
-      ...(formData.dateOfBirth ? { properties: [{ name: 'birthDate', value: (() => { const [y,m,d] = formData.dateOfBirth!.split('-'); return `${m}/${d}/${y}`; })() }] } : {}),
     }, null, 2)}
                 </pre>
               </div>

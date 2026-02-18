@@ -16,9 +16,9 @@ interface VouchedInvitePayload {
   lastName: string;
   phone: string;
   email?: string;
+  birthDate?: string;
   callbackURL: string;
   send: true;
-  properties?: Array<{ name: string; value: string }>;
 }
 
 interface VouchedInviteResponse {
@@ -60,9 +60,8 @@ export async function POST(request: NextRequest) {
       payload.email = body.email;
     }
 
-    // birthDate passed as a named property since it's not a top-level invite field
     if (body.birthDate) {
-      payload.properties = [{ name: 'birthDate', value: body.birthDate }];
+      payload.birthDate = body.birthDate;
     }
 
     console.log('IAL2 Send Invite: Sending invite to Vouched API', {
