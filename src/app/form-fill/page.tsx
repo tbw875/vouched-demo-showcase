@@ -124,7 +124,7 @@ function FormFillPageContent() {
         }
       );
 
-      // Add address fields for Healthcare use case
+      // Add address fields for Healthcare use case only (not IAL2)
       if (useCaseContext === 'healthcare') {
         fields.push(
           {
@@ -171,8 +171,8 @@ function FormFillPageContent() {
       }
     }
 
-    // DOB field - show for Visual IDV or DOB Verification
-    if (config.enabledProducts.includes('id-verification') || config.enabledProducts.includes('dob-verification')) {
+    // DOB field - show for Visual IDV, DOB Verification, or IAL2 (needed for birthDate in IDV)
+    if (config.enabledProducts.includes('id-verification') || config.enabledProducts.includes('dob-verification') || useCaseContext === 'ial2') {
       fields.push({
         id: 'dateOfBirth',
         label: 'Date of Birth',
@@ -285,6 +285,9 @@ function FormFillPageContent() {
     // Healthcare use case follows step-up workflow
     if (useCaseContext === 'healthcare') {
       window.location.href = `/healthcare/crosscheck-page?${params.toString()}`;
+    } else if (useCaseContext === 'ial2') {
+      // IAL2 workflow: CrossCheck → IDV with Driver's License Validation
+      window.location.href = `/ial2/crosscheck-page?${params.toString()}`;
     } else {
       // All other use cases follow existing simultaneous workflow
       window.location.href = `/verification?${params.toString()}`;

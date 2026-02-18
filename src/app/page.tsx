@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ChevronRightIcon, ShieldCheckIcon, DocumentCheckIcon, BuildingOffice2Icon, HeartIcon, CubeIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { ChevronRightIcon, ShieldCheckIcon, DocumentCheckIcon, BuildingOffice2Icon, HeartIcon, CubeIcon, XMarkIcon, ShieldExclamationIcon } from '@heroicons/react/24/outline';
 
 type SSNMode = 'off' | 'last4' | 'full9';
-type UseCaseContext = 'healthcare' | 'financial' | 'generic';
+type UseCaseContext = 'healthcare' | 'financial' | 'generic' | 'ial2';
 
 interface Product {
   id: string;
@@ -356,7 +356,7 @@ export default function ConfigurationPage() {
                 Use Case Context
               </h2>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
               {/* Healthcare Option */}
               <div 
                 onClick={() => setUseCaseContext('healthcare')}
@@ -410,7 +410,7 @@ export default function ConfigurationPage() {
               </div>
 
               {/* Generic Option */}
-              <div 
+              <div
                 onClick={() => setUseCaseContext('generic')}
                 className={`p-8 rounded-2xl border-2 transition-all duration-200 cursor-pointer ${
                   useCaseContext === 'generic'
@@ -434,6 +434,32 @@ export default function ConfigurationPage() {
                   </p>
                 </div>
               </div>
+
+              {/* IAL2 Workflow Option */}
+              <div
+                onClick={() => setUseCaseContext('ial2')}
+                className={`p-8 rounded-2xl border-2 transition-all duration-200 cursor-pointer ${
+                  useCaseContext === 'ial2'
+                    ? 'border-violet-500 bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-900/30 dark:to-purple-900/30 shadow-lg'
+                    : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                }`}
+              >
+                <div className="flex flex-col items-center text-center">
+                  <div className={`p-4 rounded-full mb-4 ${
+                    useCaseContext === 'ial2' ? 'bg-violet-100 dark:bg-violet-900/50' : 'bg-gray-100 dark:bg-gray-700'
+                  }`}>
+                    <ShieldExclamationIcon className={`h-8 w-8 ${
+                      useCaseContext === 'ial2' ? 'text-violet-600' : 'text-gray-600 dark:text-gray-300'
+                    }`} />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                    IAL2 Workflow
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm">
+                    Fully-automated IAL-2 compliant credential reset with CrossCheck + ID + Driver&apos;s License Verification
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -454,10 +480,12 @@ export default function ConfigurationPage() {
                 <div className={`text-lg font-semibold ${
                   useCaseContext === 'healthcare' ? 'text-rose-600 dark:text-rose-400' :
                   useCaseContext === 'financial' ? 'text-emerald-600 dark:text-emerald-400' :
+                  useCaseContext === 'ial2' ? 'text-violet-600 dark:text-violet-400' :
                   'text-indigo-600 dark:text-indigo-400'
                 }`}>
-                  {useCaseContext === 'healthcare' ? 'Healthcare' : 
-                   useCaseContext === 'financial' ? 'Financial' : 'Generic'}
+                  {useCaseContext === 'healthcare' ? 'Healthcare' :
+                   useCaseContext === 'financial' ? 'Financial' :
+                   useCaseContext === 'ial2' ? 'IAL2 Workflow' : 'Generic'}
                 </div>
               </div>
               <div className="text-center">
