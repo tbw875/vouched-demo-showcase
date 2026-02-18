@@ -5,7 +5,7 @@ interface SendInviteRequestBody {
   lastName: string;
   phone: string;
   email?: string;
-  birthDate?: string; // MM/DD/YYYY — stored in properties array
+  birthDate?: string; // MM/DD/YYYY — top-level field per Vouched API spec
 }
 
 // All fields are top-level per the Vouched OpenAPI spec (no 'parameters' wrapper)
@@ -64,13 +64,15 @@ export async function POST(request: NextRequest) {
       payload.birthDate = body.birthDate;
     }
 
-    console.log('IAL2 Send Invite: Sending invite to Vouched API', {
-      firstName: body.firstName,
-      lastName: body.lastName,
-      phone: `***${body.phone.slice(-4)}`,
-      type: payload.type,
-      contact: payload.contact,
-    });
+    // Log the full payload structure for debugging (mask phone, keep structure visible)
+    const loggablePayload = {
+      ...payload,
+      phone: `***${payload.phone.slice(-4)}`,
+    };
+    console.log('IAL2 Send Invite: Full request payload structure:', JSON.stringify(loggablePayload, null, 2));
+    console.log('IAL2 Send Invite: Payload keys:', Object.keys(payload));
+    console.log('IAL2 Send Invite: API key present:', !!apiKey, '| Key length:', apiKey.length);
+    console.log('IAL2 Send Invite: Raw JSON body being sent:', JSON.stringify(payload));
 
     const response = await fetch('https://verify.vouched.id/api/invites', {
       method: 'POST',
@@ -81,7 +83,11 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(payload),
     });
 
+    console.log('IAL2 Send Invite: Response status:', response.status, response.statusText);
+    console.log('IAL2 Send Invite: Response headers:', Object.fromEntries(response.headers.entries()));
+
     const responseText = await response.text();
+    console.log('IAL2 Send Invite: Raw response body:', responseText);
 
     let responseData: VouchedInviteResponse;
     try {
@@ -95,14 +101,14 @@ export async function POST(request: NextRequest) {
     }
 
     if (!response.ok) {
-      console.error('IAL2 Send Invite: Vouched API error', response.status, responseData);
+      console.error('IAL2 Send Invite: Vouched API error', response.status, JSON.stringify(responseData, null, 2));
       return NextResponse.json(
         { error: 'Vouched API returned an error', status: response.status, details: responseData },
         { status: response.status }
       );
     }
 
-    console.log('IAL2 Send Invite: Invite sent successfully', { id: responseData.invite });
+    console.log('IAL2 Send Invite: Invite sent successfully', JSON.stringify(responseData, null, 2));
 
     return NextResponse.json({
       success: true,
