@@ -10,7 +10,6 @@ interface FormData {
   lastName?: string;
   phone?: string;
   email?: string;
-  dateOfBirth?: string;
   ipAddress?: string;
 }
 
@@ -20,14 +19,14 @@ interface InviteResult {
   success: boolean;
   invite?: Record<string, unknown>;
   sentPayload?: {
-    parameters: {
-      firstName: string;
-      lastName: string;
-      phone: string;
-      email?: string;
-      birthDate?: string;
-      callbackURL: string;
-    };
+    type: string;
+    contact: string;
+    firstName: string;
+    lastName: string;
+    phone: string;
+    email?: string;
+    callbackURL: string;
+    send: boolean;
   };
   error?: string;
   details?: unknown;
@@ -51,13 +50,6 @@ function IAL2IDVPageContent() {
     setResult(null);
 
     try {
-      // Convert DOB from YYYY-MM-DD (HTML input) to MM/DD/YYYY (Vouched required)
-      let birthDate: string | undefined;
-      if (formData.dateOfBirth) {
-        const [year, month, day] = formData.dateOfBirth.split('-');
-        birthDate = `${month}/${day}/${year}`;
-      }
-
       const response = await fetch('/api/ial2/send-invite', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -66,7 +58,6 @@ function IAL2IDVPageContent() {
           lastName: formData.lastName || '',
           phone: formData.phone || '',
           email: formData.email,
-          birthDate,
         }),
       });
 
@@ -334,7 +325,6 @@ function IAL2IDVPageContent() {
       lastName: formData.lastName || '<lastName>',
       phone: formData.phone || '<phone>',
       ...(formData.email ? { email: formData.email } : {}),
-      ...(formData.dateOfBirth ? { birthDate: (() => { const [y,m,d] = formData.dateOfBirth!.split('-'); return `${m}/${d}/${y}`; })() } : {}),
       callbackURL: 'https://<your-domain>/api/vouched-webhook',
       send: true,
     }, null, 2)}

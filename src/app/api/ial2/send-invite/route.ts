@@ -5,7 +5,6 @@ interface SendInviteRequestBody {
   lastName: string;
   phone: string;
   email?: string;
-  birthDate?: string; // MM/DD/YYYY — top-level field per Vouched API spec
 }
 
 // All fields are top-level per the Vouched OpenAPI spec (no 'parameters' wrapper)
@@ -16,7 +15,6 @@ interface VouchedInvitePayload {
   lastName: string;
   phone: string;
   email?: string;
-  birthDate?: string;
   callbackURL: string;
   send: true;
 }
@@ -58,10 +56,6 @@ export async function POST(request: NextRequest) {
 
     if (body.email) {
       payload.email = body.email;
-    }
-
-    if (body.birthDate) {
-      payload.birthDate = body.birthDate;
     }
 
     // Log the full payload structure for debugging (mask phone, keep structure visible)
