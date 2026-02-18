@@ -88,8 +88,7 @@ export async function POST(request: NextRequest) {
 
     console.log('CrossCheck verification completed successfully:', {
       id: result.id,
-      status: result.status,
-      success: result.result.success
+      success: result.result.success ?? null
     });
 
     // Return successful result
