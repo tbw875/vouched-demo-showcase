@@ -24,7 +24,7 @@ import {
 } from '@heroicons/react/24/outline';
 import PageHeader from '../components/PageHeader';
 
-type UseCaseContext = 'healthcare' | 'financial' | 'generic';
+type UseCaseContext = 'healthcare' | 'financial' | 'generic' | 'ial2';
 
 interface ServiceCard {
   id: number;
@@ -71,7 +71,7 @@ function DashboardContent() {
 
     // Get use case context from URL parameters
     const useCaseParam = searchParams.get('useCase') as UseCaseContext;
-    if (useCaseParam && ['healthcare', 'financial', 'generic'].includes(useCaseParam)) {
+    if (useCaseParam && ['healthcare', 'financial', 'generic', 'ial2'].includes(useCaseParam)) {
       setUseCaseContext(useCaseParam);
     }
 
@@ -200,6 +200,9 @@ function DashboardContent() {
           }
         ];
       
+      case 'ial2':
+        return [];
+
       case 'generic':
         return [
           {
@@ -315,6 +318,41 @@ function DashboardContent() {
             }
           </p>
         </div>
+
+        {/* IAL2 Final Steps */}
+        {useCaseContext === 'ial2' && (
+          <div className="max-w-2xl mx-auto mb-12">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-violet-200 dark:border-violet-800 overflow-hidden">
+              <div className="bg-gradient-to-r from-violet-600 to-purple-600 px-6 py-4">
+                <h2 className="text-lg font-bold text-white">IAL2 Proofing Complete</h2>
+                <p className="text-violet-200 text-sm mt-0.5">The following steps were completed as part of this verification</p>
+              </div>
+              <div className="p-6 space-y-4">
+                <div className="flex items-start gap-3">
+                  <CheckCircleIcon className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white">IDV and Driver&apos;s License Validation passed</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">ID authenticity, selfie liveness, and DL number validated</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <CheckCircleIcon className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white">Input name compared against ID name</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">First and last name provided at enrollment matched the identity document</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <CheckCircleIcon className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white">Notification of proofing email sent to client</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Confirmation email dispatched upon successful IAL2 identity proofing</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Services Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-12">

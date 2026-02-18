@@ -107,19 +107,22 @@ function IAL2IDVPageContent() {
               onDone: (job: VouchedJob) => {
                 console.log('IAL2 IDV: Job completed:', job);
 
+                // Store job data for dashboard to read
                 localStorage.setItem('ial2JobData', JSON.stringify({
                   timestamp: new Date().toISOString(),
                   data: job
                 }));
+                localStorage.setItem('latestJobData', JSON.stringify({
+                  timestamp: new Date().toISOString(),
+                  data: job
+                }));
 
-                // Route to results page after IAL2 IDV completes
-                const resultsParams = new URLSearchParams({
-                  jobId: job?.id || 'unknown',
-                  status: job?.status || 'unknown',
+                // Route to dashboard — IAL2 does not use webhook polling
+                const dashboardParams = new URLSearchParams({
+                  useCase: useCaseContext,
                   reverification: reverificationEnabled.toString(),
-                  useCase: useCaseContext
                 });
-                window.location.href = `/results?${resultsParams.toString()}`;
+                window.location.href = `/dashboard?${dashboardParams.toString()}`;
               }
             };
 
