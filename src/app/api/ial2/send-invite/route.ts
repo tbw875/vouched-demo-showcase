@@ -5,23 +5,24 @@ interface SendInviteRequestBody {
   lastName: string;
   phone: string;
   email?: string;
-  birthDate?: string; // MM/DD/YYYY
+  birthDate?: string; // MM/DD/YYYY — stored in properties array
 }
 
+// All fields are top-level per the Vouched OpenAPI spec (no 'parameters' wrapper)
 interface VouchedInvitePayload {
-  parameters: {
-    firstName: string;
-    lastName: string;
-    phone: string;
-    email?: string;
-    birthDate?: string;
-    callbackURL: string;
-  };
+  type: 'idv';
+  contact: 'phone';
+  firstName: string;
+  lastName: string;
+  phone: string;
+  email?: string;
+  callbackURL: string;
+  send: true;
+  properties?: Array<{ name: string; value: string }>;
 }
 
 interface VouchedInviteResponse {
-  id?: string;
-  status?: string;
+  invite?: Record<string, unknown>;
   [key: string]: unknown;
 }
 
@@ -44,28 +45,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Build the Vouched Send Invite payload
+    // Build the Vouched Send Invite payload — fields are top-level, NOT nested under 'parameters'
     const payload: VouchedInvitePayload = {
-      parameters: {
-        firstName: body.firstName,
-        lastName: body.lastName,
-        phone: body.phone,
-        callbackURL: `${request.nextUrl.origin}/api/vouched-webhook`,
-      },
+      type: 'idv',
+      contact: 'phone',
+      firstName: body.firstName,
+      lastName: body.lastName,
+      phone: body.phone,
+      callbackURL: `${request.nextUrl.origin}/api/vouched-webhook`,
+      send: true,
     };
 
     if (body.email) {
-      payload.parameters.email = body.email;
+      payload.email = body.email;
     }
 
+    // birthDate passed as a named property since it's not a top-level invite field
     if (body.birthDate) {
-      payload.parameters.birthDate = body.birthDate;
+      payload.properties = [{ name: 'birthDate', value: body.birthDate }];
     }
 
     console.log('IAL2 Send Invite: Sending invite to Vouched API', {
       firstName: body.firstName,
       lastName: body.lastName,
       phone: `***${body.phone.slice(-4)}`,
+      type: payload.type,
+      contact: payload.contact,
     });
 
     const response = await fetch('https://verify.vouched.id/api/invites', {
@@ -98,7 +103,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('IAL2 Send Invite: Invite sent successfully', { id: responseData.id });
+    console.log('IAL2 Send Invite: Invite sent successfully', { id: responseData.invite });
 
     return NextResponse.json({
       success: true,

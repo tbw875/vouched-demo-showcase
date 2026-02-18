@@ -328,14 +328,15 @@ function IAL2IDVPageContent() {
 {status === 'sent' && result?.sentPayload
   ? JSON.stringify(result.sentPayload, null, 2)
   : JSON.stringify({
-      parameters: {
-        firstName: formData.firstName || '<firstName>',
-        lastName: formData.lastName || '<lastName>',
-        phone: formData.phone || '<phone>',
-        ...(formData.email ? { email: formData.email } : {}),
-        ...(formData.dateOfBirth ? { birthDate: (() => { const [y,m,d] = formData.dateOfBirth!.split('-'); return `${m}/${d}/${y}`; })() } : {}),
-        callbackURL: 'https://<your-domain>/api/vouched-webhook',
-      },
+      type: 'idv',
+      contact: 'phone',
+      firstName: formData.firstName || '<firstName>',
+      lastName: formData.lastName || '<lastName>',
+      phone: formData.phone || '<phone>',
+      ...(formData.email ? { email: formData.email } : {}),
+      callbackURL: 'https://<your-domain>/api/vouched-webhook',
+      send: true,
+      ...(formData.dateOfBirth ? { properties: [{ name: 'birthDate', value: (() => { const [y,m,d] = formData.dateOfBirth!.split('-'); return `${m}/${d}/${y}`; })() }] } : {}),
     }, null, 2)}
                 </pre>
               </div>
