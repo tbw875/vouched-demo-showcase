@@ -75,22 +75,38 @@ function DashboardContent() {
       setUseCaseContext(useCaseParam);
     }
 
-    // Get webhook data from localStorage
-    try {
-      const storedJobData = localStorage.getItem('latestJobData');
-      if (storedJobData) {
-        const jobData = JSON.parse(storedJobData);
-        setWebhookData(jobData.data);
-        // Extract job ID from the data
-        if (jobData.data && jobData.data.id) {
-          setCurrentJobId(jobData.data.id);
-        }
-      }
-    } catch (error) {
-      console.error('Error loading webhook data:', error);
-    }
+    // For IAL2, fetch the latest webhook response from the server (job completes async via SMS)
+    // For all other flows, read from localStorage (set by JS Plugin onDone callback)
+    const isIAL2 = (searchParams.get('useCase') as UseCaseContext) === 'ial2';
 
-    setIsLoading(false);
+    if (isIAL2) {
+      fetch('/api/vouched-webhook')
+        .then(res => res.json())
+        .then(data => {
+          const latest = data.responses?.[0];
+          if (latest?.data) {
+            setWebhookData(latest.data as Record<string, unknown>);
+            const jobData = latest.data as Record<string, unknown>;
+            if (jobData.id) setCurrentJobId(jobData.id as string);
+          }
+        })
+        .catch(err => console.error('Error fetching IAL2 webhook data:', err))
+        .finally(() => setIsLoading(false));
+    } else {
+      try {
+        const storedJobData = localStorage.getItem('latestJobData');
+        if (storedJobData) {
+          const jobData = JSON.parse(storedJobData);
+          setWebhookData(jobData.data);
+          if (jobData.data && jobData.data.id) {
+            setCurrentJobId(jobData.data.id);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading webhook data:', error);
+      }
+      setIsLoading(false);
+    }
   }, [searchParams]);
 
   // Function to get service cards based on use case context
