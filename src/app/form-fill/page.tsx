@@ -171,8 +171,8 @@ function FormFillPageContent() {
       }
     }
 
-    // DOB field - show for Visual IDV or DOB Verification
-    if (config.enabledProducts.includes('id-verification') || config.enabledProducts.includes('dob-verification')) {
+    // DOB field - show for Visual IDV or DOB Verification, but never for IAL2
+    if (useCaseContext !== 'ial2' && (config.enabledProducts.includes('id-verification') || config.enabledProducts.includes('dob-verification'))) {
       fields.push({
         id: 'dateOfBirth',
         label: 'Date of Birth',
