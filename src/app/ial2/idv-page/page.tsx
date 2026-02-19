@@ -40,7 +40,7 @@ function IAL2IDVPageContent() {
 
   const reverificationEnabled = searchParams.get('reverification') === 'true';
   const useCaseContext = searchParams.get('useCase') || 'ial2';
-  const crosscheckReferenceId = searchParams.get('crosscheckReferenceId') || undefined;
+  const internalId = searchParams.get('crosscheckReferenceId') || undefined;
 
   const formData: FormData = searchParams.get('formData')
     ? JSON.parse(searchParams.get('formData')!)
@@ -59,7 +59,7 @@ function IAL2IDVPageContent() {
           lastName: formData.lastName || '',
           phone: formData.phone || '',
           email: formData.email,
-          crosscheckReferenceId,
+          internalId,
         }),
       });
 
@@ -327,7 +327,7 @@ function IAL2IDVPageContent() {
       lastName: formData.lastName || '<lastName>',
       phone: formData.phone || '<phone>',
       ...(formData.email ? { email: formData.email } : {}),
-      ...(crosscheckReferenceId ? { crosscheckReferenceId } : {}),
+      ...(internalId ? { internalId } : {}),
       callbackURL: 'https://<your-domain>/api/vouched-webhook',
       send: true,
     }, null, 2)}
