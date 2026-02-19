@@ -154,6 +154,13 @@ function IAL2CrossCheckPageContent() {
       useCase: useCaseContext
     });
 
+    // Pass the crosscheck job ID so the Send Invite API can link the jobs via crosscheckReferenceId
+    // This is required for IAL2 compliance: the IDV job must be linked to the crosscheck job
+    // so Vouched can verify phoneMatch, emailMatch, and name match across both jobs
+    if (verificationResult && isCrossCheckVerificationResponse(verificationResult)) {
+      params.set('crosscheckReferenceId', verificationResult.id);
+    }
+
     window.location.href = `/ial2/idv-page?${params.toString()}`;
   };
 

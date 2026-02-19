@@ -5,6 +5,7 @@ interface SendInviteRequestBody {
   lastName: string;
   phone: string;
   email?: string;
+  crosscheckReferenceId?: string;
 }
 
 // All fields are top-level per the Vouched OpenAPI spec (no 'parameters' wrapper)
@@ -15,6 +16,7 @@ interface VouchedInvitePayload {
   lastName: string;
   phone: string;
   email?: string;
+  crosscheckReferenceId?: string; // Links IDV job to prior crosscheck job for IAL2 compliance
   callbackURL: string;
   send: true;
 }
@@ -56,6 +58,10 @@ export async function POST(request: NextRequest) {
 
     if (body.email) {
       payload.email = body.email;
+    }
+
+    if (body.crosscheckReferenceId) {
+      payload.crosscheckReferenceId = body.crosscheckReferenceId;
     }
 
     // Log the full payload structure for debugging (mask phone, keep structure visible)
