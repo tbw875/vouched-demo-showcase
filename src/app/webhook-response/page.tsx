@@ -72,8 +72,15 @@ function WebhookResponsePageContent() {
         const data = await res.json();
         setResponses(data.responses || []);
         
-        // If we got data, stop loading
+        // If we got data, stop loading and persist to localStorage so the dashboard can read it
         if (data.responses && data.responses.length > 0) {
+          const latest = data.responses[0];
+          if (latest?.data) {
+            localStorage.setItem('latestJobData', JSON.stringify({
+              timestamp: latest.timestamp,
+              data: latest.data,
+            }));
+          }
           setLoading(false);
           return true; // Signal to stop polling
         }

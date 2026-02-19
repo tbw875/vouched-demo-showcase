@@ -77,11 +77,11 @@ function IAL2IDVPageContent() {
   };
 
   const handleContinueToDashboard = () => {
-    const dashboardParams = new URLSearchParams({
+    const params = new URLSearchParams({
       useCase: useCaseContext,
       reverification: reverificationEnabled.toString(),
     });
-    window.location.href = `/dashboard?${dashboardParams.toString()}`;
+    window.location.href = `/webhook-response?${params.toString()}`;
   };
 
   const maskedPhone = formData.phone
