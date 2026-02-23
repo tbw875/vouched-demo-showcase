@@ -1,37 +1,35 @@
 import { NextResponse } from 'next/server';
+import { Redis } from '@upstash/redis';
 
-// In-memory store for webhook responses (in a real app, this would be a database)
-// Using a global variable for demo purposes only
-declare global {
-  var vouchedWebhookResponses: Array<{ timestamp: string; data?: unknown; error?: string }>;
-}
+const REDIS_KEY = 'vouched:webhook_responses';
+const MAX_RESPONSES = 10;
+const TTL_SECONDS = 600; // 10 minutes
 
-// Initialize the global store if it doesn't exist
-if (!global.vouchedWebhookResponses) {
-  global.vouchedWebhookResponses = [];
+function getRedis() {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) {
+    throw new Error('UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN must be set');
+  }
+  return new Redis({ url, token });
 }
 
 export async function POST(request: Request) {
   try {
-    // Parse the webhook payload
     const webhookData = await request.json();
-
-    // Log the webhook data
     console.log('Received Vouched webhook:', webhookData);
 
-    // Store the webhook response in our in-memory store
-    // In a production app, you would save this to a database
-    global.vouchedWebhookResponses.unshift({
-      timestamp: new Date().toISOString(),
-      data: webhookData,
-    });
+    const redis = getRedis();
 
-    // Limit the stored responses to the last 10
-    if (global.vouchedWebhookResponses.length > 10) {
-      global.vouchedWebhookResponses = global.vouchedWebhookResponses.slice(0, 10);
-    }
+    // Read existing responses, prepend new one, cap at MAX_RESPONSES
+    const existing = await redis.get<Array<{ timestamp: string; data?: unknown; error?: string }>>(REDIS_KEY) ?? [];
+    const updated = [
+      { timestamp: new Date().toISOString(), data: webhookData },
+      ...existing,
+    ].slice(0, MAX_RESPONSES);
 
-    // Return a success response to Vouched
+    await redis.set(REDIS_KEY, updated, { ex: TTL_SECONDS });
+
     return NextResponse.json({
       success: true,
       message: 'Webhook received successfully',
@@ -39,14 +37,6 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error('Error processing Vouched webhook:', error);
-
-    // Store the error in our in-memory store
-    global.vouchedWebhookResponses.unshift({
-      timestamp: new Date().toISOString(),
-      error: error instanceof Error ? error.message : 'Unknown error',
-    });
-
-    // Return an error response
     return NextResponse.json(
       {
         success: false,
@@ -58,9 +48,19 @@ export async function POST(request: Request) {
   }
 }
 
-// Endpoint to get webhook responses (for demo purposes)
 export async function GET() {
-  return NextResponse.json({
-    responses: global.vouchedWebhookResponses || [],
-  });
+  try {
+    const redis = getRedis();
+    const responses = await redis.get<Array<{ timestamp: string; data?: unknown; error?: string }>>(REDIS_KEY) ?? [];
+    return NextResponse.json({ responses });
+  } catch (error) {
+    console.error('Error reading webhook responses from Redis:', error);
+    return NextResponse.json(
+      {
+        responses: [],
+        error: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 }
+    );
+  }
 }
