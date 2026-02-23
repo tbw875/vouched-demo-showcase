@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import PageHeader from '@/app/components/PageHeader';
-import { CheckCircleIcon, DevicePhoneMobileIcon, EnvelopeIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon, DevicePhoneMobileIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
 
 interface FormData {
   firstName?: string;
@@ -37,6 +37,8 @@ function IAL2IDVPageContent() {
   const [status, setStatus] = useState<InviteStatus>('idle');
   const [result, setResult] = useState<InviteResult | null>(null);
   const [showBehindScenes, setShowBehindScenes] = useState(false);
+  const [pollingCount, setPollingCount] = useState(0);
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const reverificationEnabled = searchParams.get('reverification') === 'true';
   const useCaseContext = searchParams.get('useCase') || 'ial2';
@@ -45,6 +47,54 @@ function IAL2IDVPageContent() {
   const formData: FormData = searchParams.get('formData')
     ? JSON.parse(searchParams.get('formData')!)
     : {};
+
+  // Clean up polling interval on unmount
+  useEffect(() => {
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+    };
+  }, []);
+
+  const startPolling = (useCaseCtx: string, reverify: boolean) => {
+    // Clear any stale job data from a previous flow
+    localStorage.removeItem('latestJobData');
+
+    let attempts = 0;
+    const maxAttempts = 300; // 5 minutes at 1s intervals
+
+    const poll = async () => {
+      attempts++;
+      setPollingCount(attempts);
+
+      try {
+        const res = await fetch('/api/vouched-webhook');
+        const data = await res.json();
+
+        if (data.responses && data.responses.length > 0) {
+          const latest = data.responses[0];
+          if (latest?.data) {
+            localStorage.setItem('latestJobData', JSON.stringify({
+              timestamp: latest.timestamp,
+              data: latest.data,
+            }));
+          }
+          // Redirect to dashboard on any webhook result
+          if (pollingRef.current) clearInterval(pollingRef.current);
+          const params = new URLSearchParams({
+            useCase: useCaseCtx,
+            reverification: reverify.toString(),
+          });
+          window.location.href = `/dashboard?${params.toString()}`;
+        } else if (attempts >= maxAttempts) {
+          if (pollingRef.current) clearInterval(pollingRef.current);
+        }
+      } catch {
+        // Keep polling on network errors
+      }
+    };
+
+    pollingRef.current = setInterval(poll, 1000);
+  };
 
   const handleSendInvite = async () => {
     setStatus('sending');
@@ -71,19 +121,12 @@ function IAL2IDVPageContent() {
       } else {
         setStatus('sent');
         setResult(data);
+        startPolling(useCaseContext, reverificationEnabled);
       }
     } catch (err) {
       setStatus('error');
       setResult({ success: false, error: err instanceof Error ? err.message : 'Network error' });
     }
-  };
-
-  const handleContinueToDashboard = () => {
-    const params = new URLSearchParams({
-      useCase: useCaseContext,
-      reverification: reverificationEnabled.toString(),
-    });
-    window.location.href = `/webhook-response?${params.toString()}`;
   };
 
   const maskedPhone = formData.phone
@@ -237,22 +280,16 @@ function IAL2IDVPageContent() {
                 </div>
 
                 <div className="flex items-center gap-3 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl">
-                  <ClockIcon className="h-6 w-6 text-amber-500 flex-shrink-0" />
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-amber-500 flex-shrink-0" />
                   <div>
-                    <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">Awaiting user completion</p>
+                    <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">
+                      Waiting for verification… ({pollingCount}s)
+                    </p>
                     <p className="text-xs text-amber-700 dark:text-amber-300 mt-0.5">
-                      In a real deployment, the webhook receives the result automatically. For this demo, continue to the dashboard.
+                      You&apos;ll be redirected automatically once the user completes ID verification on their phone.
                     </p>
                   </div>
                 </div>
-
-                <button
-                  onClick={handleContinueToDashboard}
-                  className="w-full py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-3 text-base"
-                >
-                  <CheckCircleIcon className="h-5 w-5" />
-                  Continue to Dashboard
-                </button>
               </div>
             )}
 
