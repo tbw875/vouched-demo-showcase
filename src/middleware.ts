@@ -32,7 +32,7 @@ export const config = {
      * - /_next/image (image optimization)
      * - /favicon.ico, /file.svg, /globe.svg, etc (public files)
      */
-    "/((?!login|api/auth|_next/static|_next/image|.*\\.svg|.*\\.png|.*\\.ico).*)",
+    "/((?!login|api/auth|api/vouched-webhook|api/debug-webhook|_next/static|_next/image|.*\\.svg|.*\\.png|.*\\.ico).*)",
   ],
 };
 
