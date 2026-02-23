@@ -37,6 +37,18 @@ export async function POST(request: Request) {
   }
 }
 
+export async function DELETE() {
+  try {
+    await kv.del(REDIS_KEY);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return NextResponse.json(
+      { success: false, error: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    );
+  }
+}
+
 export async function GET() {
   try {
     const responses = await kv.get<Array<{ timestamp: string; data?: unknown; error?: string }>>(REDIS_KEY) ?? [];

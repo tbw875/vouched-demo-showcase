@@ -55,9 +55,10 @@ function IAL2IDVPageContent() {
     };
   }, []);
 
-  const startPolling = (useCaseCtx: string, reverify: boolean) => {
-    // Clear any stale job data from a previous flow
+  const startPolling = async (useCaseCtx: string, reverify: boolean) => {
+    // Clear stale KV data and localStorage from a previous flow
     localStorage.removeItem('latestJobData');
+    await fetch('/api/vouched-webhook', { method: 'DELETE' });
 
     let attempts = 0;
     const maxAttempts = 300; // 5 minutes at 1s intervals
@@ -121,7 +122,7 @@ function IAL2IDVPageContent() {
       } else {
         setStatus('sent');
         setResult(data);
-        startPolling(useCaseContext, reverificationEnabled);
+        startPolling(useCaseContext, reverificationEnabled).catch(console.error);
       }
     } catch (err) {
       setStatus('error');
