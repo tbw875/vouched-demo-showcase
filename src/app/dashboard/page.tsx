@@ -326,26 +326,17 @@ function DashboardContent() {
                 <p className="text-violet-200 text-sm mt-0.5">The following steps were completed as part of this verification</p>
               </div>
               <div className="p-6 space-y-4">
-                <div className="flex items-start gap-3">
-                  <CheckCircleIcon className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">IDV and Driver&apos;s License Validation passed</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">ID authenticity, selfie liveness, and DL number validated</p>
-                  </div>
+                <div className="flex items-center gap-3">
+                  <CheckCircleIcon className="h-5 w-5 text-green-500 flex-shrink-0" />
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">IDV and Driver&apos;s License Validation passed</p>
                 </div>
-                <div className="flex items-start gap-3">
-                  <CheckCircleIcon className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">Input name compared against ID name</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">First and last name provided at enrollment matched the identity document</p>
-                  </div>
+                <div className="flex items-center gap-3">
+                  <CheckCircleIcon className="h-5 w-5 text-green-500 flex-shrink-0" />
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">Input name compared against ID name</p>
                 </div>
-                <div className="flex items-start gap-3">
-                  <CheckCircleIcon className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">Notification of proofing email sent to client</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Confirmation email dispatched upon successful IAL2 identity proofing</p>
-                  </div>
+                <div className="flex items-center gap-3">
+                  <CheckCircleIcon className="h-5 w-5 text-green-500 flex-shrink-0" />
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">Notification of proofing email sent to client</p>
                 </div>
               </div>
             </div>

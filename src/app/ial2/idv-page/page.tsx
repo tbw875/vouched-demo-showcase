@@ -212,40 +212,19 @@ function IAL2IDVPageContent() {
             </div>
 
             {/* What happens */}
-            <div className="space-y-2">
+            <div className="space-y-3">
               <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">What happens next</p>
-              <div className="flex items-start gap-3">
-                <EnvelopeIcon className="h-5 w-5 text-violet-500 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-gray-700 dark:text-gray-300">
-                  A secure SMS is sent to the user&apos;s mobile number with a unique Vouched verification link.
-                </p>
+              <div className="flex items-center gap-3">
+                <EnvelopeIcon className="h-5 w-5 text-violet-500 flex-shrink-0" />
+                <p className="text-sm text-gray-700 dark:text-gray-300">A secure SMS link is sent to the user&apos;s phone</p>
               </div>
-              <div className="flex items-start gap-3">
-                <DevicePhoneMobileIcon className="h-5 w-5 text-violet-500 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-gray-700 dark:text-gray-300">
-                  The user opens the link on their phone, captures their ID and selfie with the native camera, and submits.
-                </p>
+              <div className="flex items-center gap-3">
+                <DevicePhoneMobileIcon className="h-5 w-5 text-violet-500 flex-shrink-0" />
+                <p className="text-sm text-gray-700 dark:text-gray-300">The user captures their ID and selfie on-device</p>
               </div>
-              <div className="flex items-start gap-3">
-                <CheckCircleIcon className="h-5 w-5 text-violet-500 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-gray-700 dark:text-gray-300">
-                  Vouched validates the ID, runs Driver&apos;s License Validation, and posts results to the webhook.
-                </p>
-              </div>
-            </div>
-
-            {/* DL callout */}
-            <div className="bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800 rounded-xl p-4 flex items-start gap-3">
-              <div className="flex-shrink-0 mt-0.5">
-                <svg className="h-5 w-5 text-violet-600 dark:text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-violet-900 dark:text-violet-100">Driver&apos;s License Validation + NIST IAL2</p>
-                <p className="text-xs text-violet-700 dark:text-violet-300 mt-0.5">
-                  ID Authenticity · Selfie Liveness · DL Number Validation · <code className="font-mono">nist.ial2ComplianceEnabled: true</code>
-                </p>
+              <div className="flex items-center gap-3">
+                <CheckCircleIcon className="h-5 w-5 text-violet-500 flex-shrink-0" />
+                <p className="text-sm text-gray-700 dark:text-gray-300">Vouched validates the ID and posts results via webhook</p>
               </div>
             </div>
 
