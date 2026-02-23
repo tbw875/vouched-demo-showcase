@@ -19,7 +19,6 @@ function WebhookResponsePageContent() {
   const [responses, setResponses] = useState<WebhookResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const pollingInterval = 1000; // 1 second polling interval
-  const [localJobData, setLocalJobData] = useState<WebhookResponse | null>(null);
   const [isMounted, setIsMounted] = useState(false);
   const [pollingCount, setPollingCount] = useState(0);
   const [formData, setFormData] = useState<Record<string, string>>({});
@@ -42,23 +41,8 @@ function WebhookResponsePageContent() {
   }, []);
 
   useEffect(() => {
-    // Load local job data as fallback
-    const loadLocalJobData = () => {
-      try {
-        const stored = localStorage.getItem('latestJobData');
-        if (stored) {
-          const parsedData = JSON.parse(stored);
-          setLocalJobData(parsedData);
-          // Extract job ID from the data
-          if (parsedData.data && parsedData.data.id) {
-            setCurrentJobId(parsedData.data.id);
-          }
-          console.log('Loaded local job data:', parsedData);
-        }
-      } catch (error) {
-        console.error('Error loading local job data:', error);
-      }
-    };
+    // Clear any stale job data from a previous flow so we don't show the wrong job
+    localStorage.removeItem('latestJobData');
 
     let attempts = 0;
     const maxAttempts = 90; // 90 attempts * 1 second = 90 seconds timeout
@@ -67,30 +51,41 @@ function WebhookResponsePageContent() {
       try {
         attempts++;
         setPollingCount(attempts);
-        
+
         const res = await fetch('/api/vouched-webhook');
         const data = await res.json();
         setResponses(data.responses || []);
-        
+
         // If we got data, stop loading and persist to localStorage so the dashboard can read it
         if (data.responses && data.responses.length > 0) {
           const latest = data.responses[0];
           if (latest?.data) {
-            localStorage.setItem('latestJobData', JSON.stringify({
+            const jobData = {
               timestamp: latest.timestamp,
               data: latest.data,
-            }));
+            };
+            localStorage.setItem('latestJobData', JSON.stringify(jobData));
+            // Update currentJobId from the live webhook response
+            const liveData = latest.data as Record<string, unknown>;
+            const liveJobId =
+              (liveData?.id as string) ||
+              ((liveData?.job as Record<string, unknown>)?.id as string) ||
+              (liveData?.jobId as string) ||
+              null;
+            if (liveJobId) {
+              setCurrentJobId(liveJobId);
+            }
           }
           setLoading(false);
           return true; // Signal to stop polling
         }
-        
+
         // Continue polling if no data and within attempts limit
         if (attempts >= maxAttempts) {
           setLoading(false);
           return true; // Stop polling after max attempts
         }
-        
+
         return false; // Continue polling
       } catch (error) {
         console.error('Error fetching webhook responses:', error);
@@ -98,9 +93,6 @@ function WebhookResponsePageContent() {
         return true; // Stop polling on error
       }
     };
-
-    // Load local data first
-    loadLocalJobData();
 
     // Initial fetch
     fetchResponses().then(shouldStop => {
@@ -122,11 +114,7 @@ function WebhookResponsePageContent() {
 
   }, []); // Run once on mount
 
-  // Use webhook response if available, otherwise use local job data
-  const latestResponse = responses[0] || (localJobData ? {
-    timestamp: localJobData.timestamp,
-    data: localJobData.data
-  } : null);
+  const latestResponse = responses[0] || null;
 
   const getVerificationStatus = () => {
     if (!latestResponse) return 'pending';
