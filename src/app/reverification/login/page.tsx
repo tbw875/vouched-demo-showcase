@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { AtSymbolIcon, ArrowRightIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import { AtSymbolIcon, ArrowRightIcon, ArrowPathIcon, CodeBracketIcon, IdentificationIcon } from '@heroicons/react/24/outline';
 import PageHeader from '../../components/PageHeader';
 
 interface LoginFormData {
@@ -12,6 +12,8 @@ export default function ReverificationLoginPage() {
   const [formData, setFormData] = useState<LoginFormData>({ email: '' });
   const [errors, setErrors] = useState<Partial<LoginFormData>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [showDevTools, setShowDevTools] = useState(false);
+  const [customJobId, setCustomJobId] = useState('');
 
   const validateForm = (): boolean => {
     const newErrors: Partial<LoginFormData> = {};
@@ -41,19 +43,29 @@ export default function ReverificationLoginPage() {
     // For demo purposes, simulate finding the original job ID
     // In production, you would fetch the actual job ID from your database based on email
     let originalJobId = 'HayJkgJbg'; // Default fallback
-    
-    // Try to get the stored job ID from localStorage
-    try {
-      const storedJobId = localStorage.getItem('vouchedJobId');
-      if (storedJobId) {
-        originalJobId = storedJobId;
-        console.log("Using stored job ID for reverification:", originalJobId);
-      } else {
-        console.warn("No stored job ID found, using default for demo");
+    let jobIdSource = 'hardcoded default';
+
+    // Dev override: custom job ID takes highest priority
+    if (customJobId.trim()) {
+      originalJobId = customJobId.trim();
+      jobIdSource = 'dev tools (custom input)';
+    } else {
+      // Try to get the stored job ID from localStorage
+      try {
+        const storedJobId = localStorage.getItem('vouchedJobId');
+        if (storedJobId) {
+          originalJobId = storedJobId;
+          jobIdSource = 'localStorage (vouchedJobId)';
+        } else {
+          console.warn("No stored job ID found, using default for demo");
+        }
+      } catch (err) {
+        console.warn("Could not access localStorage for job ID:", err);
       }
-    } catch (err) {
-      console.warn("Could not access localStorage for job ID:", err);
     }
+
+    console.log(`[Reverification] Job ID source: ${jobIdSource}`);
+    console.log(`[Reverification] Reference job ID: ${originalJobId}`);
     
     // Navigate to reverification verify page with the email and original job ID
     const params = new URLSearchParams({
@@ -159,12 +171,61 @@ export default function ReverificationLoginPage() {
 
         {/* Back Button */}
         <div className="text-center mt-8">
-          <button 
+          <button
             onClick={() => window.history.back()}
             className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium"
           >
             ← Back to Results
           </button>
+        </div>
+
+        {/* Dev Tools Toggle */}
+        <div className="mt-6">
+          <div className="flex justify-center">
+            <button
+              type="button"
+              onClick={() => setShowDevTools(prev => !prev)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-mono font-semibold transition-all duration-200 border ${
+                showDevTools
+                  ? 'bg-amber-50 dark:bg-amber-950 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300'
+                  : 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-amber-300 hover:text-amber-600 dark:hover:text-amber-400'
+              }`}
+            >
+              <CodeBracketIcon className="h-3.5 w-3.5" />
+              {showDevTools ? '↑ dev' : '↓ dev'}
+            </button>
+          </div>
+
+          {showDevTools && (
+            <div className="mt-4 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-2xl p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <CodeBracketIcon className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                <span className="text-sm font-semibold text-amber-800 dark:text-amber-300 font-mono">Dev Tools</span>
+              </div>
+
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm font-semibold text-amber-900 dark:text-amber-200">
+                  <IdentificationIcon className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                  Custom Reference Job ID
+                </label>
+                <p className="text-xs text-amber-700 dark:text-amber-400 mb-2">
+                  Overrides localStorage lookup. Leave blank to use the stored job ID from the last completed verification.
+                </p>
+                <input
+                  type="text"
+                  value={customJobId}
+                  onChange={(e) => setCustomJobId(e.target.value)}
+                  placeholder="e.g. HayJkgJbg"
+                  className="w-full px-4 py-2.5 rounded-lg border border-amber-300 dark:border-amber-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm font-mono placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400"
+                />
+                {customJobId.trim() && (
+                  <p className="text-xs text-amber-700 dark:text-amber-300 font-mono">
+                    ✓ Will use custom job ID: <strong>{customJobId.trim()}</strong>
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
