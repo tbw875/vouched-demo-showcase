@@ -33,6 +33,7 @@ function VerificationPageContent() {
 
   const reverificationEnabled = searchParams.get('reverification') === 'true';
   const useCaseContext = searchParams.get('useCase') || 'financial';
+  const jobType = searchParams.get('jobType') || 'idv';
 
   // Parse form data from URL params
   const formData: FormData = searchParams.get('formData')
@@ -195,6 +196,9 @@ function VerificationPageContent() {
               // Use environment variable for App ID (public key)
               appId: process.env.NEXT_PUBLIC_VOUCHED_APP_ID!,
 
+              // Job type - always explicitly set
+              type: jobType,
+
               // Required verification information for comparison
               verification: {
                 firstName: (typeof verificationData.firstName === 'string' ? verificationData.firstName : '') || '',
@@ -325,6 +329,7 @@ function VerificationPageContent() {
 
             // Initialize Vouched using the correct pattern
             console.log('=== VOUCHED PRODUCT CONFIGURATION ===');
+            console.log('Job Type (type):', vouchedConfig.type);
             console.log('Enabled Products:', config.enabledProducts);
             console.log('Product Keys Being Sent to Vouched:');
             console.log('  verification.enableCrossCheck:', vouchedConfig.verification?.enableCrossCheck);

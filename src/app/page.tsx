@@ -5,6 +5,7 @@ import { ChevronRightIcon, ShieldCheckIcon, DocumentCheckIcon, BuildingOffice2Ic
 
 type SSNMode = 'off' | 'last4' | 'full9';
 type UseCaseContext = 'healthcare' | 'financial' | 'generic' | 'ial2';
+type JobType = 'idv' | 'id' | 'selfie-verification' | 'reverify';
 
 interface Product {
   id: string;
@@ -15,6 +16,7 @@ interface Product {
 
 export default function ConfigurationPage() {
   const [ssnMode, setSsnMode] = useState<SSNMode>('off');
+  const [jobType, setJobType] = useState<JobType>('idv');
   const reverificationEnabled = true; // Reverification is always available
   const [useCaseContext, setUseCaseContext] = useState<UseCaseContext>('financial');
   const [showDevLinks, setShowDevLinks] = useState(false);
@@ -90,6 +92,7 @@ export default function ConfigurationPage() {
       enabledProducts,
       disabledProducts,
       ssnMode,
+      jobType,
       reverificationEnabled,
     });
     
@@ -100,6 +103,7 @@ export default function ConfigurationPage() {
       products: enabledProducts.join(','),
       disabledProducts: disabledProducts.join(','),
       ssnMode: ssnMode,
+      jobType: jobType,
       reverification: reverificationEnabled.toString(),
       useCase: useCaseContext
     });
@@ -346,7 +350,59 @@ export default function ConfigurationPage() {
               </div>
 
             </div>
+
+            {/* Job Type Selector */}
+            <div className="col-span-1 md:col-span-2 p-8 rounded-2xl border-2 border-gray-200 dark:border-gray-600">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-1">
+                    Job Type
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Controls which Vouched plugin type is initialised
+                  </p>
+                </div>
+
+                {/* Segmented Control */}
+                <div className="relative inline-flex bg-gray-200 dark:bg-gray-700 rounded-full p-1 shadow-inner">
+                  {/* Background slider */}
+                  <div
+                    className="absolute top-1 bottom-1 rounded-full transition-all duration-300 ease-in-out shadow-lg bg-indigo-600"
+                    style={{
+                      width: 'calc(25% - 2px)',
+                      left: jobType === 'idv' ? '2px' :
+                            jobType === 'id' ? 'calc(25% + 1px)' :
+                            jobType === 'selfie-verification' ? 'calc(50% + 0px)' :
+                            'calc(75% - 1px)'
+                    }}
+                  />
+                  {(['idv', 'id', 'selfie-verification', 'reverify'] as JobType[]).map((type) => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => setJobType(type)}
+                      className={`relative z-10 px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 min-w-[100px] ${
+                        jobType === type
+                          ? 'text-white'
+                          : 'text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100'
+                      }`}
+                    >
+                      {type}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <p className="text-gray-600 dark:text-gray-300 text-sm">
+                {jobType === 'idv' && 'Full ID + selfie verification (default)'}
+                {jobType === 'id' && 'ID document scan only — no selfie. Use this to test the Reverification flow.'}
+                {jobType === 'selfie-verification' && 'Selfie capture only — no ID document scan'}
+                {jobType === 'reverify' && 'Reverification against a prior job. Requires a jobId from a previous verification.'}
+              </p>
+            </div>
+
           </div>
+        </div>
 
           {/* Use Case Context Selection */}
           <div className="space-y-6">
@@ -468,7 +524,7 @@ export default function ConfigurationPage() {
             <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
               Configuration Summary
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div className="text-center">
                 <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Products</div>
                 <div className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">
@@ -496,6 +552,12 @@ export default function ConfigurationPage() {
                   'text-red-600 dark:text-red-400'
                 }`}>
                   {ssnMode === 'off' ? 'Off' : ssnMode === 'last4' ? 'Last 4 Digits' : 'Full 9 Digits'}
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Job Type</div>
+                <div className="text-lg font-semibold text-indigo-600 dark:text-indigo-400">
+                  {jobType}
                 </div>
               </div>
             </div>

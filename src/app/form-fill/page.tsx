@@ -56,6 +56,7 @@ function FormFillPageContent() {
   
   const reverificationEnabled = searchParams.get('reverification') === 'true';
   const useCaseContext = searchParams.get('useCase') || 'financial';
+  const jobType = searchParams.get('jobType') || 'idv';
 
   // Get user's IP address
   useEffect(() => {
@@ -278,6 +279,7 @@ function FormFillPageContent() {
       products: config.enabledProducts.join(','),
       disabledProducts: config.disabledProducts.join(','),
       formData: JSON.stringify(formData),
+      jobType: jobType,
       reverification: reverificationEnabled.toString(),
       useCase: useCaseContext
     });
