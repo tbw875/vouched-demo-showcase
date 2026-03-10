@@ -14,6 +14,7 @@ export default function ReverificationLoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showDevTools, setShowDevTools] = useState(false);
   const [customJobId, setCustomJobId] = useState('');
+  const [matchType, setMatchType] = useState<'selfie' | 'id'>('id');
 
   const validateForm = (): boolean => {
     const newErrors: Partial<LoginFormData> = {};
@@ -66,11 +67,13 @@ export default function ReverificationLoginPage() {
 
     console.log(`[Reverification] Job ID source: ${jobIdSource}`);
     console.log(`[Reverification] Reference job ID: ${originalJobId}`);
-    
-    // Navigate to reverification verify page with the email and original job ID
+    console.log(`[Reverification] Match type: ${matchType}`);
+
+    // Navigate to reverification verify page with the email, original job ID, and match type
     const params = new URLSearchParams({
       email: formData.email,
-      originalJobId: originalJobId
+      originalJobId: originalJobId,
+      matchType: matchType
     });
 
     window.location.href = `/reverification/verify?${params.toString()}`;
@@ -203,26 +206,70 @@ export default function ReverificationLoginPage() {
                 <span className="text-sm font-semibold text-amber-800 dark:text-amber-300 font-mono">Dev Tools</span>
               </div>
 
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-semibold text-amber-900 dark:text-amber-200">
-                  <IdentificationIcon className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                  Custom Reference Job ID
-                </label>
-                <p className="text-xs text-amber-700 dark:text-amber-400 mb-2">
-                  Overrides localStorage lookup. Leave blank to use the stored job ID from the last completed verification.
-                </p>
-                <input
-                  type="text"
-                  value={customJobId}
-                  onChange={(e) => setCustomJobId(e.target.value)}
-                  placeholder="e.g. HayJkgJbg"
-                  className="w-full px-4 py-2.5 rounded-lg border border-amber-300 dark:border-amber-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm font-mono placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400"
-                />
-                {customJobId.trim() && (
-                  <p className="text-xs text-amber-700 dark:text-amber-300 font-mono">
-                    ✓ Will use custom job ID: <strong>{customJobId.trim()}</strong>
+              <div className="space-y-5">
+                {/* Custom Job ID */}
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-sm font-semibold text-amber-900 dark:text-amber-200">
+                    <IdentificationIcon className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                    Custom Reference Job ID
+                  </label>
+                  <p className="text-xs text-amber-700 dark:text-amber-400">
+                    Overrides localStorage lookup. Leave blank to use the stored job ID from the last completed verification.
                   </p>
-                )}
+                  <input
+                    type="text"
+                    value={customJobId}
+                    onChange={(e) => setCustomJobId(e.target.value)}
+                    placeholder="e.g. HayJkgJbg"
+                    className="w-full px-4 py-2.5 rounded-lg border border-amber-300 dark:border-amber-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm font-mono placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400"
+                  />
+                  {customJobId.trim() && (
+                    <p className="text-xs text-amber-700 dark:text-amber-300 font-mono">
+                      ✓ Will use custom job ID: <strong>{customJobId.trim()}</strong>
+                    </p>
+                  )}
+                </div>
+
+                {/* Divider */}
+                <div className="border-t border-amber-200 dark:border-amber-800" />
+
+                {/* Match Type */}
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-sm font-semibold text-amber-900 dark:text-amber-200">
+                    <IdentificationIcon className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                    Match Type
+                  </label>
+                  <p className="text-xs text-amber-700 dark:text-amber-400">
+                    <strong>selfie</strong> — captures new selfie, compares to source job&apos;s selfie (requires <code className="font-mono">type: idv</code> reference job).<br />
+                    <strong>id</strong> — captures new ID scan, compares to source job&apos;s ID document (works with <code className="font-mono">type: id</code> reference job).
+                  </p>
+                  <div className="relative inline-flex bg-amber-100 dark:bg-amber-900 rounded-full p-1 shadow-inner">
+                    <div
+                      className="absolute top-1 bottom-1 rounded-full transition-all duration-300 ease-in-out shadow bg-amber-600 dark:bg-amber-500"
+                      style={{
+                        width: 'calc(50% - 2px)',
+                        left: matchType === 'id' ? '2px' : 'calc(50% + 1px)'
+                      }}
+                    />
+                    {(['id', 'selfie'] as const).map((type) => (
+                      <button
+                        key={type}
+                        type="button"
+                        onClick={() => setMatchType(type)}
+                        className={`relative z-10 px-6 py-1.5 rounded-full text-xs font-mono font-semibold transition-all duration-300 min-w-[80px] ${
+                          matchType === type
+                            ? 'text-white'
+                            : 'text-amber-700 dark:text-amber-300 hover:text-amber-900 dark:hover:text-amber-100'
+                        }`}
+                      >
+                        {type}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-amber-700 dark:text-amber-300 font-mono">
+                    ✓ reverificationParameters.match: <strong>&apos;{matchType}&apos;</strong>
+                  </p>
+                </div>
               </div>
             </div>
           )}

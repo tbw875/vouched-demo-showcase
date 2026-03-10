@@ -10,6 +10,7 @@ function ReverificationVerifyContent() {
   const vouchedInstanceRef = useRef<VouchedInstance | null>(null);
 
   const originalJobId = searchParams.get('originalJobId');
+  const matchType = (searchParams.get('matchType') || 'id') as 'selfie' | 'id';
 
   // Initialize Vouched JS Plugin for Reverification
   useEffect(() => {
@@ -55,7 +56,7 @@ function ReverificationVerifyContent() {
               reverificationParameters: {
                 // Reference the source job by its id
                 jobId: originalJobId,
-                match: 'selfie'
+                match: matchType
               },
 
               // Theme must be 'avant' for reverification
@@ -160,7 +161,9 @@ function ReverificationVerifyContent() {
               // Store handler for cleanup
               (window as Window & { _vouchedReverifyMessageHandler?: typeof messageHandler })._vouchedReverifyMessageHandler = messageHandler;
 
-              console.log('Creating Vouched reverification instance with config:', vouchedConfig);
+              console.log(`[Reverification] match type: '${matchType}'`);
+            console.log(`[Reverification] reference job ID: '${originalJobId}'`);
+            console.log('Creating Vouched reverification instance with config:', vouchedConfig);
               
               // Create the Vouched instance
               const vouchedInstance = window.Vouched(vouchedConfig);
