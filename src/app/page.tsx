@@ -402,7 +402,6 @@ export default function ConfigurationPage() {
             </div>
 
           </div>
-        </div>
 
           {/* Use Case Context Selection */}
           <div className="space-y-6">
