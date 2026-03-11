@@ -279,12 +279,6 @@ function CrossCheckPageContent() {
                     CrossCheck API Response
                   </h3>
                 </div>
-                <div className="flex items-center space-x-2">
-                  {getStatusIcon()}
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {getStatusText()}
-                  </span>
-                </div>
               </div>
             </div>
             <div className="p-6">
@@ -293,27 +287,13 @@ function CrossCheckPageContent() {
                 // Extract the identity score from the API response
                 const identityScore = verificationResult.result.confidences?.identity;
                 const scorePercentage = identityScore ? Math.round(identityScore * 100) : null;
-                const isPassed = scorePercentage && scorePercentage >= 85;
                 
                 return scorePercentage !== null ? (
                   <div className="mb-6 p-6 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl border border-indigo-200 dark:border-indigo-700">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="text-lg font-semibold text-indigo-900 dark:text-indigo-100 mb-2">Identity Check Score</h4>
-                        <p className="text-4xl font-bold text-indigo-600 dark:text-indigo-400">
-                          {scorePercentage}%
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <div className={`inline-flex items-center px-4 py-2 rounded-full text-lg font-semibold ${
-                          isPassed
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
-                            : 'text-white dark:text-white'
-                        }`} style={!isPassed ? { backgroundColor: '#EC4C3A' } : {}}>
-                          {isPassed ? '✓ Passed' : '✕ Failed'}
-                        </div>
-                      </div>
-                    </div>
+                    <h4 className="text-lg font-semibold text-indigo-900 dark:text-indigo-100 mb-2">Identity Check Score</h4>
+                    <p className="text-4xl font-bold text-indigo-600 dark:text-indigo-400">
+                      {scorePercentage}%
+                    </p>
                   </div>
                 ) : null;
               })()}
