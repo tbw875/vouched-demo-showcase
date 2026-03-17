@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { ChevronRightIcon, CheckCircleIcon, XCircleIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { ChevronRightIcon } from '@heroicons/react/24/outline';
 import PageHeader from '@/app/components/PageHeader';
 import { CrossCheckVerificationRequest, CrossCheckApiResponse, isCrossCheckVerificationResponse } from '@/types/crosscheck-api';
 
@@ -155,30 +155,6 @@ function CrossCheckPageContent() {
     });
 
     window.location.href = `/healthcare/dob-page?${params.toString()}`;
-  };
-
-  const getStatusIcon = () => {
-    if (isLoading) {
-      return <ClockIcon className="h-6 w-6 text-yellow-500 animate-spin" />;
-    }
-    if (verificationError) {
-      return <XCircleIcon className="h-6 w-6 text-red-500" />;
-    }
-    if (verificationResult && isCrossCheckVerificationResponse(verificationResult)) {
-      return verificationResult.result.success 
-        ? <CheckCircleIcon className="h-6 w-6 text-green-500" />
-        : <XCircleIcon className="h-6 w-6 text-red-500" />;
-    }
-    return <ClockIcon className="h-6 w-6 text-gray-400" />;
-  };
-
-  const getStatusText = () => {
-    if (isLoading) return 'Processing CrossCheck verification...';
-    if (verificationError) return 'Verification failed';
-    if (verificationResult && isCrossCheckVerificationResponse(verificationResult)) {
-      return verificationResult.result.success ? 'Verification successful' : 'Verification failed';
-    }
-    return 'Ready to verify';
   };
 
   return (

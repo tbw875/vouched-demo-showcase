@@ -164,24 +164,6 @@ function IAL2CrossCheckPageContent() {
     window.location.href = `/ial2/idv-page?${params.toString()}`;
   };
 
-  const getStatusIcon = () => {
-    if (isLoading) return <ClockIcon className="h-6 w-6 text-yellow-500 animate-spin" />;
-    if (verificationError) return <XCircleIcon className="h-6 w-6 text-red-500" />;
-    if (verificationResult && isCrossCheckVerificationResponse(verificationResult)) {
-      return <CheckCircleIcon className="h-6 w-6 text-green-500" />;
-    }
-    return <ClockIcon className="h-6 w-6 text-gray-400" />;
-  };
-
-  const getStatusText = () => {
-    if (isLoading) return 'Processing CrossCheck verification...';
-    if (verificationError) return 'Verification failed';
-    if (verificationResult && isCrossCheckVerificationResponse(verificationResult)) {
-      return 'Verification complete';
-    }
-    return 'Ready to verify';
-  };
-
   // Derive individual check results from the CrossCheck response.
   // The API returns result.phone.isValid, result.phone.isMatch, etc.
   const getCheckResult = (checkKey: string): boolean | null => {
