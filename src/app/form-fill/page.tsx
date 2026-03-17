@@ -44,6 +44,7 @@ function FormFillPageContent() {
   const [formData, setFormData] = useState<FormData>({});
   const [errors, setErrors] = useState<Partial<FormData>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [showDevFill, setShowDevFill] = useState(false);
   
   // Parse configuration from URL params
   const config: VouchedConfig = {
@@ -309,6 +310,44 @@ function FormFillPageContent() {
           <p className="text-xl text-gray-600 dark:text-gray-300">
             Please provide your personal information for verification
           </p>
+        </div>
+
+        {/* Dev Fill */}
+        <div className="text-center mb-6">
+          <button
+            onClick={() => setShowDevFill(!showDevFill)}
+            className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium transition-colors duration-200"
+          >
+            {showDevFill ? '↑ Hide dev' : '↓ dev'}
+          </button>
+
+          {showDevFill && (
+            <div className="space-y-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div>
+                <button
+                  onClick={() => {
+                    setFormData(prev => ({
+                      ...prev,
+                      firstName: 'Tom',
+                      lastName: 'Walsh',
+                      phone: '2067195992',
+                      email: 'charger875@gmail.com',
+                      street: '3044 S Chicago St',
+                      city: 'Seattle',
+                      state: 'WA',
+                      postalCode: '98117',
+                      country: 'US',
+                      dateOfBirth: '1990-07-15',
+                    }));
+                    setErrors({});
+                  }}
+                  className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium transition-colors duration-200"
+                >
+                  → Fill with Tom&apos;s Info
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Form */}
