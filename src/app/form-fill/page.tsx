@@ -312,44 +312,6 @@ function FormFillPageContent() {
           </p>
         </div>
 
-        {/* Dev Fill */}
-        <div className="text-center mb-6">
-          <button
-            onClick={() => setShowDevFill(!showDevFill)}
-            className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium transition-colors duration-200"
-          >
-            {showDevFill ? '↑ Hide dev' : '↓ dev'}
-          </button>
-
-          {showDevFill && (
-            <div className="space-y-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <div>
-                <button
-                  onClick={() => {
-                    setFormData(prev => ({
-                      ...prev,
-                      firstName: 'Tom',
-                      lastName: 'Walsh',
-                      phone: '2067195992',
-                      email: 'charger875@gmail.com',
-                      street: '3044 S Chicago St',
-                      city: 'Seattle',
-                      state: 'WA',
-                      postalCode: '98117',
-                      country: 'US',
-                      dateOfBirth: '1990-07-15',
-                    }));
-                    setErrors({});
-                  }}
-                  className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium transition-colors duration-200"
-                >
-                  → Fill with Tom&apos;s Info
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
         {/* Form */}
         <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-700 p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -410,6 +372,45 @@ function FormFillPageContent() {
             </div>
           </form>
         </div>
+
+        {/* Dev Fill */}
+        <div className="text-center mt-8">
+          <button
+            onClick={() => setShowDevFill(!showDevFill)}
+            className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium transition-colors duration-200"
+          >
+            {showDevFill ? '↑ Hide dev' : '↓ dev'}
+          </button>
+
+          {showDevFill && (
+            <div className="space-y-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div>
+                <button
+                  onClick={() => {
+                    setFormData(prev => ({
+                      ...prev,
+                      firstName: 'Tom',
+                      lastName: 'Walsh',
+                      phone: '2067195992',
+                      email: 'charger875@gmail.com',
+                      street: '3044 S Chicago St',
+                      city: 'Seattle',
+                      state: 'WA',
+                      postalCode: '98117',
+                      country: 'US',
+                      dateOfBirth: '1990-07-15',
+                    }));
+                    setErrors({});
+                  }}
+                  className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium transition-colors duration-200"
+                >
+                  → Fill with Tom&apos;s Info
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
               </div>
       </div>
     );
