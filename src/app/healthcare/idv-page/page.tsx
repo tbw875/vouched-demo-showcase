@@ -157,8 +157,8 @@ function HealthcareIDVPageContent() {
                 email: (typeof verificationData.email === 'string' ? verificationData.email : '') || '',
                 phone: (typeof verificationData.phone === 'string' ? verificationData.phone : '') || '',
                 ...(typeof verificationData.birthDate === 'string' && verificationData.birthDate && { birthDate: verificationData.birthDate }),
-                // Product configuration goes inside verification object per Vouched docs
-                enableCrossCheck: config.enabledProducts.includes('crosscheck'),
+                // CrossCheck already completed earlier in the healthcare workflow — do not re-run it here
+                enableCrossCheck: false,
                 enableDriversLicenseValidation: config.enabledProducts.includes('drivers-license-verification'),
               },
 
