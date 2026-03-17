@@ -128,9 +128,10 @@ function HealthcareIDVPageContent() {
             if (formData.email) verificationData.email = formData.email;
             if (formData.ipAddress) verificationData.ipAddress = formData.ipAddress;
             
-            // Add DOB for Visual IDV or DOB verification
+            // Add DOB for Visual IDV or DOB verification - format as MM/DD/YYYY per Vouched API spec
             if ((config.enabledProducts.includes('id-verification') || config.enabledProducts.includes('dob-verification')) && formData.dateOfBirth) {
-              verificationData.birthDate = formData.dateOfBirth;
+              const [year, month, day] = formData.dateOfBirth.split('-');
+              verificationData.birthDate = `${month}/${day}/${year}`;
             }
             
             // Add SSN for SSN Private verification
