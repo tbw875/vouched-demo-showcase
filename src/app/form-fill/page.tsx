@@ -396,7 +396,7 @@ function FormFillPageContent() {
                       street: '3044 S Chicago St',
                       city: 'Seattle',
                       state: 'WA',
-                      postalCode: '98117',
+                      postalCode: '98108',
                       country: 'US',
                       dateOfBirth: '1990-07-15',
                     }));
