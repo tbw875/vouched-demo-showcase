@@ -35,19 +35,9 @@ function EpicHeart({ className = '' }: { className?: string }) {
 // Simulated MyChart loading screen shown in the left phone card while CrossCheck runs
 function EpicLoadingScreen() {
   return (
-    <div className="w-full max-w-[390px] h-[680px] max-h-[calc(100dvh-16rem)] bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col">
-        <div className="flex items-center gap-3 px-3 py-2 bg-gray-100 border-b border-gray-200 shrink-0">
-          <div className="flex items-center justify-center w-7 h-7 rounded-full bg-white border border-gray-200 text-gray-500 text-sm">
-            ✕
-          </div>
-          <div className="flex-1 bg-white rounded-lg px-3 py-1.5 text-xs text-gray-700 font-medium border border-gray-200 flex items-center gap-2">
-            <span className="text-gray-400">🔒</span>
-            vendorservices.epic.com
-            <div className="ml-auto w-3/4 h-0.5 bg-blue-500 rounded-full animate-pulse" />
-          </div>
-          <div className="flex items-center justify-center w-7 h-7 rounded-full bg-white border border-gray-200 text-gray-400 text-sm">
-            ⋮
-          </div>
+    <div className="w-full max-w-[390px] h-[calc(100dvh-11rem)] bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+        <div className="bg-gray-50 border-b border-gray-200 px-4 py-2 text-center text-xs text-gray-400 tracking-wide shrink-0">
+          epic.stage.vouched.id
         </div>
         <div className="flex-1 flex flex-col items-center justify-center gap-4">
           <EpicHeart className="w-20 h-20 animate-pulse" />
