@@ -29,7 +29,6 @@ export default function EpicVerifyPhonePage() {
     }
   }, []);
 
-  // Countdown timer
   useEffect(() => {
     if (countdown <= 0) {
       setResendActive(true);
@@ -70,12 +69,12 @@ export default function EpicVerifyPhonePage() {
       setError('Please enter all 6 digits');
       return;
     }
-    // Accept any 6-digit code
-    router.push('/epic/verification');
+    // Accept any 6-digit code — routes to CrossCheck before IDV
+    router.push('/epic/crosscheck');
   }
 
   function handleResend() {
-    setCountdown(28);
+    setCountdown(30);
     setResendActive(false);
     setCode(['', '', '', '', '', '']);
     inputs.current[0]?.focus();
@@ -85,7 +84,6 @@ export default function EpicVerifyPhonePage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      {/* Simulated URL bar */}
       <div className="bg-gray-50 border-b border-gray-200 px-4 py-2 text-center text-xs text-gray-400 tracking-wide">
         epic.stage.vouched.id
       </div>
@@ -102,7 +100,6 @@ export default function EpicVerifyPhonePage() {
           Verification Code
         </label>
 
-        {/* 6-box OTP input */}
         <div className="flex gap-2 mb-2" onPaste={handlePaste}>
           {code.map((digit, i) => (
             <input
@@ -127,7 +124,6 @@ export default function EpicVerifyPhonePage() {
 
         {error && <p className="text-red-500 text-xs mb-4">{error}</p>}
 
-        {/* Verify button */}
         <button
           onClick={handleVerify}
           disabled={!allFilled}
@@ -136,7 +132,6 @@ export default function EpicVerifyPhonePage() {
           Verify
         </button>
 
-        {/* Resend */}
         <div className="text-center mt-4">
           {resendActive ? (
             <button
@@ -151,7 +146,6 @@ export default function EpicVerifyPhonePage() {
         </div>
       </div>
 
-      {/* Footer */}
       <div className="px-5 py-4 text-center space-y-1">
         <p className="text-xs text-gray-400">
           Your personal information is secure and will only be used for identity verification.

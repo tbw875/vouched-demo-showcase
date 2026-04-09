@@ -95,7 +95,6 @@ function DatePicker({
       />
       {open && (
         <div className="absolute z-50 top-full left-0 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-xl p-4">
-          {/* Month/Year header */}
           <div className="flex items-center justify-between mb-3">
             <button onClick={prevMonth} className="p-1 hover:bg-gray-100 rounded-full text-gray-600">
               ‹
@@ -107,13 +106,11 @@ function DatePicker({
               ›
             </button>
           </div>
-          {/* Day headers */}
           <div className="grid grid-cols-7 mb-1">
             {DAYS.map(d => (
               <div key={d} className="text-center text-xs text-gray-400 font-medium py-1">{d}</div>
             ))}
           </div>
-          {/* Days grid */}
           <div className="grid grid-cols-7">
             {cells.map((day, i) =>
               day === null ? (
@@ -133,7 +130,6 @@ function DatePicker({
               )
             )}
           </div>
-          {/* Reset */}
           <div className="flex justify-between mt-3 pt-3 border-t border-gray-100">
             <button
               onClick={() => { onChange(''); setOpen(false); }}
@@ -227,7 +223,6 @@ export default function EpicFormPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      {/* Simulated URL bar */}
       <div className="bg-gray-50 border-b border-gray-200 px-4 py-2 text-center text-xs text-gray-400 tracking-wide">
         epic.stage.vouched.id
       </div>
@@ -239,7 +234,6 @@ export default function EpicFormPage() {
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* First Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
             <input
@@ -251,7 +245,6 @@ export default function EpicFormPage() {
             {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>}
           </div>
 
-          {/* Last Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
             <input
@@ -263,7 +256,6 @@ export default function EpicFormPage() {
             {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>}
           </div>
 
-          {/* Phone Number */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
             <div className={`flex items-center border rounded-lg overflow-hidden shadow-sm ${errors.phone ? 'border-red-400' : 'border-gray-200'} focus-within:ring-2 focus-within:ring-blue-400`}>
@@ -282,7 +274,6 @@ export default function EpicFormPage() {
             {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
           </div>
 
-          {/* Date of Birth */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
             <DatePicker
@@ -292,7 +283,6 @@ export default function EpicFormPage() {
             {errors.dateOfBirth && <p className="text-red-500 text-xs mt-1">{errors.dateOfBirth}</p>}
           </div>
 
-          {/* Email Address */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
             <input
@@ -304,7 +294,6 @@ export default function EpicFormPage() {
             {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
           </div>
 
-          {/* Consent checkbox */}
           <div className="flex items-start gap-3 pt-1">
             <input
               type="checkbox"
@@ -326,7 +315,6 @@ export default function EpicFormPage() {
           </div>
           {errors.consent && <p className="text-red-500 text-xs -mt-2">{errors.consent}</p>}
 
-          {/* Continue button */}
           <div className="pt-2">
             <button
               type="submit"
@@ -338,7 +326,6 @@ export default function EpicFormPage() {
           </div>
         </form>
 
-        {/* What you'll need next */}
         <div className="mt-6 bg-gray-50 rounded-xl p-4 border border-gray-100">
           <h2 className="font-bold text-gray-900 text-sm mb-3">What you&apos;ll need next:</h2>
           <ul className="space-y-2">
@@ -356,7 +343,6 @@ export default function EpicFormPage() {
         </div>
       </div>
 
-      {/* Footer */}
       <div className="px-5 py-4 text-center space-y-1">
         <p className="text-xs text-gray-400">
           Your personal information is secure and will only be used for identity verification.
@@ -366,7 +352,6 @@ export default function EpicFormPage() {
         </p>
       </div>
 
-      {/* Dev fill */}
       <div className="text-center pb-4">
         <button
           onClick={() => setShowDev(d => !d)}

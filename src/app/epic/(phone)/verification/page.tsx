@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useRef, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { VouchedConfig as VouchedSDKConfig, VouchedJob, VouchedInstance } from '@/types/vouched';
 
 interface EpicFormData {
@@ -12,8 +12,10 @@ interface EpicFormData {
   email?: string;
 }
 
-export default function EpicVerificationPage() {
+function EpicVerificationContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const crosscheckReferenceId = searchParams.get('crosscheckReferenceId') || undefined;
   const vouchedInstanceRef = useRef<VouchedInstance | null>(null);
 
   useEffect(() => {
@@ -58,7 +60,8 @@ export default function EpicVerificationPage() {
               phone: formData.phone || '',
               ...(birthDate && { birthDate }),
               enableCrossCheck: false,
-              enableDriversLicenseValidation: false,
+              enableDriversLicenseValidation: true,
+              ...(crosscheckReferenceId && { crosscheckReferenceId }),
             },
             callbackURL: `${window.location.origin}/api/vouched-webhook`,
             crossDevice: true,
@@ -80,8 +83,6 @@ export default function EpicVerificationPage() {
                 data: job,
               }));
               localStorage.setItem('epicJobData', JSON.stringify(job));
-              // Unmount before navigating so the SDK can clean up its mount point
-              // before React removes the DOM node
               if (vouchedInstanceRef.current?.unmount) {
                 try { vouchedInstanceRef.current.unmount(); } catch { /* ignore */ }
                 vouchedInstanceRef.current = null;
@@ -119,12 +120,12 @@ export default function EpicVerificationPage() {
 
   return (
     <div className="relative flex flex-col min-h-screen bg-white">
-      {/* Simulated URL bar — present on every page in the flow */}
+      {/* Simulated URL bar — consistent across all Epic flow pages */}
       <div className="bg-gray-50 border-b border-gray-200 px-4 py-2 text-center text-xs text-gray-400 tracking-wide shrink-0">
         epic.stage.vouched.id
       </div>
 
-      {/* SDK fills the remaining height, scoped inside the phone card */}
+      {/* SDK fills remaining height, scoped inside the phone card */}
       <div className="flex-1 relative">
         <div className="vouched-wrapper">
           <div id="vouched-element" className="vouched-element" />
@@ -150,5 +151,17 @@ export default function EpicVerificationPage() {
         }
       `}</style>
     </div>
+  );
+}
+
+export default function EpicVerificationPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[600px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
+      </div>
+    }>
+      <EpicVerificationContent />
+    </Suspense>
   );
 }
