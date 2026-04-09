@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, Suspense } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 interface FormData {
@@ -165,10 +166,12 @@ function EpicFormContent() {
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [showDev, setShowDev] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     localStorage.removeItem('epicFormData');
     localStorage.removeItem('epicJobData');
+    setMounted(true);
   }, []);
 
   const isValid =
@@ -225,7 +228,8 @@ function EpicFormContent() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <>
+    <div className="flex flex-col bg-white">
       <div className="bg-gray-50 border-b border-gray-200 px-4 py-2 text-center text-xs text-gray-400 tracking-wide">
         epic.stage.vouched.id
       </div>
@@ -355,25 +359,31 @@ function EpicFormContent() {
         </p>
       </div>
 
-      <div className="text-center pb-4">
-        <button
-          onClick={() => setShowDev(d => !d)}
-          className="text-gray-300 text-xs hover:text-gray-400 transition-colors"
-        >
-          {showDev ? '↑ hide dev' : '↓ dev'}
-        </button>
-        {showDev && (
-          <div className="mt-2">
-            <button
-              onClick={devFill}
-              className="text-xs text-gray-400 hover:text-gray-600 underline"
-            >
-              → Fill with Tom&apos;s Info
-            </button>
-          </div>
-        )}
-      </div>
     </div>
+    {mounted && createPortal(
+      <div className="fixed bottom-4 inset-x-0 flex flex-col items-center pointer-events-none">
+        <div className="pointer-events-auto text-center">
+          <button
+            onClick={() => setShowDev(d => !d)}
+            className="text-gray-300 text-xs hover:text-gray-400 transition-colors"
+          >
+            {showDev ? '↑ hide dev' : '↓ dev'}
+          </button>
+          {showDev && (
+            <div className="mt-2">
+              <button
+                onClick={devFill}
+                className="text-xs text-gray-400 hover:text-gray-600 underline"
+              >
+                → Fill with Tom&apos;s Info
+              </button>
+            </div>
+          )}
+        </div>
+      </div>,
+      document.body
+    )}
+    </>
   );
 }
 

@@ -138,7 +138,7 @@ export default function EpicCompletePage() {
   ];
 
   const epicCard = (
-    <div className="w-full max-w-[430px] h-[680px] bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+    <div className="w-full max-w-[390px] h-[680px] bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col">
       {phase === '1' ? (
         <div className="flex flex-col h-full bg-white">
           <div className="bg-gray-50 border-b border-gray-200 px-4 py-2 text-center text-xs text-gray-400 tracking-wide">
@@ -220,7 +220,7 @@ export default function EpicCompletePage() {
   return (
     <div className="min-h-screen bg-gray-100 py-8 px-6">
       <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 xl:grid-cols-[460px_1fr] gap-8 items-start">
+        <div className="grid grid-cols-1 xl:grid-cols-[420px_1fr] gap-8 items-start">
 
           {/* Left: phone card */}
           <div className="flex justify-center xl:justify-start">

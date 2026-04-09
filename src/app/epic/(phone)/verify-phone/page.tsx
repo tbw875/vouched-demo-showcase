@@ -89,7 +89,7 @@ export default function EpicVerifyPhonePage() {
   const allFilled = code.every(d => d !== '');
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <div className="flex flex-col bg-white">
       <div className="bg-gray-50 border-b border-gray-200 px-4 py-2 text-center text-xs text-gray-400 tracking-wide">
         epic.stage.vouched.id
       </div>
