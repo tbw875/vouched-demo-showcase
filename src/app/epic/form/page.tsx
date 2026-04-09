@@ -168,6 +168,11 @@ export default function EpicFormPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showDev, setShowDev] = useState(false);
 
+  useEffect(() => {
+    localStorage.removeItem('epicFormData');
+    localStorage.removeItem('epicJobData');
+  }, []);
+
   const isValid =
     form.firstName.trim() &&
     form.lastName.trim() &&
@@ -186,6 +191,7 @@ export default function EpicFormPage() {
     if (!form.firstName.trim()) newErrors.firstName = 'Required';
     if (!form.lastName.trim()) newErrors.lastName = 'Required';
     if (!form.phone.trim()) newErrors.phone = 'Required';
+    else if (form.phone.replace(/\D/g, '').length !== 10) newErrors.phone = 'Enter a valid 10-digit US number';
     if (!form.dateOfBirth) newErrors.dateOfBirth = 'Required';
     if (!form.email.trim()) newErrors.email = 'Required';
     if (!form.consent) newErrors.consent = 'You must consent to continue';

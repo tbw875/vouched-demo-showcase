@@ -77,7 +77,9 @@ export default function EpicCompletePage() {
   );
   const [issuerID] = useState(() => generateId('v1:'));
   const [nonce] = useState(() => generateNonce(44));
-  const nowSec = Math.floor(Date.now() / 1000);
+  const [eptId] = useState(() => `E${Math.floor(1000000 + Math.random() * 9000000)}`);
+  const [wprId] = useState(() => String(Math.floor(100000 + Math.random() * 900000)));
+  const [nowSec] = useState(() => Math.floor(Date.now() / 1000));
 
   useEffect(() => {
     try {
@@ -142,7 +144,7 @@ export default function EpicCompletePage() {
         <div className="bg-gray-50 border-b border-gray-200 px-4 py-2 text-center text-xs text-gray-400 tracking-wide">
           epic.stage.vouched.id
         </div>
-        <div className="flex-1 flex flex-col items-center justify-center px-8 text-center gap-5">
+        <div className="relative flex-1 flex flex-col items-center justify-center px-8 text-center gap-5">
           {/* Language selector cosmetic */}
           <div className="absolute top-10 right-5 flex items-center gap-1 text-xs text-gray-500 border border-gray-200 rounded px-2 py-1">
             <span>Language:</span>
@@ -209,9 +211,9 @@ export default function EpicCompletePage() {
                   value: sessionToken.slice(0, 44) + '=',
                 },
                 { label: 'OpenID Provider', value: 'VOUCHED - MYC ID TOKEN RETRIEVAL' },
-                { label: 'EPT ID', value: '' },
-                { label: 'WPR ID', value: '' },
-                { label: 'Match Result', value: 'None' },
+                { label: 'EPT ID', value: eptId },
+                { label: 'WPR ID', value: wprId },
+                { label: 'Match Result', value: 'Matched' },
               ].map((row, i) => (
                 <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                   <td className="px-3 py-2 font-medium text-gray-700 border-b border-gray-200 align-top w-2/5">
