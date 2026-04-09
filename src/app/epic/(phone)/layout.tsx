@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 
-export default function EpicLayout({ children }: { children: React.ReactNode }) {
+export default function EpicPhoneLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-gray-100 flex items-start justify-center py-8 px-4">
       <div className="w-full max-w-[430px] bg-white rounded-3xl shadow-2xl overflow-hidden">
