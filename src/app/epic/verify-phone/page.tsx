@@ -15,7 +15,7 @@ export default function EpicVerifyPhonePage() {
   const router = useRouter();
   const [code, setCode] = useState(['', '', '', '', '', '']);
   const [error, setError] = useState('');
-  const [countdown, setCountdown] = useState(28);
+  const [countdown, setCountdown] = useState(30);
   const [resendActive, setResendActive] = useState(false);
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
   const [phone, setPhone] = useState('');

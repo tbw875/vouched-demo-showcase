@@ -118,26 +118,24 @@ export default function EpicVerificationPage() {
   }, []);
 
   return (
-    <>
-      <div className="vouched-wrapper">
-        <div id="vouched-element" className="vouched-element" />
+    <div className="relative flex flex-col min-h-screen bg-white">
+      {/* Simulated URL bar — present on every page in the flow */}
+      <div className="bg-gray-50 border-b border-gray-200 px-4 py-2 text-center text-xs text-gray-400 tracking-wide shrink-0">
+        epic.stage.vouched.id
+      </div>
+
+      {/* SDK fills the remaining height, scoped inside the phone card */}
+      <div className="flex-1 relative">
+        <div className="vouched-wrapper">
+          <div id="vouched-element" className="vouched-element" />
+        </div>
       </div>
 
       <style jsx>{`
-        :global(html),
-        :global(body) {
-          height: 100%;
-          overflow: hidden;
-        }
-
         .vouched-wrapper {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
+          position: absolute;
+          inset: 0;
           background: white;
-          z-index: 10;
         }
 
         .vouched-element {
@@ -151,6 +149,6 @@ export default function EpicVerificationPage() {
           height: 100%;
         }
       `}</style>
-    </>
+    </div>
   );
 }

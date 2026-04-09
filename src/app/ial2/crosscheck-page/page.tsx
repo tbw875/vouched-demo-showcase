@@ -102,7 +102,6 @@ function IAL2CrossCheckPageContent() {
     setRequestData(crossCheckRequest);
 
     try {
-      console.log('IAL2: Starting CrossCheck verification...');
 
       const response = await fetch('/api/healthcare/crosscheck-route', {
         method: 'POST',
@@ -119,7 +118,6 @@ function IAL2CrossCheckPageContent() {
         throw new Error(`CrossCheck verification failed: ${errorMsg}`);
       }
 
-      console.log('IAL2: CrossCheck verification completed:', result);
       setVerificationResult(result);
 
       if (isCrossCheckVerificationResponse(result)) {
@@ -300,7 +298,7 @@ function IAL2CrossCheckPageContent() {
                   headers: { 'Content-Type': 'application/json' },
                   body: {
                     ...requestData,
-                    phone: requestData.phone ? `***${requestData.phone.slice(-4)}` : undefined
+                    phone: requestData.phone ? `(***) ***-${requestData.phone.slice(-4)}` : undefined
                   }
                 } : null}
                 title="request"
