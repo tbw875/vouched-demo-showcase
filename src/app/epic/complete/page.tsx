@@ -138,7 +138,7 @@ export default function EpicCompletePage() {
   ];
 
   const epicCard = (
-    <div className="w-full max-w-[390px] h-[680px] bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+    <div className="w-full max-w-[390px] h-[680px] max-h-[calc(100dvh-5rem)] bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col">
       {phase === '1' ? (
         <div className="flex flex-col h-full bg-white">
           <div className="bg-gray-50 border-b border-gray-200 px-4 py-2 text-center text-xs text-gray-400 tracking-wide">

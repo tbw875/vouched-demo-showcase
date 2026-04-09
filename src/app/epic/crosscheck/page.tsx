@@ -35,7 +35,7 @@ function EpicHeart({ className = '' }: { className?: string }) {
 // Simulated MyChart loading screen shown in the left phone card while CrossCheck runs
 function EpicLoadingScreen() {
   return (
-    <div className="w-full max-w-[390px] h-[680px] bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+    <div className="w-full max-w-[390px] h-[680px] max-h-[calc(100dvh-16rem)] bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col">
         <div className="flex items-center gap-3 px-3 py-2 bg-gray-100 border-b border-gray-200 shrink-0">
           <div className="flex items-center justify-center w-7 h-7 rounded-full bg-white border border-gray-200 text-gray-500 text-sm">
             ✕
