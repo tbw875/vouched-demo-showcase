@@ -157,14 +157,8 @@ export default function EpicCompletePage() {
         </div>
       ) : (
         <div className="flex flex-col h-full bg-white">
-          <div className="flex items-center gap-3 px-3 py-2 bg-gray-100 border-b border-gray-200">
-            <div className="flex items-center justify-center w-7 h-7 rounded-full bg-white border border-gray-200 text-gray-500 text-sm">✕</div>
-            <div className="flex-1 bg-white rounded-lg px-3 py-1.5 text-xs text-gray-700 font-medium border border-gray-200 flex items-center gap-2">
-              <span className="text-gray-400">🔒</span>
-              vendorservices.epic.com
-              {phase === '2a' && <div className="ml-auto w-3/4 h-0.5 bg-blue-500 rounded-full animate-pulse" />}
-            </div>
-            <div className="flex items-center justify-center w-7 h-7 rounded-full bg-white border border-gray-200 text-gray-400 text-sm">⋮</div>
+          <div className="bg-gray-50 border-b border-gray-200 px-4 py-2 text-center text-xs text-gray-400 tracking-wide shrink-0">
+            epic.stage.vouched.id
           </div>
           {phase === '2a' ? (
             <div className="flex-1 flex flex-col items-center justify-center gap-4">
@@ -229,7 +223,7 @@ export default function EpicCompletePage() {
 
           {/* Right: webhook response — revealed in phase 2b */}
           {phase === '2b' && (
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 min-w-0">
               {jobData?.id && (
                 <button
                   onClick={() => window.open(`https://app.vouched.id/account/jobs/${jobData.id}`, '_blank')}
@@ -247,7 +241,7 @@ export default function EpicCompletePage() {
                 </div>
                 <div className="p-6">
                   {webhookDataRef.current ? (
-                    <div className="overflow-hidden rounded-lg">
+                    <div className="overflow-x-auto rounded-lg">
                       <SyntaxHighlighter
                         language="json"
                         style={oneDark}
