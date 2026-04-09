@@ -35,8 +35,7 @@ function EpicHeart({ className = '' }: { className?: string }) {
 // Simulated MyChart loading screen shown in the left phone card while CrossCheck runs
 function EpicLoadingScreen() {
   return (
-    <div className="flex items-start justify-center py-8 px-4">
-      <div className="w-full max-w-[430px] h-[680px] bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+    <div className="w-full max-w-[430px] h-[680px] bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col">
         <div className="flex items-center gap-3 px-3 py-2 bg-gray-100 border-b border-gray-200 shrink-0">
           <div className="flex items-center justify-center w-7 h-7 rounded-full bg-white border border-gray-200 text-gray-500 text-sm">
             ✕
@@ -55,7 +54,6 @@ function EpicLoadingScreen() {
           <p className="text-sm text-gray-500">Please wait a moment...</p>
           <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-400" />
         </div>
-      </div>
     </div>
   );
 }
@@ -182,12 +180,14 @@ export default function EpicCrossCheckPage() {
 
       {/* Two-column layout */}
       <div className="max-w-6xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 items-start">
+        <div className="grid grid-cols-1 xl:grid-cols-[460px_1fr] gap-8 items-start">
 
           {/* Left: simulated MyChart loading screen */}
           <div>
             <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">MyChart Patient Experience</h2>
-            <EpicLoadingScreen />
+            <div className="flex justify-center xl:justify-start">
+              <EpicLoadingScreen />
+            </div>
           </div>
 
           {/* Right: CrossCheck API response */}

@@ -145,11 +145,6 @@ export default function EpicCompletePage() {
             epic.stage.vouched.id
           </div>
           <div className="relative flex-1 flex flex-col items-center justify-center px-8 text-center gap-5">
-            <div className="flex items-center gap-1 text-xs text-gray-500 border border-gray-200 rounded px-2 py-1 self-end">
-              <span>Language:</span>
-              <span className="font-medium">English</span>
-              <span className="text-gray-400">▾</span>
-            </div>
             <GreenCheck />
             <div>
               <h2 className="text-xl font-bold text-gray-900 mb-2">Verification Complete!</h2>
@@ -225,7 +220,7 @@ export default function EpicCompletePage() {
   return (
     <div className="min-h-screen bg-gray-100 py-8 px-6">
       <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 items-start">
+        <div className="grid grid-cols-1 xl:grid-cols-[460px_1fr] gap-8 items-start">
 
           {/* Left: phone card */}
           <div className="flex justify-center xl:justify-start">
