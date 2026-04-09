@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useRef, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 interface FormData {
   firstName: string;
@@ -150,8 +150,10 @@ function DatePicker({
   );
 }
 
-export default function EpicFormPage() {
+function EpicFormContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const mode = searchParams.get('mode') || 'idv'; // 'idv' or 'ial2'
   const [form, setForm] = useState<FormData>({
     firstName: '',
     lastName: '',
@@ -205,6 +207,7 @@ export default function EpicFormPage() {
       phone: form.phone,
       dateOfBirth: form.dateOfBirth,
       email: form.email,
+      mode,
     }));
     router.push('/epic/verify-phone');
   }
@@ -371,5 +374,17 @@ export default function EpicFormPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function EpicFormPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[600px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
+      </div>
+    }>
+      <EpicFormContent />
+    </Suspense>
   );
 }

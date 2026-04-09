@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { ChevronRightIcon, ShieldCheckIcon, DocumentCheckIcon, BuildingOffice2Icon, HeartIcon, CubeIcon, XMarkIcon, ShieldExclamationIcon, ComputerDesktopIcon } from '@heroicons/react/24/outline';
 
 type SSNMode = 'off' | 'last4' | 'full9';
-type UseCaseContext = 'healthcare' | 'financial' | 'generic' | 'ial2' | 'epic';
+type UseCaseContext = 'healthcare' | 'financial' | 'generic' | 'ial2' | 'epic' | 'epic-ial2';
 type JobType = 'idv' | 'id' | 'selfie-verification' | 'reverify';
 
 interface Product {
@@ -108,9 +108,13 @@ export default function ConfigurationPage() {
       useCase: useCaseContext
     });
     
-    // Epic use case goes directly to the Epic flow (no form-fill intermediary)
+    // Epic use cases go directly to the Epic flow (no form-fill intermediary)
     if (useCaseContext === 'epic') {
-      window.location.href = '/epic/form';
+      window.location.href = '/epic/form?mode=idv';
+      return;
+    }
+    if (useCaseContext === 'epic-ial2') {
+      window.location.href = '/epic/form?mode=ial2';
       return;
     }
 
@@ -522,7 +526,7 @@ export default function ConfigurationPage() {
                 </div>
               </div>
 
-              {/* Epic Integration Option */}
+              {/* Epic Integration Option — IDV Only */}
               <div
                 onClick={() => setUseCaseContext('epic')}
                 className={`p-8 rounded-2xl border-2 transition-all duration-200 cursor-pointer ${
@@ -540,10 +544,36 @@ export default function ConfigurationPage() {
                     }`} />
                   </div>
                   <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                    Epic Integration
+                    Epic MyChart — IDV Only
                   </h3>
                   <p className="text-gray-600 dark:text-gray-300 text-sm">
-                    Full patient identity verification flow as embedded in Epic&apos;s MyChart — mobile-first, OTP + ID + selfie
+                    Patient identity verification embedded in Epic&apos;s MyChart — mobile-first, OTP + ID + selfie
+                  </p>
+                </div>
+              </div>
+
+              {/* Epic IAL-2 Option */}
+              <div
+                onClick={() => setUseCaseContext('epic-ial2')}
+                className={`p-8 rounded-2xl border-2 transition-all duration-200 cursor-pointer ${
+                  useCaseContext === 'epic-ial2'
+                    ? 'border-red-500 bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-900/30 dark:to-rose-900/30 shadow-lg'
+                    : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                }`}
+              >
+                <div className="flex flex-col items-center text-center">
+                  <div className={`p-4 rounded-full mb-4 ${
+                    useCaseContext === 'epic-ial2' ? 'bg-red-100 dark:bg-red-900/50' : 'bg-gray-100 dark:bg-gray-700'
+                  }`}>
+                    <ShieldExclamationIcon className={`h-8 w-8 ${
+                      useCaseContext === 'epic-ial2' ? 'text-red-600' : 'text-gray-600 dark:text-gray-300'
+                    }`} />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                    Epic MyChart — IAL-2
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm">
+                    IAL-2 compliant MyChart flow — OTP + CrossCheck + ID + Driver&apos;s License Verification
                   </p>
                 </div>
               </div>
@@ -569,12 +599,14 @@ export default function ConfigurationPage() {
                   useCaseContext === 'financial' ? 'text-emerald-600 dark:text-emerald-400' :
                   useCaseContext === 'ial2' ? 'text-violet-600 dark:text-violet-400' :
                   useCaseContext === 'epic' ? 'text-red-600 dark:text-red-400' :
+                  useCaseContext === 'epic-ial2' ? 'text-red-600 dark:text-red-400' :
                   'text-indigo-600 dark:text-indigo-400'
                 }`}>
                   {useCaseContext === 'healthcare' ? 'Healthcare' :
                    useCaseContext === 'financial' ? 'Financial' :
                    useCaseContext === 'ial2' ? 'IAL2 Workflow' :
-                   useCaseContext === 'epic' ? 'Epic Integration' : 'Generic'}
+                   useCaseContext === 'epic' ? 'Epic MyChart — IDV Only' :
+                   useCaseContext === 'epic-ial2' ? 'Epic MyChart — IAL-2' : 'Generic'}
                 </div>
               </div>
               <div className="text-center">

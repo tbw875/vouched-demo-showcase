@@ -69,8 +69,14 @@ export default function EpicVerifyPhonePage() {
       setError('Please enter all 6 digits');
       return;
     }
-    // Accept any 6-digit code — routes to CrossCheck before IDV
-    router.push('/epic/crosscheck');
+    // Route based on mode saved during form entry
+    try {
+      const data = JSON.parse(localStorage.getItem('epicFormData') || '{}');
+      const mode = data.mode || 'idv';
+      router.push(mode === 'ial2' ? '/epic/crosscheck' : '/epic/verification');
+    } catch {
+      router.push('/epic/verification');
+    }
   }
 
   function handleResend() {
