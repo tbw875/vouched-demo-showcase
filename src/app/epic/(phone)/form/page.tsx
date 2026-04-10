@@ -247,7 +247,7 @@ function EpicFormContent() {
               type="text"
               value={form.firstName}
               onChange={e => handleChange('firstName', e.target.value)}
-              className={`border rounded-lg px-4 py-3 w-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm ${errors.firstName ? 'border-red-400' : 'border-gray-200'}`}
+              className={`border rounded-lg px-4 py-3 w-full text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm ${errors.firstName ? 'border-red-400' : 'border-gray-200'}`}
             />
             {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>}
           </div>
@@ -258,7 +258,7 @@ function EpicFormContent() {
               type="text"
               value={form.lastName}
               onChange={e => handleChange('lastName', e.target.value)}
-              className={`border rounded-lg px-4 py-3 w-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm ${errors.lastName ? 'border-red-400' : 'border-gray-200'}`}
+              className={`border rounded-lg px-4 py-3 w-full text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm ${errors.lastName ? 'border-red-400' : 'border-gray-200'}`}
             />
             {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>}
           </div>
@@ -275,7 +275,7 @@ function EpicFormContent() {
                 value={form.phone}
                 onChange={e => handleChange('phone', e.target.value.replace(/\D/g, ''))}
                 placeholder="(555) 555-5555"
-                className="flex-1 px-3 py-3 text-sm focus:outline-none bg-white"
+                className="flex-1 px-3 py-3 text-sm text-gray-900 focus:outline-none bg-white"
               />
             </div>
             {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
@@ -296,7 +296,7 @@ function EpicFormContent() {
               type="email"
               value={form.email}
               onChange={e => handleChange('email', e.target.value)}
-              className={`border rounded-lg px-4 py-3 w-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm ${errors.email ? 'border-red-400' : 'border-gray-200'}`}
+              className={`border rounded-lg px-4 py-3 w-full text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm ${errors.email ? 'border-red-400' : 'border-gray-200'}`}
             />
             {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
           </div>

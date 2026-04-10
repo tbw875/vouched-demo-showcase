@@ -117,12 +117,12 @@ export default function EpicVerifyPhonePage() {
               value={digit}
               onChange={e => handleDigit(i, e.target.value)}
               onKeyDown={e => handleKeyDown(i, e)}
-              className={`w-full h-12 border-2 rounded-lg text-center text-xl font-semibold focus:outline-none transition-colors ${
+              className={`w-full h-12 border-2 rounded-lg text-center text-xl font-semibold text-gray-900 focus:outline-none transition-colors ${
                 error
-                  ? 'border-red-400 focus:border-red-500'
+                  ? 'border-red-400 focus:border-red-500 bg-white'
                   : digit
                   ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-300 focus:border-blue-500'
+                  : 'border-gray-300 focus:border-blue-500 bg-white'
               }`}
             />
           ))}
