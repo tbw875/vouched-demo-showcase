@@ -361,27 +361,25 @@ function EpicFormContent() {
 
     </div>
     {mounted && createPortal(
-      <div className="fixed bottom-4 inset-x-0 flex flex-col items-center pointer-events-none">
-        <div className="pointer-events-auto text-center">
-          <button
-            onClick={() => setShowDev(d => !d)}
-            className="text-gray-300 text-xs hover:text-gray-400 transition-colors"
-          >
-            {showDev ? '↑ hide dev' : '↓ dev'}
-          </button>
-          {showDev && (
-            <div className="mt-2">
-              <button
-                onClick={devFill}
-                className="text-xs text-gray-400 hover:text-gray-600 underline"
-              >
-                → Fill with Tom&apos;s Info
-              </button>
-            </div>
-          )}
-        </div>
+      <div className="text-center py-3">
+        <button
+          onClick={() => setShowDev(d => !d)}
+          className="text-gray-400 text-xs hover:text-gray-500 transition-colors"
+        >
+          {showDev ? '↑ hide dev' : '↓ dev'}
+        </button>
+        {showDev && (
+          <div className="mt-2">
+            <button
+              onClick={devFill}
+              className="text-xs text-gray-500 hover:text-gray-700 underline"
+            >
+              → Fill with Tom&apos;s Info
+            </button>
+          </div>
+        )}
       </div>,
-      document.body
+      document.getElementById('epic-phone-below') ?? document.body
     )}
     </>
   );
