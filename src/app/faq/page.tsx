@@ -57,8 +57,8 @@ const FAQ_DATA: FAQSection[] = [
       {
         num: 1,
         question: 'How long do you retain patient/user data after verification?',
-        answer: '<p>The default minimum is <strong>3 days</strong>. Customers can configure shorter or longer retention windows based on their compliance requirements. For customers that need real-time deletion — like those in Illinois or Texas — we support instant deletion via API call immediately after verification completes.</p>',
-        highlight: 'Lead with the 3-day default, then emphasize the real-time deletion API. Prospects in regulated states will ask this as a gating question.',
+        answer: '<p>The default minimum is <strong>1 day</strong>. Customers can configure shorter or longer retention windows based on their compliance requirements. For customers that need real-time deletion — like those in Illinois or Texas — we support instant deletion via API call immediately after verification completes.</p>',
+        highlight: 'Lead with the 1-day default, then emphasize the real-time deletion API. Prospects in regulated states will ask this as a gating question.',
         sources: ['Epic Demo', 'WellSpan Demo'],
       },
       {
@@ -726,6 +726,30 @@ export default function FAQPage() {
                             ))}
                           </div>
                         )}
+                        {/* Flag button */}
+                        <div className="mt-4 flex justify-end">
+                          <a
+                            href="https://docs.google.com/forms/d/e/1FAIpQLSfj5XAHG-opXQvQ7gPh75Egm-if4dtUhWxR1AhIBKL4vYuTcA/viewform"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={e => e.stopPropagation()}
+                            title="Flag an issue with this answer"
+                            className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-colors duration-150"
+                            style={{ color: '#DC2626' }}
+                            onMouseEnter={e => {
+                              (e.currentTarget as HTMLAnchorElement).style.background = '#FEF2F2';
+                            }}
+                            onMouseLeave={e => {
+                              (e.currentTarget as HTMLAnchorElement).style.background = 'transparent';
+                            }}
+                          >
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+                              <line x1="4" y1="22" x2="4" y2="15"/>
+                            </svg>
+                            Flag issue
+                          </a>
+                        </div>
                       </div>
                     )}
                   </div>
