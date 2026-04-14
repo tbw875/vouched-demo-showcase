@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ChevronRightIcon, ShieldCheckIcon, DocumentCheckIcon, BuildingOffice2Icon, HeartIcon, CubeIcon, XMarkIcon, ShieldExclamationIcon, ComputerDesktopIcon } from '@heroicons/react/24/outline';
+import { ChevronRightIcon, ShieldCheckIcon, DocumentCheckIcon, BuildingOffice2Icon, HeartIcon, CubeIcon, XMarkIcon, ShieldExclamationIcon, ComputerDesktopIcon, QuestionMarkCircleIcon } from '@heroicons/react/24/outline';
 
 type SSNMode = 'off' | 'last4' | 'full9';
 type UseCaseContext = 'healthcare' | 'financial' | 'generic' | 'ial2' | 'epic' | 'epic-ial2';
@@ -140,6 +140,18 @@ export default function ConfigurationPage() {
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
             Configure your demo experience to showcase Vouched&apos;s AI-powered identity verification solutions
           </p>
+        </div>
+
+        {/* RealFAQ Button */}
+        <div className="flex justify-center mb-8">
+          <button
+            onClick={() => window.location.href = '/faq'}
+            className="inline-flex items-center gap-2 rounded-xl border-2 border-indigo-600 px-5 py-2.5 text-sm font-semibold text-indigo-600 transition-all duration-200 hover:bg-indigo-50 dark:border-indigo-400 dark:text-indigo-400 dark:hover:bg-indigo-900/30"
+          >
+            <QuestionMarkCircleIcon className="h-4 w-4" />
+            RealFAQ — Questions from Real Calls
+            <ChevronRightIcon className="h-4 w-4 opacity-50" />
+          </button>
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-700 p-8 space-y-10">
