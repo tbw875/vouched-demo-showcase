@@ -154,7 +154,7 @@ function DOBPageContent() {
         {/* Page Title */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Healthcare Verification - DOB Verification
+            Step Up Workflow - DOB Verification
           </h1>
         </div>
 

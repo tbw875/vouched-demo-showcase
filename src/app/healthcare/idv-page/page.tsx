@@ -309,7 +309,7 @@ function HealthcareIDVPageContent() {
         {/* Page Title */}
         <div className="page-title text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Healthcare Verification - Identity Verification
+            Step Up Workflow - Identity Verification
           </h1>
         </div>
 
@@ -354,7 +354,7 @@ function HealthcareIDVPageContent() {
                   </div>
                   <div className="flex-1 text-center">
                     <span className="text-sm text-gray-600 dark:text-gray-300">
-                      Healthcare Identity Verification
+                      Step Up Workflow - Identity Verification
                     </span>
                   </div>
                 </div>

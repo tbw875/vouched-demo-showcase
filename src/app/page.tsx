@@ -440,7 +440,7 @@ export default function ConfigurationPage() {
                     }`} />
                   </div>
                   <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                    Healthcare
+                    Step-Up Workflow
                   </h3>
                   <p className="text-gray-600 dark:text-gray-300 text-sm">
                     For verifying you are treating the correct patient, and protecting their PHI.
@@ -602,7 +602,7 @@ export default function ConfigurationPage() {
                   useCaseContext === 'epic-ial2' ? 'text-red-600 dark:text-red-400' :
                   'text-indigo-600 dark:text-indigo-400'
                 }`}>
-                  {useCaseContext === 'healthcare' ? 'Healthcare' :
+                  {useCaseContext === 'healthcare' ? 'Step-Up Workflow' :
                    useCaseContext === 'financial' ? 'Financial' :
                    useCaseContext === 'ial2' ? 'IAL2 Workflow' :
                    useCaseContext === 'epic' ? 'Epic MyChart — IDV Only' :

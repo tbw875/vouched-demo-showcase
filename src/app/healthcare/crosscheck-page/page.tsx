@@ -166,7 +166,7 @@ function CrossCheckPageContent() {
         {/* Page Title */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Healthcare Verification - CrossCheck
+            Step Up Workflow - CrossCheck
           </h1>
         </div>
 
