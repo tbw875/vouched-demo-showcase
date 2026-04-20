@@ -19,6 +19,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Vouched Identity Verification Showcase",
   description: "Interactive demo showcasing Vouched's powerful identity verification solutions",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({
